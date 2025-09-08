@@ -24,10 +24,6 @@ const AdminSchema = new Schema(
       type: String,
       required: true,
     },
-    type: {
-      type: String,
-      enum: ["superadmin", "regionaladmin"],
-    },
     password: {
       type: String,
       required: true,
@@ -40,6 +36,6 @@ const AdminSchema = new Schema(
   { timestamps: true }
 );
 
-const Admin = mongoose.model("Admin", AdminSchema);
+const Admin = mongoose.model("Superadmin", AdminSchema);
 
 export default Admin;

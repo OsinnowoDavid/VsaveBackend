@@ -1,12 +1,13 @@
 import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
-import connectDB from "./config/mongodB.js";
+import connectDB from "./config/mongodB";
+import userRouter from "./routes/User";
 
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 dotenv.config();
-const port = process.env.PORT;
+const port = process.env.PORT || 5000;
 const app = express();
 app.use(express.json());
 // const allowedOrigin =[]
@@ -25,9 +26,11 @@ app.use(cookieParser());
 connectDB();
 
 app.get("/", (req, res) => {
-  res.send("Welcome to Home Backend");
+  res.send("Welcome to Vsave Backend");
 });
+//user route config
+app.use("/user", userRouter);
 
 app.listen(port, () => {
-  console.log("Server is running ");
+  console.log(`Server is running on ${port}`);
 });

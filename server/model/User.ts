@@ -34,15 +34,22 @@ const userSchema = new Schema({
   },
   referral_code: {
     type: String,
-    required: true,
   },
   vsave_point: {
     type: Number,
-    required: true,
+    default: 0,
   },
   KYC: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "KYC",
+  },
+  available_balance: {
+    type: Number,
+    default: 0,
+  },
+  pending_balance: {
+    type: Number,
+    default: 0,
   },
 });
 
