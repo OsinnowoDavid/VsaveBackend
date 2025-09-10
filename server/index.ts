@@ -3,7 +3,8 @@ import cors from "cors";
 import bodyParser from "body-parser";
 import connectDB from "./config/mongodB";
 import userRouter from "./routes/User";
-
+import adminRouter from "./routes/Admin";
+import regionalAdminRouter from "./routes/RegionalAdmin";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 dotenv.config();
@@ -30,6 +31,12 @@ app.get("/", (req, res) => {
 });
 //user route config
 app.use("/user", userRouter);
+
+// superAdmin routes config
+app.use("/admin", adminRouter);
+
+// regionaladmin routes config
+app.use("/regionaladmin", regionalAdminRouter);
 
 app.listen(port, () => {
   console.log(`Server is running on ${port}`);

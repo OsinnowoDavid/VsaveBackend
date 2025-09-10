@@ -2,6 +2,8 @@ import jwt from "jsonwebtoken";
 const jwt_secret: any = process.env.jwt_secret;
 import { NextFunction, Request, Response } from "express";
 import { getUserById } from "../services/User";
+import { getAllSuperadminById } from "../services/Admin";
+import { getRegionalAdminById } from "../services/RegionalAdmin";
 
 export const signUserToken = (user: any) => {
   const payload = {
@@ -21,6 +23,12 @@ export const verifyUserToken = async (
   try {
     // Extract token from authorization header
     const { authorization = "" } = req.headers;
+    if (!authorization || authorization === "") {
+      return res.json({
+        status: "failed!",
+        msg: "No authorization token found",
+      });
+    }
     const decoded: any = jwt.verify(authorization, jwt_secret);
 
     const foundId = decoded.user;
@@ -40,6 +48,78 @@ export const verifyUserToken = async (
 
     return next();
   } catch (err: any) {
-    return res.json(err.message);
+    res.json({
+      Status: "Failed",
+      message: err.message,
+    });
+  }
+};
+
+export const verifySuperadminToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    // Extract token from authorization header
+    const { authorization = "" } = req.headers;
+    if (!authorization || authorization === "") {
+      return res.json({
+        status: "failed!",
+        msg: "No authorization token found",
+      });
+    }
+    const decoded: any = jwt.verify(authorization, jwt_secret);
+    const foundId = decoded.user;
+    // find superadmin by decoded user id
+    const currentAdmin = await getAllSuperadminById(foundId);
+    if (!currentAdmin) {
+      return res.json({
+        status: "failed!",
+        msg: "user not authorized!!",
+      });
+    }
+    // Attach user to request object
+    req.user = currentAdmin;
+    return next();
+  } catch (err: any) {
+    res.json({
+      Status: "Failed",
+      message: err.message,
+    });
+  }
+};
+
+export const verifyRegionaladminToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    // Extract token from authorization header
+    const { authorization = "" } = req.headers;
+    if (!authorization || authorization === "") {
+      return res.json({
+        status: "failed!",
+        msg: "No authorization token found",
+      });
+    }
+    const decoded: any = jwt.verify(authorization, jwt_secret);
+    const foundId = decoded.user;
+    const currentAdmin = await getRegionalAdminById(foundId);
+    if (!currentAdmin) {
+      return res.json({
+        status: "failed!",
+        msg: "user not authorized!!",
+      });
+    }
+    // Attach user to request object
+    req.user = currentAdmin;
+    return next();
+  } catch (err: any) {
+    res.json({
+      Status: "Failed",
+      message: err.message,
+    });
   }
 };

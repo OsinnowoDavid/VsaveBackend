@@ -1,14 +1,14 @@
 import { Request, Response } from "express";
 import argon from "argon2";
-import { createNewUser, getUserByEmail, getUserById } from "../services/User";
+import { CreateSuperAdmin, getAllSuperadminByEmail } from "../services/Admin";
 import { signUserToken } from "../config/JWT";
 
-export const registerUser = async (req: Request, res: Response) => {
+export const registerAdmin = async (req: Request, res: Response) => {
   try {
     const { firstname, lastname, middlename, email, phone_no, password } =
       req.body;
     let hashPassword = await argon.hash(password);
-    const newUser = await createNewUser(
+    const newAdmin = await CreateSuperAdmin(
       firstname,
       lastname,
       email,
@@ -16,57 +16,57 @@ export const registerUser = async (req: Request, res: Response) => {
       hashPassword,
       middlename
     );
-    if (!newUser) {
+    if (!newAdmin) {
       return res.json({
         status: "Failed",
         message: "something went wrong, try again later",
       });
     }
     return res.json({
-      status: "Success",
-      message: "User created successfuly",
-      data: newUser,
+      status: "Failed",
+      message: "Regional admin created successfully",
+      data: newAdmin,
     });
   } catch (err: any) {
-    res.json({
-      Status: "Failed",
+    return res.json({
+      status: "Failed",
       message: err.message,
     });
   }
 };
 
-export const loginUser = async (req: Request, res: Response) => {
+export const LoginSuperAdmin = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
-    const user = await getUserByEmail(email);
-    if (!user) {
+    const foundAdmin = await getAllSuperadminByEmail(email);
+    if (!foundAdmin) {
       return res.json({
         status: "Failed",
-        message: "User not found",
+        message: "User Not Found",
       });
     }
-    const verifyPassword = await argon.verify(user.password, password);
+    let verifyPassword = await argon.verify(foundAdmin.password, password);
     if (!verifyPassword) {
       return res.json({
         status: "Failed",
-        message: "incorrect password ",
+        message: "incorrect Passsword",
       });
     }
     // Return success with JWT token
     return res.json({
-      status: "success",
+      Status: "success",
       message: "login successfuly",
-      token: signUserToken(user),
+      token: signUserToken(foundAdmin),
     });
   } catch (err: any) {
-    res.json({
-      Status: "Failed",
+    return res.json({
+      status: "Failed",
       message: err.message,
     });
   }
 };
 
-export const userProfile = async (req: Request, res: Response) => {
+export const superAdminProfile = async (req: Request, res: Response) => {
   try {
     let user = req.user;
     if (!user) {
@@ -81,8 +81,8 @@ export const userProfile = async (req: Request, res: Response) => {
       data: user,
     });
   } catch (err: any) {
-    res.json({
-      Status: "Failed",
+    return res.json({
+      status: "Failed",
       message: err.message,
     });
   }

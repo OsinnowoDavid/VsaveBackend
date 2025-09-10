@@ -6,8 +6,8 @@ export const CreateSuperAdmin = async (
   email: string,
   phone_no: string,
   password: string,
-  profile_pic?: string,
-  middlename?: string
+  middlename?: string,
+  profile_pic?: string
 ) => {
   try {
     let type = "superadmin";
@@ -53,3 +53,20 @@ export const CreateSuperAdmin = async (
 //         throw err
 //     }
 // }
+export const getAllSuperadminById = async (id: string) => {
+  try {
+    const foundAdmin = await Admin.findById(id);
+    return foundAdmin;
+  } catch (err: any) {
+    throw err;
+  }
+};
+
+export const getAllSuperadminByEmail = async (email: string) => {
+  try {
+    const foundAdmin = await Admin.findOne({ email });
+    return foundAdmin;
+  } catch (err: any) {
+    throw err;
+  }
+};
