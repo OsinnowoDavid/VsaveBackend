@@ -4,25 +4,17 @@ import KYCModel from "./KYC.js";
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
-  firstname: {
+  fullname: {
     type: String,
     required: true,
-  },
-  lastname: {
-    type: String,
-    required: true,
-  },
-  middlename: {
-    type: String,
-    required: false,
   },
   email: {
     type: String,
     required: true,
+    unique: true,
   },
   phone_no: {
     type: String,
-    required: true,
   },
   password: {
     type: String,
@@ -50,6 +42,16 @@ const userSchema = new Schema({
   pending_balance: {
     type: Number,
     default: 0,
+  },
+  isEmailVerified: {
+    type: Boolean,
+    default: false,
+  },
+  status: {
+    type: String,
+  },
+  address: {
+    type: String,
   },
 });
 

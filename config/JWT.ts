@@ -55,7 +55,7 @@ export const verifyUserToken = async (
   }
 };
 
-export const verifySuperadminToken = async (
+export const verifySuperAdminToken = async (
   req: Request,
   res: Response,
   next: NextFunction
