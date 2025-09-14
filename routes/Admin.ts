@@ -4,7 +4,7 @@ import {
   LoginSuperAdmin,
   superAdminProfile,
 } from "../controller/Admin";
-import { verifySuperadminToken } from "../config/JWT";
+import { verifySuperAdminToken } from "../config/JWT";
 
 const router = express.Router();
 
@@ -12,6 +12,6 @@ router.post("/register", registerAdmin);
 
 router.post("/login", LoginSuperAdmin);
 
-router.get("/profile", verifySuperadminToken, superAdminProfile);
+router.get("/profile", verifySuperAdminToken, superAdminProfile);
 
 export default router;

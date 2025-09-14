@@ -90,7 +90,7 @@ export const verifySuperAdminToken = async (
   }
 };
 
-export const verifyRegionaladminToken = async (
+export const verifyRegionalAdminToken = async (
   req: Request,
   res: Response,
   next: NextFunction
