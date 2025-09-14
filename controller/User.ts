@@ -22,38 +22,38 @@ export const registerUser = async (req: Request, res: Response) => {
     const user = (await getUserByEmail(email)) as IUser;
     // first check if it is a user that is in the database but didn't verify email
 
-    if (!user.isEmailVerified) {
-      const tokenNumber = Math.floor(100000 + Math.random() * 900000);
-      const mailOptions = {
-        from: `"My App" <${process.env.EMAIL_USER}>`, // sender
-        to: email, // recipient
-        subject: "Welcome to VSAVE 🎉",
-        text: ` Hello ${user.fullname} this is your VSave Verification code 
-          ${tokenNumber} 
-          code expires in 5 mins
-      — The VSave Team.`,
-      };
-      // Send email
-      await Transporter.sendMail(mailOptions);
-      const getNextFiveMinutes = () => {
-        const now = new Date();
-        const next = new Date(now.getTime() + 5 * 60 * 1000); // add 5 minutes
-        return next;
-      };
-      const expTime = getNextFiveMinutes();
-      await assignUserEmailVerificationToken(user.email, tokenNumber, expTime);
-      return res.json({
-        status: "Failed",
-        message:
-          "Account with this Email already exist you just need to verify yout Email , a token has been sent to this Email check and verify",
-        isEmailVerified: user.isEmailVerified,
-      });
-    }
+    // if (!user.isEmailVerified) {
+    //   const tokenNumber = Math.floor(100000 + Math.random() * 900000);
+    //   const mailOptions = {
+    //     from: `"My App" <${process.env.EMAIL_USER}>`, // sender
+    //     to: email, // recipient
+    //     subject: "Welcome to VSAVE 🎉",
+    //     text: ` Hello ${user.fullname} this is your VSave Verification code 
+    //       ${tokenNumber} 
+    //       code expires in 5 mins
+    //   — The VSave Team.`,
+    //   };
+    //   // Send email
+    //   await Transporter.sendMail(mailOptions);
+    //   const getNextFiveMinutes = () => {
+    //     const now = new Date();
+    //     const next = new Date(now.getTime() + 5 * 60 * 1000); // add 5 minutes
+    //     return next;
+    //   };
+    //   const expTime = getNextFiveMinutes();
+    //   await assignUserEmailVerificationToken(user.email, tokenNumber, expTime);
+    //   return res.json({
+    //     status: "Failed",
+    //     message:
+    //       "Account with this Email already exist you just need to verify yout Email , a token has been sent to this Email check and verify",
+    //     isEmailVerified: user.isEmailVerified,
+    //   });
+    // }
     if (user) {
       return res.json({
         status: "Failed",
         message: "User already exists Login Instead !",
-        isEmailVerified: user.isEmailVerified,
+    
       });
     }
     // create new user
