@@ -1,5 +1,5 @@
 import express from "express";
-import { verifyRegionaladminToken } from "../config/JWT";
+import { verifyRegionalAdminToken } from "../config/JWT";
 import {
   registerRegionalAdmin,
   LoginRegionalAdmin,
@@ -12,6 +12,6 @@ router.post("/register", registerRegionalAdmin);
 
 router.post("/login", LoginRegionalAdmin);
 
-router.get("/profile", verifyRegionaladminToken, regionalAdminProfile);
+router.get("/profile", verifyRegionalAdminToken, regionalAdminProfile);
 
 export default router;
