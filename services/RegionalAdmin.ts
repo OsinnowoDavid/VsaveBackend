@@ -1,24 +1,20 @@
 import RegionalAdmin from "../model/Regionaladmin";
 
 export const createRegionalAdmin = async (
-  firstname: string,
-  lastname: string,
+  fullName: string,
   email: string,
-  phone_no: string,
+  phoneNumber: string,
   password: string,
   region: string,
-  middlename?: string,
-  profile_pic?: string
+  profilePicture?: string
 ) => {
   try {
     const newRegionalAdmin = await RegionalAdmin.create({
-      firstname,
-      lastname,
-      middlename,
+      fullName,
       email,
-      phone_no,
+      phoneNumber,
       password,
-      profile_pic,
+      profilePicture,
       region,
     });
     return newRegionalAdmin;

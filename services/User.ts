@@ -5,13 +5,13 @@ import KYC from "../model/KYC";
 import { IUser } from "../types";
 
 export const createNewUser = async (
-  fullname: string,
+  fullName: string,
   email: string,
   password: string
 ) => {
   try {
     const newUser = await User.create({
-      fullname,
+      fullName,
       email,
       password,
     });

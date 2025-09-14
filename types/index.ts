@@ -2,15 +2,15 @@ import { ObjectId, Document } from "mongoose";
 
 export interface IUser extends Document {
   id: ObjectId;
-  fullname: string;
+  fullName: string;
   email: string;
-  phone_no: string;
+  phoneNumber: string;
   password: string;
-  profile_pic: string;
-  vsave_point: number;
+  profilePicture: string;
+  vsavePoint: number;
   KYC: object;
-  available_balance: number;
-  pending_balance: number;
+  availableBalance: number;
+  pendingBalance: number;
   isEmailVerified: boolean;
   status: string;
   address: string;
