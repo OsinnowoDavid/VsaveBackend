@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
-    "target": "esnext",
-    "module": "commonjs",
+    "target": "ESNext",
+    "module": "CommonJS",
     "esModuleInterop": true,
-    "outDir": "dist",
-    "rootDir": "server"
+    "strict": true,
+    "skipLibCheck": true
   }
 }
