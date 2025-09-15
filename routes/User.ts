@@ -8,15 +8,10 @@ import {
   registerKYC1,
 } from "../controller/User";
 import { verifyUserToken } from "../config/JWT";
-import {
-  validateUserRegitrationInput,
-  validateUserLoginInput,
-} from "../validate-input/user";
-
 const router = express.Router();
 
-router.post("/register", validateUserRegitrationInput, registerUser);
-router.post("/login", validateUserLoginInput, loginUser);
+router.post("/register", registerUser);
+router.post("/login", loginUser);
 router.post("/verify-email", verifyEmail);
 router.post("/resend-verification-token", resendUserVerificationEmail);
 router.get("/profile", verifyUserToken, userProfile);
