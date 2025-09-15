@@ -9,9 +9,9 @@ const Admin_1 = require("../services/Admin");
 const JWT_1 = require("../config/JWT");
 const registerAdmin = async (req, res) => {
     try {
-        const { firstname, lastname, middlename, email, phone_no, password } = req.body;
+        const { fullName, email, phoneNumber, password } = req.body;
         let hashPassword = await argon2_1.default.hash(password);
-        const newAdmin = await (0, Admin_1.CreateSuperAdmin)(firstname, lastname, email, phone_no, hashPassword, middlename);
+        const newAdmin = await (0, Admin_1.CreateSuperAdmin)(fullName, email, phoneNumber, hashPassword);
         if (!newAdmin) {
             return res.json({
                 status: "Failed",
@@ -35,7 +35,7 @@ exports.registerAdmin = registerAdmin;
 const LoginSuperAdmin = async (req, res) => {
     try {
         const { email, password } = req.body;
-        const foundAdmin = await (0, Admin_1.getAllSuperadminByEmail)(email);
+        const foundAdmin = await (0, Admin_1.getAllSuperAdminByEmail)(email);
         if (!foundAdmin) {
             return res.json({
                 status: "Failed",

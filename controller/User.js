@@ -10,46 +10,20 @@ const JWT_1 = require("../config/JWT");
 const nodemailer_1 = __importDefault(require("../config/nodemailer"));
 const registerUser = async (req, res) => {
     try {
-        const { fullname, email, password } = req.body;
+        const { fullName, email, password } = req.body;
         let hashPassword = await argon2_1.default.hash(password);
         // check if user is already in the database
         const user = (await (0, User_1.getUserByEmail)(email));
         // first check if it is a user that is in the database but didn't verify email
-        // if (!user.isEmailVerified) {
-        //   const tokenNumber = Math.floor(100000 + Math.random() * 900000);
-        //   const mailOptions = {
-        //     from: `"My App" <${process.env.EMAIL_USER}>`, // sender
-        //     to: email, // recipient
-        //     subject: "Welcome to VSAVE 🎉",
-        //     text: ` Hello ${user.fullname} this is your VSave Verification code 
-        //       ${tokenNumber} 
-        //       code expires in 5 mins
-        //   — The VSave Team.`,
-        //   };
-        //   // Send email
-        //   await Transporter.sendMail(mailOptions);
-        //   const getNextFiveMinutes = () => {
-        //     const now = new Date();
-        //     const next = new Date(now.getTime() + 5 * 60 * 1000); // add 5 minutes
-        //     return next;
-        //   };
-        //   const expTime = getNextFiveMinutes();
-        //   await assignUserEmailVerificationToken(user.email, tokenNumber, expTime);
-        //   return res.json({
-        //     status: "Failed",
-        //     message:
-        //       "Account with this Email already exist you just need to verify yout Email , a token has been sent to this Email check and verify",
-        //     isEmailVerified: user.isEmailVerified,
-        //   });
-        // }
         if (user) {
             return res.json({
                 status: "Failed",
                 message: "User already exists Login Instead !",
+                isEmailVerified: user.isEmailVerified,
             });
         }
         // create new user
-        const newUser = await (0, User_1.createNewUser)(fullname, email, hashPassword);
+        const newUser = await (0, User_1.createNewUser)(fullName, email, hashPassword);
         if (!newUser) {
             return res.json({
                 status: "Failed",
@@ -77,7 +51,7 @@ const registerUser = async (req, res) => {
             from: `"My App" <${process.env.EMAIL_USER}>`, // sender
             to: email, // recipient
             subject: "Welcome to VSAVE 🎉",
-            text: `Hello ${newUser.fullname}, welcome to our VSave! ,your trusted partner for smart saving and easy loans. To get started, please verify your email using the code below:
+            text: `Hello ${newUser.fullName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans. To get started, please verify your email using the code below:
       CODE : ${tokenNumber}
       This code will expire in 5 minutes, so be sure to use it right away.
       We’re excited to have you on board!
@@ -149,7 +123,7 @@ const resendUserVerificationEmail = async (req, res) => {
             from: `"My App" <${process.env.EMAIL_USER}>`, // sender
             to: email, // recipient
             subject: "Welcome to VSAVE 🎉",
-            text: ` Hello ${user.fullname} this is your VSave Verification code 
+            text: ` Hello ${user.fullName} this is your VSave Verification code 
           ${tokenNumber} 
           code expires in 5 mins
       — The VSave Team.`,
@@ -194,7 +168,7 @@ const loginUser = async (req, res) => {
                 from: `"My App" <${process.env.EMAIL_USER}>`, // sender
                 to: email, // recipient
                 subject: "Welcome to VSAVE 🎉",
-                text: ` Hello ${user.fullname} this is your VSave Verification code 
+                text: ` Hello ${user.fullName} this is your VSave Verification code 
           ${tokenNumber} 
           code expires in 5 mins
       — The VSave Team.`,

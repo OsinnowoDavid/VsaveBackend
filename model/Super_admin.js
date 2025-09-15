@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
 const Schema = mongoose_1.default.Schema;
-const AgentSchema = new Schema({
+const AdminSchema = new Schema({
     fullName: {
         type: String,
         required: true,
@@ -18,11 +18,6 @@ const AgentSchema = new Schema({
         type: String,
         required: true,
     },
-    region: {
-        type: mongoose_1.default.Schema.Types.ObjectId,
-        ref: "Region",
-        required: true,
-    },
     password: {
         type: String,
         required: true,
@@ -31,16 +26,6 @@ const AgentSchema = new Schema({
         type: String,
         required: false,
     },
-    referralCode: {
-        type: String,
-        required: true,
-    },
-    referres: [
-        {
-            type: mongoose_1.default.Schema.Types.ObjectId,
-            ref: "User",
-        },
-    ],
 }, { timestamps: true });
-const Admin = mongoose_1.default.model("Agent", AgentSchema);
+const Admin = mongoose_1.default.model("Superadmin", AdminSchema);
 exports.default = Admin;

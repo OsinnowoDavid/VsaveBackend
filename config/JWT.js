@@ -64,7 +64,7 @@ const verifySuperAdminToken = async (req, res, next) => {
         const decoded = jsonwebtoken_1.default.verify(authorization, jwt_secret);
         const foundId = decoded.user;
         // find superadmin by decoded user id
-        const currentAdmin = await (0, Admin_1.getAllSuperadminById)(foundId);
+        const currentAdmin = await (0, Admin_1.getAllSuperAdminById)(foundId);
         if (!currentAdmin) {
             return res.json({
                 status: "failed!",

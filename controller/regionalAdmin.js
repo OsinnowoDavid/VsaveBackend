@@ -9,9 +9,9 @@ const JWT_1 = require("../config/JWT");
 const RegionalAdmin_1 = require("../services/RegionalAdmin");
 const registerRegionalAdmin = async (req, res) => {
     try {
-        const { firstname, lastname, middlename, email, phone_no, password, region, } = req.body;
+        const { fullName, email, phoneNumber, password, region } = req.body;
         const hashPassword = await argon2_1.default.hash(password);
-        const newRegionalAdmin = await (0, RegionalAdmin_1.createRegionalAdmin)(firstname, lastname, email, phone_no, hashPassword, region, middlename);
+        const newRegionalAdmin = await (0, RegionalAdmin_1.createRegionalAdmin)(fullName, email, phoneNumber, hashPassword, region);
         if (!newRegionalAdmin) {
             return res.json({
                 status: "Failed",

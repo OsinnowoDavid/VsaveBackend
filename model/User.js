@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
 const Schema = mongoose_1.default.Schema;
 const userSchema = new Schema({
-    fullname: {
+    fullName: {
         type: String,
         required: true,
     },
@@ -15,21 +15,21 @@ const userSchema = new Schema({
         required: true,
         unique: true,
     },
-    phone_no: {
+    phoneNumber: {
         type: String,
     },
     password: {
         type: String,
         required: true,
     },
-    profile_pic: {
+    profilePicture: {
         type: String,
         required: false,
     },
-    referral_code: {
+    referral: {
         type: String,
     },
-    vsave_point: {
+    vsavePoint: {
         type: Number,
         default: 0,
     },
@@ -37,11 +37,11 @@ const userSchema = new Schema({
         type: mongoose_1.default.Schema.Types.ObjectId,
         ref: "KYC",
     },
-    available_balance: {
+    availableBalance: {
         type: Number,
         default: 0,
     },
-    pending_balance: {
+    pendingBalance: {
         type: Number,
         default: 0,
     },

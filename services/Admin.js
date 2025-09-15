@@ -3,20 +3,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllSuperadminByEmail = exports.getAllSuperadminById = exports.CreateSuperAdmin = void 0;
-const Superadmin_1 = __importDefault(require("../model/Superadmin"));
-const CreateSuperAdmin = async (firstname, lastname, email, phone_no, password, middlename, profile_pic) => {
+exports.getAllSuperAdminByEmail = exports.getAllSuperAdminById = exports.CreateSuperAdmin = void 0;
+const Super_admin_1 = __importDefault(require("../model/Super_admin"));
+const CreateSuperAdmin = async (fullName, email, phoneNumber, password, profilePicture) => {
     try {
         let type = "superadmin";
-        const newSuperAdmin = await Superadmin_1.default.create({
-            firstname,
-            lastname,
-            middlename,
+        const newSuperAdmin = await Super_admin_1.default.create({
+            fullName,
             email,
             type,
-            phone_no,
+            phoneNumber,
             password,
-            profile_pic,
+            profilePicture,
         });
         return newSuperAdmin;
     }
@@ -51,23 +49,23 @@ exports.CreateSuperAdmin = CreateSuperAdmin;
 //         throw err
 //     }
 // }
-const getAllSuperadminById = async (id) => {
+const getAllSuperAdminById = async (id) => {
     try {
-        const foundAdmin = await Superadmin_1.default.findById(id);
+        const foundAdmin = await Super_admin_1.default.findById(id);
         return foundAdmin;
     }
     catch (err) {
         throw err;
     }
 };
-exports.getAllSuperadminById = getAllSuperadminById;
-const getAllSuperadminByEmail = async (email) => {
+exports.getAllSuperAdminById = getAllSuperAdminById;
+const getAllSuperAdminByEmail = async (email) => {
     try {
-        const foundAdmin = await Superadmin_1.default.findOne({ email });
+        const foundAdmin = await Super_admin_1.default.findOne({ email });
         return foundAdmin;
     }
     catch (err) {
         throw err;
     }
 };
-exports.getAllSuperadminByEmail = getAllSuperadminByEmail;
+exports.getAllSuperAdminByEmail = getAllSuperAdminByEmail;

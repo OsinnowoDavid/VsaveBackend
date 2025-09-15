@@ -5,16 +5,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getRegionalAdminByEmail = exports.getRegionalAdminById = exports.createRegionalAdmin = void 0;
 const Regionaladmin_1 = __importDefault(require("../model/Regionaladmin"));
-const createRegionalAdmin = async (firstname, lastname, email, phone_no, password, region, middlename, profile_pic) => {
+const createRegionalAdmin = async (fullName, email, phoneNumber, password, region, profilePicture) => {
     try {
         const newRegionalAdmin = await Regionaladmin_1.default.create({
-            firstname,
-            lastname,
-            middlename,
+            fullName,
             email,
-            phone_no,
+            phoneNumber,
             password,
-            profile_pic,
+            profilePicture,
             region,
         });
         return newRegionalAdmin;

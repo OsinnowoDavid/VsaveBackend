@@ -8,10 +8,10 @@ const User_1 = __importDefault(require("../model/User"));
 const VerificationToken_1 = __importDefault(require("../model/VerificationToken"));
 const KYC1_1 = __importDefault(require("../model/KYC1"));
 const KYC_1 = __importDefault(require("../model/KYC"));
-const createNewUser = async (fullname, email, password) => {
+const createNewUser = async (fullName, email, password) => {
     try {
         const newUser = await User_1.default.create({
-            fullname,
+            fullName,
             email,
             password,
         });

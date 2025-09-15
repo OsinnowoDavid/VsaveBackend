@@ -10,19 +10,11 @@ const AdminSchema = new Schema({
         type: String,
         required: true,
     },
-    lastname: {
-        type: String,
-        required: true,
-    },
-    middlename: {
-        type: String,
-        required: false,
-    },
     email: {
         type: String,
         required: true,
     },
-    phone_no: {
+    phoneNumber: {
         type: String,
         required: true,
     },
@@ -30,7 +22,7 @@ const AdminSchema = new Schema({
         type: String,
         required: true,
     },
-    profile_pic: {
+    profilePicture: {
         type: String,
         required: false,
     },
