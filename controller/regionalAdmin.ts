@@ -9,24 +9,14 @@ import {
 
 export const registerRegionalAdmin = async (req: Request, res: Response) => {
   try {
-    const {
-      firstname,
-      lastname,
-      middlename,
-      email,
-      phone_no,
-      password,
-      region,
-    } = req.body;
+    const { fullName, email, phoneNumber, password, region } = req.body;
     const hashPassword = await argon.hash(password);
     const newRegionalAdmin = await createRegionalAdmin(
-      firstname,
-      lastname,
+      fullName,
       email,
-      phone_no,
+      phoneNumber,
       hashPassword,
-      region,
-      middlename
+      region
     );
     if (!newRegionalAdmin) {
       return res.json({

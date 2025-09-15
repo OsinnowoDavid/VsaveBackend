@@ -1,20 +1,17 @@
 import { Request, Response } from "express";
 import argon from "argon2";
-import { CreateSuperAdmin, getAllSuperadminByEmail } from "../services/Admin";
+import { CreateSuperAdmin, getAllSuperAdminByEmail } from "../services/Admin";
 import { signUserToken } from "../config/JWT";
 
 export const registerAdmin = async (req: Request, res: Response) => {
   try {
-    const { firstname, lastname, middlename, email, phone_no, password } =
-      req.body;
+    const { fullName, email, phoneNumber, password } = req.body;
     let hashPassword = await argon.hash(password);
     const newAdmin = await CreateSuperAdmin(
-      firstname,
-      lastname,
+      fullName,
       email,
-      phone_no,
-      hashPassword,
-      middlename
+      phoneNumber,
+      hashPassword
     );
     if (!newAdmin) {
       return res.json({
@@ -38,7 +35,7 @@ export const registerAdmin = async (req: Request, res: Response) => {
 export const LoginSuperAdmin = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
-    const foundAdmin = await getAllSuperadminByEmail(email);
+    const foundAdmin = await getAllSuperAdminByEmail(email);
     if (!foundAdmin) {
       return res.json({
         status: "Failed",

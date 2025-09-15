@@ -1,25 +1,21 @@
-import Admin from "../model/Superadmin";
+import Admin from "../model/Super_admin";
 
 export const CreateSuperAdmin = async (
-  firstname: string,
-  lastname: string,
+  fullName: string,
   email: string,
-  phone_no: string,
+  phoneNumber: string,
   password: string,
-  middlename?: string,
-  profile_pic?: string
+  profilePicture?: string
 ) => {
   try {
     let type = "superadmin";
     const newSuperAdmin = await Admin.create({
-      firstname,
-      lastname,
-      middlename,
+      fullName,
       email,
       type,
-      phone_no,
+      phoneNumber,
       password,
-      profile_pic,
+      profilePicture,
     });
     return newSuperAdmin;
   } catch (err: any) {
@@ -53,7 +49,7 @@ export const CreateSuperAdmin = async (
 //         throw err
 //     }
 // }
-export const getAllSuperadminById = async (id: string) => {
+export const getAllSuperAdminById = async (id: string) => {
   try {
     const foundAdmin = await Admin.findById(id);
     return foundAdmin;
@@ -62,7 +58,7 @@ export const getAllSuperadminById = async (id: string) => {
   }
 };
 
-export const getAllSuperadminByEmail = async (email: string) => {
+export const getAllSuperAdminByEmail = async (email: string) => {
   try {
     const foundAdmin = await Admin.findOne({ email });
     return foundAdmin;
