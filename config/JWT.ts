@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 const jwt_secret: any = process.env.jwt_secret;
 import { NextFunction, Request, Response } from "express";
 import { getUserById } from "../services/User";
-import { getAllSuperadminById } from "../services/Admin";
+import { getAllSuperAdminById } from "../services/Admin";
 import { getRegionalAdminById } from "../services/RegionalAdmin";
 
 export const signUserToken = (user: any) => {
@@ -72,7 +72,7 @@ export const verifySuperAdminToken = async (
     const decoded: any = jwt.verify(authorization, jwt_secret);
     const foundId = decoded.user;
     // find superadmin by decoded user id
-    const currentAdmin = await getAllSuperadminById(foundId);
+    const currentAdmin = await getAllSuperAdminById(foundId);
     if (!currentAdmin) {
       return res.json({
         status: "failed!",

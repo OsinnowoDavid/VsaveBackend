@@ -8,8 +8,8 @@ const loanSchema = new Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
-    InitAmount: { type: Number, required: true },
-    amount: { type: Number, required: true },
+    InitialAmount: { type: Number, required: true },
+    currentAmount: { type: Number, required: true },
     status: {
       type: String,
       enum: ["pending", "approved", "rejected", "active", "completed"],

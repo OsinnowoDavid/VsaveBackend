@@ -1,11 +1,14 @@
-import validator from "Validator" ;
-import isEmpty from "../isEmpty" ;
+import validator from "validator";
+import isEmpty from "../isEmpty";
 
-const validateLoginInput = (data:any)=>{
-    let error = {} 
-    // Convert undefined/null values to empty strings for validation
-    data.email = !isEmpty(data.email) ? data.email : "";
-    data.password = !isEmpty(data.password) ? data.password : "";
+const validateLoginInput = (data: any) => {
+  let error = {
+    email: "",
+    password: "",
+  };
+  // Convert undefined/null values to empty strings for validation
+  data.email = !isEmpty(data.email) ? data.email : "";
+  data.password = !isEmpty(data.password) ? data.password : "";
   // Validate email
   if (validator.isEmpty(data.email)) {
     error.email = "email field is Required";
@@ -26,4 +29,6 @@ const validateLoginInput = (data:any)=>{
     error,
     isValid: isEmpty(error),
   };
-}
+};
+
+export default validateLoginInput;
