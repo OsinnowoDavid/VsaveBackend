@@ -22,7 +22,6 @@ const userSchema = new Schema({
   },
   profilePicture: {
     type: String,
-    required: false,
   },
   referral: {
     type: String,

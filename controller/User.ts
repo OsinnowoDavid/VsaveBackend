@@ -30,7 +30,6 @@ export const registerUser = async (req: Request, res: Response) => {
     }
     // create new user
     const newUser = await createNewUser(fullName, email, hashPassword);
-    console.log("new user:", newUser);
     if (!newUser) {
       return res.json({
         status: "Failed",
@@ -181,8 +180,8 @@ export const loginUser = async (req: Request, res: Response) => {
         from: `"My App" <${process.env.EMAIL_USER}>`, // sender
         to: email, // recipient
         subject: "Welcome to VSAVE 🎉",
-        text: ` Hello ${user.fullName} this is your VSave Verification code 
-          ${tokenNumber} 
+        text: ` Hello ${user.fullName} this is your VSave Verification code
+          ${tokenNumber}
           code expires in 5 mins
       — The VSave Team.`,
       };

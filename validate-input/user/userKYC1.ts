@@ -53,7 +53,6 @@ const validateKYC1input = (data: any) => {
 
   const hasError = (errorObj: typeof error): boolean =>
     Object.values(errorObj).some((value) => value.trim() !== "");
-  console.log("error oject:", error);
   return {
     error,
     isNotValid: hasError(error),
