@@ -27,6 +27,7 @@ app.use(cookieParser());
 connectDB();
 
 app.get("/", (req, res) => {
+  console.log("log when got to index page");
   res.send("Welcome to Vsave Backend");
 });
 //user route config
@@ -37,6 +38,8 @@ app.use("/admin", adminRouter);
 
 // regionaladmin routes config
 app.use("/regionaladmin", regionalAdminRouter);
+
+console.log("got here");
 
 app.listen(port, () => {
   console.log(`Server is running on ${port}`);

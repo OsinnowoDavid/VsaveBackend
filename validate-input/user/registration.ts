@@ -16,8 +16,8 @@ const validateRegistrationInput = (data: any) => {
     error.fullName = "fullName field is Required";
   }
   // Validate fullName leNgth
-  if (!validator.isLength(data.fullName, { min: 2, max: 60 })) {
-    error.fullName = "fullname must be between 2 to 35 characters.";
+  if (!validator.isLength(data.fullName, { min: 2, max: 150 })) {
+    error.fullName = "fullname must be between 2 to 150 characters.";
   }
   // Validate email
   if (validator.isEmpty(data.email)) {
@@ -32,12 +32,16 @@ const validateRegistrationInput = (data: any) => {
     error.password = "password field is Required";
   }
   // Validate password length
-  if (!validator.isLength(data.password, { min: 6, max: 30 })) {
+  if (!validator.isLength(data.password, { min: 6, max: 100 })) {
     error.password = "password must be at least 6 characters.";
   }
+
+  const hasError = (errorObj: typeof error): boolean =>
+    Object.values(errorObj).some((value) => value.trim() !== "");
+  console.log("error oject:", error);
   return {
     error,
-    isValid: isEmpty(error),
+    isNotValid: hasError(error),
   };
 };
 

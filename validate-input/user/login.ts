@@ -15,19 +15,23 @@ const validateLoginInput = (data: any) => {
   }
   // Validate email format
   if (!validator.isEmail(data.email)) {
-    error.email = "Email is invalid.";
+    error.email = "email is invalid.";
   }
   // Validate password
   if (validator.isEmpty(data.password)) {
     error.password = "password field is Required";
   }
   // Validate password length
-  if (!validator.isLength(data.password, { min: 6, max: 30 })) {
+  if (!validator.isLength(data.password, { min: 6, max: 100 })) {
     error.password = "password must be at least 6 characters.";
   }
+
+  const hasError = (errorObj: typeof error): boolean =>
+    Object.values(errorObj).some((value) => value.trim() !== "");
+
   return {
     error,
-    isValid: isEmpty(error),
+    isNotValid: hasError(error),
   };
 };
 

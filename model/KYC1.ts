@@ -32,7 +32,7 @@ const KYC1Schema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    nin: {
+    bvn: {
       type: String,
       required: true,
     },

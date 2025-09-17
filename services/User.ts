@@ -110,7 +110,7 @@ export const createKYC1Record = async (
   accountDetails: string,
   country: string,
   state: string,
-  nin: string
+  bvn: string
 ) => {
   try {
     const newKYC1 = await KYC1.create({
@@ -120,7 +120,7 @@ export const createKYC1Record = async (
       accountDetails,
       country,
       state,
-      nin,
+      bvn,
     });
     const foundUser = await User.findById(user._id);
     foundUser;

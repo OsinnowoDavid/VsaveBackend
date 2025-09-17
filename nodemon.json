@@ -1,5 +1,4 @@
 {
-  "watch": ["server"],
   "ext": "ts,js,json",
   "ignore": ["node_modules"],
   "execMap": {

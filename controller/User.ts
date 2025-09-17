@@ -30,6 +30,7 @@ export const registerUser = async (req: Request, res: Response) => {
     }
     // create new user
     const newUser = await createNewUser(fullName, email, hashPassword);
+    console.log("new user:", newUser);
     if (!newUser) {
       return res.json({
         status: "Failed",
@@ -246,9 +247,10 @@ export const userProfile = async (req: Request, res: Response) => {
 
 export const registerKYC1 = async (req: Request, res: Response) => {
   try {
-    const { profession, accountNumber, accountDetails, country, state, nin } =
+    const { profession, accountNumber, accountDetails, country, state, bvn } =
       req.body;
     const user = req.user as IUser;
+    // verfy BVN with quralID
     const newKYC1 = await createKYC1Record(
       user,
       profession,
@@ -256,7 +258,7 @@ export const registerKYC1 = async (req: Request, res: Response) => {
       accountDetails,
       country,
       state,
-      nin
+      bvn
     );
     if (!newKYC1) {
       return res.json({
