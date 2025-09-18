@@ -12,7 +12,11 @@ export const validateUserRegitrationInput = (
   const { error, isNotValid } = validateRegistrationInput(req.body);
   // check validation
   if (isNotValid) {
-    return res.status(400).json(error);
+    return res.status(400).json({
+      status: "failed",
+      isNotValid,
+      error,
+    });
   } else {
     next();
   }
