@@ -8,7 +8,7 @@ import regionalAdminRouter from "./routes/RegionalAdmin";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 dotenv.config();
-const port = process.env.PORT ;
+const port = process.env.PORT || 5000;
 const app = express();
 app.use(express.json());
 // const allowedOrigin =[]

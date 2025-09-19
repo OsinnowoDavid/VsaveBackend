@@ -30,7 +30,11 @@ export const validateUserLoginInput = (
   const { error, isNotValid } = validateLoginInput(req.body);
   // check validation
   if (isNotValid) {
-    return res.status(400).json(error);
+    return res.status(400).json({
+      status: "failed",
+      isNotValid,
+      error,
+    });
   } else {
     next();
   }
@@ -44,7 +48,11 @@ export const validateUserKYC1Input = (
   const { error, isNotValid } = validateKYC1input(req.body);
   // check validation
   if (isNotValid) {
-    return res.status(400).json(error);
+    return res.status(400).json({
+      status: "failed",
+      isNotValid,
+      error,
+    });
   } else {
     next();
   }
