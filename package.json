@@ -5,12 +5,14 @@
   "license": "ISC",
   "author": "",
   "main": "index.ts",
-  "scripts": {
-    "start": "nodemon --exec ts-node index.ts",
-    "dev": "nodemon index.ts",
-    "start:dev": "nodemon --exec ts-node-esm index.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+ "scripts": {
+  "build": "tsc",
+  "start": "node index.js",
+  "dev": "nodemon --exec ts-node index.ts",
+  "start:dev": "nodemon --exec ts-node-esm index.ts",
+  "test": "echo \"Error: no test specified\" && exit 1"
+}
+,
   "dependencies": {
     "argon2": "^0.44.0",
     "axios": "^1.12.2",
