@@ -41,6 +41,6 @@ app.use("/regionaladmin", regionalAdminRouter);
 
 console.log("got here");
 
-app.listen(port, () => {
+app.listen(10000, () => {
   console.log("serve is running");
 });
