@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const transporter = nodemailer.createTransport({
+  service: "",
   host: "box.eedu.tech",
   port: 465,
   secure: true, // true for 465, false for other ports
