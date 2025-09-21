@@ -8,7 +8,6 @@ const dotenv_1 = __importDefault(require("dotenv"));
 // Load environment variables from .env file
 dotenv_1.default.config();
 const transporter = nodemailer_1.default.createTransport({
-    service: "",
     host: "box.eedu.tech",
     port: 465,
     secure: true, // true for 465, false for other ports

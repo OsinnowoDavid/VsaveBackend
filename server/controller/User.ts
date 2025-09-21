@@ -57,20 +57,20 @@ export const registerUser = async (req: Request, res: Response) => {
       });
     }
     //config mail option
-    // const mailOptions = {
-    //   from: `"My App" <${process.env.EMAIL_USER}>`, // sender
-    //   to: email, // recipient
-    //   subject: "Welcome to VSAVE 🎉",
-    //   text: `Hello ${newUser.fullName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans. To get started, please verify your email using the code below:
-    //   CODE : ${tokenNumber}
-    //   This code will expire in 5 minutes, so be sure to use it right away.
-    //   We’re excited to have you on board!
+    const mailOptions = {
+      from: `<${process.env.User}>`, // sender
+      to: email, // recipient
+      subject: "Welcome to VSAVE 🎉",
+      text: `Hello ${newUser.fullName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans. To get started, please verify your email using the code below:
+      CODE : ${tokenNumber}
+      This code will expire in 5 minutes, so be sure to use it right away.
+      We’re excited to have you on board!
 
-    //   — The VSave Team.`,
-    // };
+      — The VSave Team.`,
+    };
 
-    // // Send email
-    // await Transporter.sendMail(mailOptions);
+    // Send email
+    await Transporter.sendMail(mailOptions);
 
     return res.json({
       status: "Success",
