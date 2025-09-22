@@ -3,35 +3,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.regionalAdminProfile = exports.LoginRegionalAdmin = exports.registerRegionalAdmin = void 0;
+exports.regionalAdminProfile = exports.LoginRegionalAdmin = void 0;
 const argon2_1 = __importDefault(require("argon2"));
 const JWT_1 = require("../config/JWT");
 const RegionalAdmin_1 = require("../services/RegionalAdmin");
-const registerRegionalAdmin = async (req, res) => {
-    try {
-        const { fullName, email, phoneNumber, password, region } = req.body;
-        const hashPassword = await argon2_1.default.hash(password);
-        const newRegionalAdmin = await (0, RegionalAdmin_1.createRegionalAdmin)(fullName, email, phoneNumber, hashPassword, region);
-        if (!newRegionalAdmin) {
-            return res.json({
-                status: "Failed",
-                message: "something went wrong, try again later",
-            });
-        }
-        return res.json({
-            status: "success",
-            message: "Regional admin created successfully",
-            data: newRegionalAdmin,
-        });
-    }
-    catch (err) {
-        return res.json({
-            status: "Failed",
-            message: err.message,
-        });
-    }
-};
-exports.registerRegionalAdmin = registerRegionalAdmin;
 const LoginRegionalAdmin = async (req, res) => {
     try {
         const { email, password } = req.body;

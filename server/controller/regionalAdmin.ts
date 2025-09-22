@@ -2,40 +2,9 @@ import { Request, Response } from "express";
 import argon from "argon2";
 import { signUserToken } from "../config/JWT";
 import {
-  createRegionalAdmin,
   getRegionalAdminByEmail,
   getRegionalAdminById,
 } from "../services/RegionalAdmin";
-
-export const registerRegionalAdmin = async (req: Request, res: Response) => {
-  try {
-    const { fullName, email, phoneNumber, password, region } = req.body;
-    const hashPassword = await argon.hash(password);
-    const newRegionalAdmin = await createRegionalAdmin(
-      fullName,
-      email,
-      phoneNumber,
-      hashPassword,
-      region
-    );
-    if (!newRegionalAdmin) {
-      return res.json({
-        status: "Failed",
-        message: "something went wrong, try again later",
-      });
-    }
-    return res.json({
-      status: "success",
-      message: "Regional admin created successfully",
-      data: newRegionalAdmin,
-    });
-  } catch (err: any) {
-    return res.json({
-      status: "Failed",
-      message: err.message,
-    });
-  }
-};
 
 export const LoginRegionalAdmin = async (req: Request, res: Response) => {
   try {

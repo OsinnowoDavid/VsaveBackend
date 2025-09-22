@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
 const Schema = mongoose_1.default.Schema;
 const AdminSchema = new Schema({
-    firstname: {
+    fullName: {
         type: String,
         required: true,
     },

@@ -10,6 +10,10 @@ const regionSchema = new Schema({
         type: String,
         required: true,
     },
+    shortCode: {
+        type: String,
+        required: true,
+    },
     admin: [{ type: mongoose_1.default.Schema.Types.ObjectId, ref: "Admin" }],
     agents: [{ type: mongoose_1.default.Schema.Types.ObjectId, ref: "Agent" }],
     user: [{ type: mongoose_1.default.Schema.Types.ObjectId, ref: "User" }],
