@@ -13,5 +13,11 @@ router.post("/login", index_1.validateUserLoginInput, User_1.loginUser);
 router.post("/verify-email", User_1.verifyEmail);
 router.post("/resend-verification-token", User_1.resendUserVerificationEmail);
 router.get("/profile", JWT_1.verifyUserToken, User_1.userProfile);
-router.get("/register-kyc1", JWT_1.verifyUserToken, index_1.validateUserKYC1Input, User_1.registerKYC1);
+router.get("/get-all-banks", JWT_1.verifyUserToken, User_1.getBanksAndCode);
+// router.post(
+//   "/verify-bank-account",
+//   verifyUserToken,
+//   verifyBankAccountController
+// );
+router.get("/register-kyc1", JWT_1.verifyUserToken, User_1.registerKYC1);
 exports.default = router;

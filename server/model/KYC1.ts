@@ -20,6 +20,10 @@ const KYC1Schema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    bank: {
+      type: String,
+      required: true,
+    },
     accountDetails: {
       type: String,
       required: true,

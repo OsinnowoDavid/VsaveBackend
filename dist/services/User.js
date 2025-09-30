@@ -3,15 +3,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createKYC1Record = exports.kycStatusChange = exports.createKYCRecord = exports.getUserVerificationToken = exports.assignUserEmailVerificationToken = exports.getUserByEmail = exports.getUserById = exports.createNewUser = void 0;
+exports.depositMoney = exports.verifyBankaccount = exports.getAllBanksAndCode = exports.createKYC1Record = exports.kycStatusChange = exports.createKYCRecord = exports.getUserVerificationToken = exports.assignUserEmailVerificationToken = exports.getUserByEmail = exports.getUserById = exports.createNewUser = void 0;
 const User_1 = __importDefault(require("../model/User"));
 const VerificationToken_1 = __importDefault(require("../model/VerificationToken"));
 const KYC1_1 = __importDefault(require("../model/KYC1"));
 const KYC_1 = __importDefault(require("../model/KYC"));
-const createNewUser = async (fullName, email, password) => {
+const axios_1 = __importDefault(require("axios"));
+const FLW_SECRET_KEY = process.env.FLW_SECRET_KEY;
+const createNewUser = async (firstName, lastName, email, password) => {
     try {
         const newUser = await User_1.default.create({
-            fullName,
+            firstName,
+            lastName,
             email,
             password,
         });
@@ -98,12 +101,13 @@ const kycStatusChange = async (user, status, stage) => {
     }
 };
 exports.kycStatusChange = kycStatusChange;
-const createKYC1Record = async (user, profession, accountNumber, accountDetails, country, state, bvn) => {
+const createKYC1Record = async (user, profession, accountNumber, bank, accountDetails, country, state, bvn) => {
     try {
         const newKYC1 = await KYC1_1.default.create({
             user,
             profession,
             accountNumber,
+            bank,
             accountDetails,
             country,
             state,
@@ -118,3 +122,39 @@ const createKYC1Record = async (user, profession, accountNumber, accountDetails,
     }
 };
 exports.createKYC1Record = createKYC1Record;
+const getAllBanksAndCode = async () => {
+    try {
+        const response = await axios_1.default.get("https://api.flutterwave.com/v3/banks/NG", {
+            headers: {
+                Authorization: `Bearer ${FLW_SECRET_KEY}`,
+            },
+        });
+        return response.data.data; // array of banks with codes
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.getAllBanksAndCode = getAllBanksAndCode;
+const verifyBankaccount = async (accountNumber, bankCode) => {
+    try {
+        const response = await axios_1.default.post("https://api.flutterwave.com/v3/accounts/resolve", {
+            account_number: Number(accountNumber),
+            account_bank: bankCode,
+        }, {
+            headers: {
+                Authorization: `Bearer ${FLW_SECRET_KEY}`,
+                "Content-Type": "application/json",
+            },
+        });
+        console.log("Account Details:", response.data);
+        return response.data;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.verifyBankaccount = verifyBankaccount;
+const depositMoney = async (user) => {
+};
+exports.depositMoney = depositMoney;

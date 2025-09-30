@@ -2,7 +2,8 @@ import { ObjectId, Document } from "mongoose";
 
 export interface IUser extends Document {
   id: ObjectId;
-  fullName: string;
+  firstName: string;
+  lastName: string;
   email: string;
   phoneNumber: string;
   password: string;

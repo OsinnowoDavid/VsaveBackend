@@ -7,21 +7,23 @@ const validator_1 = __importDefault(require("validator"));
 const isEmpty_1 = __importDefault(require("../isEmpty"));
 const validateRegistrationInput = (data) => {
     let error = {
-        fullName: "",
+        firstName: "",
+        lastName: "",
         email: "",
         password: "",
     };
     // Convert undefined/null values to empty strings for validation
-    data.fullName = !(0, isEmpty_1.default)(data.fullName) ? data.fullName : "";
+    data.firstName = !(0, isEmpty_1.default)(data.firstName) ? data.firstName : "";
+    data.lastName = !(0, isEmpty_1.default)(data.lastName) ? data.lastName : "";
     data.email = !(0, isEmpty_1.default)(data.email) ? data.email : "";
     data.password = !(0, isEmpty_1.default)(data.password) ? data.password : "";
     // Validate fullName
-    if (validator_1.default.isEmpty(data.fullName)) {
-        error.fullName = "fullName field is Required";
+    if (validator_1.default.isEmpty(data.firstName)) {
+        error.firstName = "firstName field is Required";
     }
     // Validate fullName leNgth
-    if (!validator_1.default.isLength(data.fullName, { min: 2, max: 150 })) {
-        error.fullName = "fullname must be between 2 to 150 characters.";
+    if (validator_1.default.isEmpty(data.lastName)) {
+        error.lastName = "lastName field is Required";
     }
     // Validate email
     if (validator_1.default.isEmpty(data.email)) {

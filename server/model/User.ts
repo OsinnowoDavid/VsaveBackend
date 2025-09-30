@@ -1,10 +1,13 @@
 import mongoose from "mongoose";
-import KYCModel from "./KYC.js";
 
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
-  fullName: {
+  firstName: {
+    type: String,
+    required: true,
+  },
+  lastName: {
     type: String,
     required: true,
   },

@@ -3,14 +3,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.registerKYC1 = exports.userProfile = exports.loginUser = exports.resendUserVerificationEmail = exports.verifyEmail = exports.registerUser = void 0;
+exports.registerKYC1 = exports.getBanksAndCode = exports.userProfile = exports.loginUser = exports.resendUserVerificationEmail = exports.verifyEmail = exports.registerUser = void 0;
 const argon2_1 = __importDefault(require("argon2"));
 const User_1 = require("../services/User");
 const JWT_1 = require("../config/JWT");
 const nodemailer_1 = __importDefault(require("../config/nodemailer"));
+const axios_1 = __importDefault(require("axios"));
+const QOREID_API_KEY = process.env.QOREID_SECRET_KEY;
+const QOREID_BASE_URL = process.env.QOREID_BASE_URL;
+console.log("Q:", QOREID_BASE_URL);
 const registerUser = async (req, res) => {
     try {
-        const { fullName, email, password } = req.body;
+        const { firstName, lastName, email, password } = req.body;
         let hashPassword = await argon2_1.default.hash(password);
         // check if user is already in the database
         const user = (await (0, User_1.getUserByEmail)(email));
@@ -23,7 +27,7 @@ const registerUser = async (req, res) => {
             });
         }
         // create new user
-        const newUser = await (0, User_1.createNewUser)(fullName, email, hashPassword);
+        const newUser = await (0, User_1.createNewUser)(firstName, lastName, email, hashPassword);
         if (!newUser) {
             return res.json({
                 status: "Failed",
@@ -51,7 +55,7 @@ const registerUser = async (req, res) => {
             from: `<${process.env.User}>`, // sender
             to: email, // recipient
             subject: "Welcome to VSAVE 🎉",
-            text: `Hello ${newUser.fullName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans. To get started, please verify your email using the code below:
+            text: `Hello ${newUser.firstName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans. To get started, please verify your email using the code below:
       CODE : ${tokenNumber}
       This code will expire in 5 minutes, so be sure to use it right away.
       We’re excited to have you on board!
@@ -120,10 +124,10 @@ const resendUserVerificationEmail = async (req, res) => {
         }
         const tokenNumber = Math.floor(100000 + Math.random() * 900000);
         const mailOptions = {
-            from: `"My App" <${process.env.EMAIL_USER}>`, // sender
+            from: `<${process.env.User}>`, // sender
             to: email, // recipient
             subject: "Welcome to VSAVE 🎉",
-            text: ` Hello ${user.fullName} this is your VSave Verification code 
+            text: ` Hello ${user.firstName} this is your VSave Verification code 
           ${tokenNumber} 
           code expires in 5 mins
       — The VSave Team.`,
@@ -165,10 +169,10 @@ const loginUser = async (req, res) => {
         if (!user.isEmailVerified) {
             const tokenNumber = Math.floor(100000 + Math.random() * 900000);
             const mailOptions = {
-                from: `"My App" <${process.env.EMAIL_USER}>`, // sender
+                from: `<${process.env.User}>`, // sender
                 to: email, // recipient
                 subject: "Welcome to VSAVE 🎉",
-                text: ` Hello ${user.fullName} this is your VSave Verification code
+                text: ` Hello ${user.firstName} this is your VSave Verification code
           ${tokenNumber}
           code expires in 5 mins
       — The VSave Team.`,
@@ -233,12 +237,72 @@ const userProfile = async (req, res) => {
     }
 };
 exports.userProfile = userProfile;
+const getBanksAndCode = async (req, res) => {
+    try {
+        const BanksAndCode = await (0, User_1.getAllBanksAndCode)();
+        if (!BanksAndCode) {
+            return res.json({
+                Status: "Failed",
+                message: "no Bank Code found",
+            });
+        }
+        return res.json({
+            Status: "Success",
+            message: "Bank Code found",
+            data: BanksAndCode,
+        });
+    }
+    catch (err) {
+        res.json({
+            Status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.getBanksAndCode = getBanksAndCode;
+// export const verifyBankAccountController = async (
+//   req: Request,
+//   res: Response
+// ) => {
+//   try {
+//     const { accountNumber, bankCode } = req.body;
+//     const verifiedAccount = await verifyBankaccount(accountNumber, bankCode);
+//     if (!verifiedAccount) {
+//       return res.json({
+//         Status: "Failed",
+//         message: "No Account Found",
+//       });
+//     }
+//     return res.json({
+//       Status: "Success",
+//       message: "Account Found",
+//       data: verifiedAccount,
+//     });
+//   } catch (err: any) {
+//     res.json({
+//       Status: "Failed",
+//       message: err.message,
+//     });
+//   }
+// };
 const registerKYC1 = async (req, res) => {
     try {
-        const { profession, accountNumber, accountDetails, country, state, bvn } = req.body;
+        const { profession, accountNumber, bank, bankCode, accountDetails, country, state, bvn, } = req.body;
         const user = req.user;
-        // verfy BVN with quralID
-        const newKYC1 = await (0, User_1.createKYC1Record)(user, profession, accountNumber, accountDetails, country, state, bvn);
+        console.log("got here begining of the controller");
+        console.log("key:", QOREID_API_KEY);
+        const options = {
+            method: "POST",
+            url: "https://api.qoreid.com/v1/ng/identities/bvn-basic/95888168924",
+            headers: {
+                accept: "application/json",
+                "content-type": "application/json",
+            },
+            data: { firstname: "Bunch", lastname: "Dillon" },
+        };
+        const bvnData = await axios_1.default.request(options);
+        // save KYC1
+        const newKYC1 = await (0, User_1.createKYC1Record)(user, profession, accountNumber, bank, accountDetails, country, state, bvn);
         if (!newKYC1) {
             return res.json({
                 status: "Failed",
@@ -254,7 +318,8 @@ const registerKYC1 = async (req, res) => {
         });
     }
     catch (err) {
-        res.json({
+        console.log("error:", err.message);
+        return res.json({
             Status: "Failed",
             message: err.message,
         });
