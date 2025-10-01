@@ -1,7 +1,7 @@
-import { ObjectId, Document } from "mongoose";
+import { Types, Document } from "mongoose";
 
 export interface IUser extends Document {
-  id: ObjectId;
+  _id: Types.ObjectId;
   firstName: string;
   lastName: string;
   email: string;
@@ -15,6 +15,8 @@ export interface IUser extends Document {
   isEmailVerified: boolean;
   status: string;
   address: string;
+  gender: string;
+  dateOfBirth: Date;
 }
 
 export interface IVerificationToken extends Document {

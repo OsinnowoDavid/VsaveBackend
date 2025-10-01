@@ -11,6 +11,7 @@ import {
   kycStatusChange,
   getAllBanksAndCode,
   verifyBankaccount,
+  createVirtualAccountForPayment,
 } from "../services/User";
 import { IUser, IVerificationToken } from "../types";
 import { signUserToken } from "../config/JWT";
@@ -360,3 +361,24 @@ export const registerKYC1 = async (req: Request, res: Response) => {
   }
 };
 
+export const initiateVirtualAccountForDeposit = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { amount, bvn } = req.body;
+    const user = req.user as IUser;
+    const virtualAccount = await createVirtualAccountForPayment(user, bvn);
+    return res.json({
+      Status: "Success",
+      message: "Virtual Account Init",
+      data: virtualAccount,
+    });
+  } catch (err: any) {
+    return res.json({
+      Status: "Failed",
+      message: err.message,
+      error: err,
+    });
+  }
+};

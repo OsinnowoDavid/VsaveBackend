@@ -7,6 +7,7 @@ import {
   resendUserVerificationEmail,
   registerKYC1,
   getBanksAndCode,
+  initiateVirtualAccountForDeposit,
   // verifyBankAccountController,
 } from "../controller/User";
 import {
@@ -29,4 +30,10 @@ router.get("/get-all-banks", verifyUserToken, getBanksAndCode);
 //   verifyBankAccountController
 // );
 router.get("/register-kyc1", verifyUserToken, registerKYC1);
+router.get(
+  "/create-virtual-account",
+  verifyUserToken,
+  initiateVirtualAccountForDeposit
+);
+
 export default router;

@@ -55,6 +55,13 @@ const userSchema = new Schema({
   address: {
     type: String,
   },
+  gender: {
+    type: String,
+    enum: ["Male", "Female"],
+  },
+  dateOfBirth: {
+    type: Date,
+  },
 });
 
 const User = mongoose.model("User", userSchema);

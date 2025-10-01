@@ -179,6 +179,64 @@ export const verifyBankaccount = async (
   }
 };
 
-export const depositMoney = async (user:string) =>{
-  
-}
+export const createVirtualAccountForPayment = async (
+  user: IUser,
+  bvn: string
+) => {
+  try {
+    console.log("user:", user);
+    let getGenderCode = (gender: string) => {
+      if (typeof gender !== "string") {
+        throw new Error("Invalid input: expected a string");
+      }
+
+      const formatted = gender.trim().toLowerCase();
+
+      if (formatted === "male") {
+        return "1";
+      } else if (formatted === "female") {
+        return "2";
+      } else {
+        throw new Error("Invalid gender: must be 'Male' or 'Female'");
+      }
+    };
+    let formatDate = (date: Date) => {
+      const day = String(date.getDate()).padStart(2, "0");
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const year = date.getFullYear();
+
+      return `${month}/${day}/${year}`;
+    };
+    let dob = formatDate(user.dateOfBirth);
+    let gender = getGenderCode(user.gender);
+    let data = JSON.stringify({
+      customer_identifier: user._id,
+      first_name: user.firstName,
+      last_name: user.lastName,
+      mobile_num: user.phoneNumber,
+      email: user.email,
+      bvn,
+      dob,
+      address: user.address,
+      gender,
+      beneficiary_account: "9006809223",
+    });
+    let config = {
+      method: "post",
+      maxBodyLength: Infinity,
+      url: "https://api-d.squadco.com/virtual-account",
+      headers: {
+        Authorization: "Bearer sk_5709ece1ad1217f663a4b66f60b523d1072bf323",
+        "Content-Type": "application/json",
+      },
+      data: data,
+    };
+    console.log("payload:", data);
+    const response = await axios.request(config);
+    return response.data;
+    // includes virtual_account_number, bank details
+  } catch (err: any) {
+    console.log("error:", err.message, "data:", err.data);
+    throw err;
+  }
+};
