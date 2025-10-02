@@ -1,18 +1,18 @@
 import express from "express";
 import {
-  registerUser,
-  loginUser,
-  userProfile,
-  verifyEmail,
-  resendUserVerificationEmail,
-  registerKYC1,
-  getBanksAndCode,
-  // verifyBankAccountController,
+    registerUser,
+    loginUser,
+    userProfile,
+    verifyEmail,
+    resendUserVerificationEmail,
+    registerKYC1,
+    getBanksAndCode,
+    // verifyBankAccountController,
 } from "../controller/User";
 import {
-  validateUserRegitrationInput,
-  validateUserKYC1Input,
-  validateUserLoginInput,
+    validateUserRegitrationInput,
+    validateUserKYC1Input,
+    validateUserLoginInput,
 } from "../validate-input/user/index";
 import { verifyUserToken } from "../config/JWT";
 const router = express.Router();

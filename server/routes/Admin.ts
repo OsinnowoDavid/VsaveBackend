@@ -1,8 +1,8 @@
 import express from "express";
 import {
-  registerAdminController,
-  LoginSuperAdminController,
-  superAdminProfileController,
+    registerAdminController,
+    LoginSuperAdminController,
+    superAdminProfileController,
 } from "../controller/Admin";
 import { verifySuperAdminToken } from "../config/JWT";
 

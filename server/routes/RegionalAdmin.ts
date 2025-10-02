@@ -1,8 +1,8 @@
 import express from "express";
 import { verifyRegionalAdminToken } from "../config/JWT";
 import {
-  LoginRegionalAdmin,
-  regionalAdminProfile,
+    LoginRegionalAdmin,
+    regionalAdminProfile,
 } from "../controller/regionalAdmin";
 
 const router = express.Router();

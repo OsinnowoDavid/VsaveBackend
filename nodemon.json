@@ -1,7 +1,7 @@
 {
-  "ext": "ts,js,json",
-  "ignore": ["node_modules"],
-  "execMap": {
-    "ts": "ts-node"
-  }
+    "ext": "ts,js,json",
+    "ignore": ["node_modules"],
+    "execMap": {
+        "ts": "ts-node"
+    }
 }

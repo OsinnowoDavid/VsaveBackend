@@ -13,12 +13,12 @@ const app = express();
 app.use(express.json());
 // const allowedOrigin =[]
 app.use(
-  cors({
-    // origin:allowedOrigin,
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    // allowedHeaders: ["Content-Type","Authorization"]
-  })
+    cors({
+        // origin:allowedOrigin,
+        credentials: true,
+        methods: ["GET", "POST", "PUT", "DELETE"],
+        // allowedHeaders: ["Content-Type","Authorization"]
+    }),
 );
 
 app.use(bodyParser.json());
@@ -27,7 +27,7 @@ app.use(cookieParser());
 connectDB();
 
 app.get("/", (req, res) => {
-  res.send("Welcome to Vsave Backend");
+    res.send("Welcome to Vsave Backend");
 });
 //user route config
 app.use("/user", userRouter);
@@ -41,5 +41,5 @@ app.use("/regionaladmin", regionalAdminRouter);
 console.log("got here");
 
 app.listen(port, () => {
-  console.log(`serve is running on ${port}}`);
+    console.log(`serve is running on ${port}}`);
 });
