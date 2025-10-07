@@ -5,13 +5,13 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const transporter = nodemailer.createTransport({
-  host: "box.eedu.tech",
-  port: 465,
-  secure: true, // true for 465, false for other ports
-  auth: {
-    user: process.env.User,
-    pass: process.env.Pass,
-  },
+    host: "box.eedu.tech",
+    port: 465,
+    secure: true, // true for 465, false for other ports
+    auth: {
+        user: process.env.User,
+        pass: process.env.Pass,
+    },
 });
 
 export default transporter;

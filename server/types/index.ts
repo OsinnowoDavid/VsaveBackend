@@ -21,10 +21,10 @@ export interface IUser extends Document {
 }
 
 export interface IVerificationToken extends Document {
-  user: object;
-  email: string;
-  token: string;
-  expiresAt: Date;
+    user: object;
+    email: string;
+    token: string;
+    expiresAt: Date;
 }
 
 export interface ISuperAdmin extends Document {
