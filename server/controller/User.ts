@@ -12,18 +12,21 @@ import {
   getAllBanksAndCode,
   verifyBankaccount,
   createVirtualAccountForPayment,
+  buyAirtime,
 } from "../services/User";
 import { IUser, IVerificationToken } from "../types";
 import { signUserToken } from "../config/JWT";
 import Transporter from "../config/nodemailer";
 import axios from "axios";
+import { format } from "path";
 const QOREID_API_KEY = process.env.QOREID_SECRET_KEY as string;
 const QOREID_BASE_URL = process.env.QOREID_BASE_URL as string;
 console.log("Q:", QOREID_BASE_URL);
 
 export const registerUser = async (req: Request, res: Response) => {
   try {
-    const { firstName, lastName, email, password } = req.body;
+    const { firstName, lastName, email, password, gender, dateOfBirth } =
+      req.body;
     let hashPassword = await argon.hash(password);
     // check if user is already in the database
     const user = (await getUserByEmail(email)) as IUser;
@@ -40,7 +43,9 @@ export const registerUser = async (req: Request, res: Response) => {
       firstName,
       lastName,
       email,
-      hashPassword
+      hashPassword,
+      gender,
+      dateOfBirth
     );
     if (!newUser) {
       return res.json({
@@ -276,31 +281,7 @@ export const getBanksAndCode = async (req: Request, res: Response) => {
     });
   }
 };
-// export const verifyBankAccountController = async (
-//   req: Request,
-//   res: Response
-// ) => {
-//   try {
-//     const { accountNumber, bankCode } = req.body;
-//     const verifiedAccount = await verifyBankaccount(accountNumber, bankCode);
-//     if (!verifiedAccount) {
-//       return res.json({
-//         Status: "Failed",
-//         message: "No Account Found",
-//       });
-//     }
-//     return res.json({
-//       Status: "Success",
-//       message: "Account Found",
-//       data: verifiedAccount,
-//     });
-//   } catch (err: any) {
-//     res.json({
-//       Status: "Failed",
-//       message: err.message,
-//     });
-//   }
-// };
+
 export const registerKYC1 = async (req: Request, res: Response) => {
   try {
     const {
@@ -369,6 +350,12 @@ export const initiateVirtualAccountForDeposit = async (
     const { amount, bvn } = req.body;
     const user = req.user as IUser;
     const virtualAccount = await createVirtualAccountForPayment(user, bvn);
+    if (virtualAccount.success === "false" || virtualAccount.status !== 200) {
+      return res.json({
+        Status: "Failed",
+        message: "somethind went wrong couldn't create virtual account",
+      });
+    }
     return res.json({
       Status: "Success",
       message: "Virtual Account Init",
@@ -378,7 +365,6 @@ export const initiateVirtualAccountForDeposit = async (
     return res.json({
       Status: "Failed",
       message: err.message,
-      error: err,
     });
   }
 };

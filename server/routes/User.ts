@@ -14,7 +14,7 @@ import {
   validateUserRegitrationInput,
   validateUserKYC1Input,
   validateUserLoginInput,
-} from "../validate-input/user/index";
+} from "../validate-input/user";
 import { verifyUserToken } from "../config/JWT";
 const router = express.Router();
 

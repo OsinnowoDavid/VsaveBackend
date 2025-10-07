@@ -14,7 +14,7 @@ export const validateUserRegitrationInput = (
   if (isNotValid) {
     return res.status(400).json({
       status: "failed",
-      isNotValid,
+      message: "inValid Input",
       error,
     });
   } else {
@@ -32,7 +32,7 @@ export const validateUserLoginInput = (
   if (isNotValid) {
     return res.status(400).json({
       status: "failed",
-      isNotValid,
+      message: "inValid Input",
       error,
     });
   } else {
@@ -50,7 +50,7 @@ export const validateUserKYC1Input = (
   if (isNotValid) {
     return res.status(400).json({
       status: "failed",
-      isNotValid,
+      message: "inValid Input",
       error,
     });
   } else {

@@ -10,7 +10,9 @@ export const createNewUser = async (
   firstName: string,
   lastName: string,
   email: string,
-  password: string
+  password: string,
+  gender: string,
+  dateOfBirth: string
 ) => {
   try {
     const newUser = await User.create({
@@ -18,6 +20,8 @@ export const createNewUser = async (
       lastName,
       email,
       password,
+      gender,
+      dateOfBirth,
     });
     return newUser;
   } catch (err: any) {
@@ -200,6 +204,14 @@ export const createVirtualAccountForPayment = async (
         throw new Error("Invalid gender: must be 'Male' or 'Female'");
       }
     };
+    let gender = getGenderCode(user.gender);
+    let sampleID = "SQUAD_101";
+    let checkForSampleUser = (id: string) => {
+      if (id === "68e546e495709e02560d167e") {
+        return sampleID;
+      }
+      return id;
+    };
     let formatDate = (date: Date) => {
       const day = String(date.getDate()).padStart(2, "0");
       const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -207,15 +219,15 @@ export const createVirtualAccountForPayment = async (
 
       return `${month}/${day}/${year}`;
     };
-    let dob = formatDate(user.dateOfBirth);
-    let gender = getGenderCode(user.gender);
+
+    let dob = formatDate(new Date(user.dateOfBirth));
     let data = JSON.stringify({
-      customer_identifier: user._id,
+      customer_identifier: checkForSampleUser(user._id.toString()),
       first_name: user.firstName,
       last_name: user.lastName,
       mobile_num: user.phoneNumber,
       email: user.email,
-      bvn,
+      bvn: user.bvn,
       dob,
       address: user.address,
       gender,
@@ -224,9 +236,9 @@ export const createVirtualAccountForPayment = async (
     let config = {
       method: "post",
       maxBodyLength: Infinity,
-      url: "https://api-d.squadco.com/virtual-account",
+      url: "https://sandbox-api-d.squadco.com/virtual-account",
       headers: {
-        Authorization: "Bearer sk_5709ece1ad1217f663a4b66f60b523d1072bf323",
+        Authorization: `Bearer ${process.env.SQUAD_SECRET_KEY}`,
         "Content-Type": "application/json",
       },
       data: data,
@@ -236,7 +248,58 @@ export const createVirtualAccountForPayment = async (
     return response.data;
     // includes virtual_account_number, bank details
   } catch (err: any) {
-    console.log("error:", err.message, "data:", err.data);
+    // If the request fails, we log the response from the provider
+    if (err.response) {
+      console.error("Error Response Status:", err.response.status);
+      console.error("Error Response Data:", err.response.data);
+      return err.response.data; // Return the exact response data from the provider
+    } else if (err.request) {
+      console.error("No Response:", err.request);
+      return { error: "No response from the server" };
+    } else {
+      console.error("Error:", err.message);
+      return { error: "Unexpected error occurred" };
+    }
+  }
+};
+
+export const buyAirtime = async (phoneNumber: string, amount: number) => {
+  try {
+    const data = {
+      phone_number: phoneNumber,
+      amount: 5000,
+    };
+    let config = {
+      method: "post",
+      maxBodyLength: Infinity,
+      url: "https://sandbox-api-d.squadco.com/vending/purchase/airtime",
+      headers: {
+        Authorization: `Bearer ${process.env.SQUAD_SECRET_KEY}`,
+        "Content-Type": "application/json",
+      },
+      data: data,
+    };
+    const response = await axios.request(config);
+    return response.data;
+  } catch (err: any) {
+    throw err;
+  }
+};
+
+export const getDataPlan = async (network: string) => {
+  try {
+    let config = {
+      method: "Get",
+      maxBodyLength: Infinity,
+      url: `https://sandbox-api-d.squadco.com/vending/data-bundles?network=${network.toUpperCase()}`,
+      headers: {
+        Authorization: `Bearer ${process.env.SQUAD_SECRET_KEY}`,
+        "Content-Type": "application/json",
+      },
+    };
+    const response = await axios.request(config);
+    return response.data;
+  } catch (err: any) {
     throw err;
   }
 };

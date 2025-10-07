@@ -15,8 +15,9 @@ export interface IUser extends Document {
   isEmailVerified: boolean;
   status: string;
   address: string;
+  bvn: string;
   gender: string;
-  dateOfBirth: Date;
+  dateOfBirth: Date | string;
 }
 
 export interface IVerificationToken extends Document {
@@ -24,4 +25,13 @@ export interface IVerificationToken extends Document {
   email: string;
   token: string;
   expiresAt: Date;
+}
+
+export interface ISuperAdmin extends Document {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  password: string;
+  profilePicture?: string;
 }

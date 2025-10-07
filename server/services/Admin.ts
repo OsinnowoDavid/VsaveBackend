@@ -1,9 +1,13 @@
 import Admin from "../model/Super_admin";
 import RegionalAdmin from "../model/Regionaladmin";
 import Region from "../model/Region";
+import SubRegion from "../model/SubRegion";
+import SubRegionalAdmin from "../model/SubRegionalAdmin";
+import subRegion from "../model/SubRegion";
 
 export const CreateSuperAdmin = async (
-  fullName: string,
+  firstName: string,
+  lastName: string,
   email: string,
   phoneNumber: string,
   password: string,
@@ -12,7 +16,8 @@ export const CreateSuperAdmin = async (
   try {
     let type = "superadmin";
     const newSuperAdmin = await Admin.create({
-      fullName,
+      firstName,
+      lastName,
       email,
       type,
       phoneNumber,

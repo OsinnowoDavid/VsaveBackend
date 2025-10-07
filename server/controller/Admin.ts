@@ -10,10 +10,11 @@ import { signUserToken } from "../config/JWT";
 
 export const registerAdminController = async (req: Request, res: Response) => {
   try {
-    const { fullName, email, phoneNumber, password } = req.body;
+    const { firstName, lastName, email, phoneNumber, password } = req.body;
     let hashPassword = await argon.hash(password);
     const newAdmin = await CreateSuperAdmin(
-      fullName,
+      firstName,
+      lastName,
       email,
       phoneNumber,
       hashPassword

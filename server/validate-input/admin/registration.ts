@@ -1,17 +1,14 @@
 import validator from "validator";
 import isEmpty from "../isEmpty";
-import { IUser } from "../../types";
-import User from "../../model/User";
+import { ISuperAdmin } from "../../types";
 
-const validateRegistrationInput = (data: IUser) => {
-  let error = {} as IUser;
+const validateRegistrationInput = (data: ISuperAdmin) => {
+  let error = {} as ISuperAdmin;
   // Convert undefined/null values to empty strings for validation
   data.firstName = !isEmpty(data.firstName) ? data.firstName : "";
   data.lastName = !isEmpty(data.lastName) ? data.lastName : "";
   data.email = !isEmpty(data.email) ? data.email : "";
   data.password = !isEmpty(data.password) ? data.password : "";
-  data.gender = !isEmpty(data.gender) ? data.gender : "";
-
   // Validate fullName
   if (validator.isEmpty(data.firstName)) {
     error.firstName = "firstName field is Required";
@@ -37,12 +34,6 @@ const validateRegistrationInput = (data: IUser) => {
     error.password = "password must be at least 6 characters.";
   }
 
-  if (validator.isEmpty(data.gender)) {
-    error.gender = "gender field is Required";
-  }
-  if (!data.dateOfBirth) {
-    error.dateOfBirth = "dateOfBirth field is required";
-  }
   const hasError = (errorObj: typeof error): boolean =>
     Object.values(errorObj).some((value) => value.trim() !== "");
   return {

@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const Schema = mongoose.Schema;
 
-const AdminSchema = new Schema(
+const subRegionalAdminSchema = new Schema(
   {
     firstName: {
       type: String,
@@ -18,7 +18,7 @@ const AdminSchema = new Schema(
     },
     phoneNumber: {
       type: String,
-      required: false,
+      required: true,
     },
     password: {
       type: String,
@@ -28,10 +28,14 @@ const AdminSchema = new Schema(
       type: String,
       required: false,
     },
+    subRegion: { type: mongoose.Schema.Types.ObjectId, ref: "SubRegion" },
   },
   { timestamps: true }
 );
 
-const Admin = mongoose.model("Superadmin", AdminSchema);
+const subRegionalAdmin = mongoose.model(
+  "SubRegionalAdmin",
+  subRegionalAdminSchema
+);
 
-export default Admin;
+export default subRegionalAdmin;
