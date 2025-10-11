@@ -4,10 +4,13 @@ import {
   LoginSuperAdminController,
   superAdminProfileController,
   createNewRegionController,
-  createRegionalAdminController
+  createRegionalAdminController,
+  getAllRegionController,
+  getAllRegionalAdminController,
+  getRegionalAdminByEmailController
 } from "../controller/Admin";
 import { verifySuperAdminToken } from "../config/JWT";
-import { validateAdminRegistrationInput } from "../validate-input/admin";
+import { validateAdminRegistrationInput } from "../validate-input/admin/index";
 
 const router = express.Router();
 
@@ -23,6 +26,13 @@ router.get("/profile", verifySuperAdminToken, superAdminProfileController);
 
 router.post("/create-region", verifySuperAdminToken, createNewRegionController); 
 
-router.post("/create-regional-admin", verifySuperAdminToken, createRegionalAdminController)
+router.post("/create-regional-admin", verifySuperAdminToken, createRegionalAdminController);
+
+router.get("/get-all-regional-admin", verifySuperAdminToken, getAllRegionalAdminController);
+
+router.post("/get-all-region", verifySuperAdminToken, getAllRegionController); 
+
+router.get("/get-regional-admin", verifySuperAdminToken,getRegionalAdminByEmailController )
+
 
 export default router;

@@ -3,18 +3,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.registerKYC1 = exports.getBanksAndCode = exports.userProfile = exports.loginUser = exports.resendUserVerificationEmail = exports.verifyEmail = exports.registerUser = void 0;
+exports.buyDataController = exports.buyAirtimeController = exports.getDataPlanController = exports.getUserKyc1RecordController = exports.registerKYC1 = exports.userProfile = exports.loginUser = exports.resendUserVerificationEmail = exports.verifyEmail = exports.registerUser = void 0;
 const argon2_1 = __importDefault(require("argon2"));
 const User_1 = require("../services/User");
 const JWT_1 = require("../config/JWT");
 const nodemailer_1 = __importDefault(require("../config/nodemailer"));
-const axios_1 = __importDefault(require("axios"));
 const QOREID_API_KEY = process.env.QOREID_SECRET_KEY;
 const QOREID_BASE_URL = process.env.QOREID_BASE_URL;
 console.log("Q:", QOREID_BASE_URL);
 const registerUser = async (req, res) => {
     try {
-        const { firstName, lastName, email, password } = req.body;
+        const { firstName, lastName, email, password, gender, dateOfBirth, phoneNumber, } = req.body;
         let hashPassword = await argon2_1.default.hash(password);
         // check if user is already in the database
         const user = (await (0, User_1.getUserByEmail)(email));
@@ -27,7 +26,7 @@ const registerUser = async (req, res) => {
             });
         }
         // create new user
-        const newUser = await (0, User_1.createNewUser)(firstName, lastName, email, hashPassword);
+        const newUser = await (0, User_1.createNewUser)(firstName, lastName, email, hashPassword, gender, dateOfBirth, phoneNumber);
         if (!newUser) {
             return res.json({
                 status: "Failed",
@@ -72,7 +71,7 @@ const registerUser = async (req, res) => {
     }
     catch (err) {
         res.json({
-            Status: "Failed",
+            status: "Failed",
             message: err.message,
         });
     }
@@ -106,7 +105,7 @@ const verifyEmail = async (req, res) => {
     }
     catch (err) {
         res.json({
-            Status: "Failed",
+            status: "Failed",
             message: err.message,
         });
     }
@@ -149,7 +148,7 @@ const resendUserVerificationEmail = async (req, res) => {
     }
     catch (err) {
         res.json({
-            Status: "Failed",
+            status: "Failed",
             message: err.message,
         });
     }
@@ -208,7 +207,7 @@ const loginUser = async (req, res) => {
     }
     catch (err) {
         res.json({
-            Status: "Failed",
+            status: "Failed",
             message: err.message,
         });
     }
@@ -219,7 +218,7 @@ const userProfile = async (req, res) => {
         let user = req.user;
         if (!user) {
             return res.json({
-                Status: "Failed",
+                status: "Failed",
                 message: "user not found",
             });
         }
@@ -231,78 +230,18 @@ const userProfile = async (req, res) => {
     }
     catch (err) {
         res.json({
-            Status: "Failed",
+            status: "Failed",
             message: err.message,
         });
     }
 };
 exports.userProfile = userProfile;
-const getBanksAndCode = async (req, res) => {
-    try {
-        const BanksAndCode = await (0, User_1.getAllBanksAndCode)();
-        if (!BanksAndCode) {
-            return res.json({
-                Status: "Failed",
-                message: "no Bank Code found",
-            });
-        }
-        return res.json({
-            Status: "Success",
-            message: "Bank Code found",
-            data: BanksAndCode,
-        });
-    }
-    catch (err) {
-        res.json({
-            Status: "Failed",
-            message: err.message,
-        });
-    }
-};
-exports.getBanksAndCode = getBanksAndCode;
-// export const verifyBankAccountController = async (
-//   req: Request,
-//   res: Response
-// ) => {
-//   try {
-//     const { accountNumber, bankCode } = req.body;
-//     const verifiedAccount = await verifyBankaccount(accountNumber, bankCode);
-//     if (!verifiedAccount) {
-//       return res.json({
-//         Status: "Failed",
-//         message: "No Account Found",
-//       });
-//     }
-//     return res.json({
-//       Status: "Success",
-//       message: "Account Found",
-//       data: verifiedAccount,
-//     });
-//   } catch (err: any) {
-//     res.json({
-//       Status: "Failed",
-//       message: err.message,
-//     });
-//   }
-// };
 const registerKYC1 = async (req, res) => {
     try {
-        const { profession, accountNumber, bank, bankCode, accountDetails, country, state, bvn, } = req.body;
+        const { profession, accountNumber, bank, bankCode, accountDetails, country, state, bvn, address, } = req.body;
         const user = req.user;
-        console.log("got here begining of the controller");
-        console.log("key:", QOREID_API_KEY);
-        const options = {
-            method: "POST",
-            url: "https://api.qoreid.com/v1/ng/identities/bvn-basic/95888168924",
-            headers: {
-                accept: "application/json",
-                "content-type": "application/json",
-            },
-            data: { firstname: "Bunch", lastname: "Dillon" },
-        };
-        const bvnData = await axios_1.default.request(options);
         // save KYC1
-        const newKYC1 = await (0, User_1.createKYC1Record)(user, profession, accountNumber, bank, accountDetails, country, state, bvn);
+        const newKYC1 = await (0, User_1.createKYC1Record)(user, profession, accountNumber, bank, accountDetails, country, state, bvn, address);
         if (!newKYC1) {
             return res.json({
                 status: "Failed",
@@ -311,8 +250,17 @@ const registerKYC1 = async (req, res) => {
         }
         // change KYC status
         await (0, User_1.kycStatusChange)(user, "verified", 1);
+        const virtualAccount = await (0, User_1.createVirtualAccountForPayment)(user, bvn, address);
+        if (virtualAccount.success === "false") {
+            return res.json({
+                status: "Failed",
+                message: "something went wrong, account number not created",
+                data: newKYC1,
+            });
+        }
+        await (0, User_1.createVirtualAccountIndex)(user._id.toString(), virtualAccount.data.virtual_account_number);
         return res.json({
-            Status: "success",
+            status: "success",
             message: "KYC1 record created successfuly",
             data: newKYC1,
         });
@@ -320,9 +268,105 @@ const registerKYC1 = async (req, res) => {
     catch (err) {
         console.log("error:", err.message);
         return res.json({
-            Status: "Failed",
+            status: "Failed",
             message: err.message,
         });
     }
 };
 exports.registerKYC1 = registerKYC1;
+const getUserKyc1RecordController = async (req, res) => {
+    try {
+        const user = req.user;
+        const foundKYC = await (0, User_1.getUserKyc1Record)(user._id.toString());
+        if (!foundKYC) {
+            return res.json({
+                status: "Failed",
+                message: "No Record Found",
+            });
+        }
+        return res.json({
+            status: "Success",
+            message: "Record Found",
+            data: foundKYC,
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.getUserKyc1RecordController = getUserKyc1RecordController;
+const getDataPlanController = async (req, res) => {
+    try {
+        const { network } = req.params;
+        const dataPlan = await (0, User_1.getDataPlan)(network);
+        if (!dataPlan) {
+            return res.json({
+                status: "Failed",
+                message: "something went wrong",
+            });
+        }
+        return res.json({
+            status: "Success",
+            message: "Found Data Plan",
+            data: dataPlan,
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.getDataPlanController = getDataPlanController;
+const buyAirtimeController = async (req, res) => {
+    try {
+        const { phoneNumber, amount } = req.body;
+        const airtime = await (0, User_1.buyAirtime)(phoneNumber, amount);
+        if (!airtime) {
+            return res.json({
+                status: "Failed",
+                message: "something went wrong",
+            });
+        }
+        return res.json({
+            status: "Success",
+            message: "airtime purchase successful",
+            data: airtime,
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.buyAirtimeController = buyAirtimeController;
+const buyDataController = async (req, res) => {
+    try {
+        const { phoneNumber, amount, planCode } = req.body;
+        const dataPurchase = await (0, User_1.buyData)(phoneNumber, amount, planCode);
+        if (!dataPurchase) {
+            return res.json({
+                status: "Failed",
+                message: "something went wrong",
+            });
+        }
+        return res.json({
+            status: "Success",
+            message: "data purchased",
+            data: dataPurchase,
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.buyDataController = buyDataController;

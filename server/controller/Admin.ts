@@ -5,32 +5,43 @@ import {
     getAllSuperAdminByEmail,
     createRegionalAdmin,
     createNewRegion,
+    getAllRegion,
+    getRegionByName,
+    getRegionalAdminById,
+    getRegionalAdminByEmail,
+    getAllRegionalAdmin,
+    assignRegionalAdmin,
 } from "../services/Admin";
 import { signUserToken } from "../config/JWT";
 
 export const registerAdminController = async (req: Request, res: Response) => {
-  try {
-    const { firstName, lastName, email, phoneNumber, password } = req.body;
-    let hashPassword = await argon.hash(password);
-    const newAdmin = await CreateSuperAdmin(
-      firstName,
-      lastName,
-      email,
-      phoneNumber,
-      hashPassword
-    );
-    if (!newAdmin) {
-      return res.json({
-        status: "Failed",
-        message: "something went wrong, try again later",
-      });
-    }
-}catch(err:any){
-   return res.json({
+    try {
+        const { firstName, lastName, email, phoneNumber, password } = req.body;
+        let hashPassword = await argon.hash(password);
+        const newAdmin = await CreateSuperAdmin(
+            firstName,
+            lastName,
+            email,
+            phoneNumber,
+            hashPassword,
+        );
+        if (!newAdmin) {
+            return res.json({
+                status: "Failed",
+                message: "something went wrong, try again later",
+            });
+        }
+        return res.json({
+            Status: "success",
+            message: "SuperAdmin Account created successfuly",
+            data: newAdmin,
+        });
+    } catch (err: any) {
+        return res.json({
             status: "Failed",
             message: err.message,
         });
-}
+    }
 };
 
 export const LoginSuperAdminController = async (
@@ -98,19 +109,22 @@ export const createRegionalAdminController = async (
 ) => {
     try {
         const {
-            fullName,
+            firstName,
+            lastName,
             email,
             phoneNumber,
             password,
+            region,
             profilePicture,
-            region,
         } = req.body;
+        let hashPassword = await argon.hash(password);
         const newRegionalAdmin = await createRegionalAdmin(
-            fullName,
+            firstName,
+            lastName,
             email,
             phoneNumber,
-            password,
-            region,
+            hashPassword,
+            region.toString(),
             profilePicture,
         );
         if (!newRegionalAdmin) {
@@ -119,6 +133,8 @@ export const createRegionalAdminController = async (
                 message: "something went wrong, try again later",
             });
         }
+        // assing regional admin to is region
+        await assignRegionalAdmin(newRegionalAdmin, region);
         return res.json({
             status: "Success",
             message: "Regional admin created successfully",
@@ -150,6 +166,70 @@ export const createNewRegionController = async (
             message: "Region  created successfully",
             data: newRegion,
         });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+
+export const getAllRegionController = async (req: Request, res: Response) => {
+    try {
+        const allRegion = await getAllRegion();
+        if (!allRegion) {
+            return res.json({
+                status: "Failed",
+                message: "No Region Found",
+            });
+        }
+
+        return res.json({
+            status: "Success",
+            message: "Region Found",
+            data: allRegion,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+
+export const getAllRegionalAdminController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const allRegionalAdmin = await getAllRegionalAdmin();
+        if (!allRegionalAdmin) {
+            return res.json({
+                status: "Failed",
+                message: "No Region Found",
+            });
+        }
+
+        return res.json({
+            status: "Success",
+            message: "Region Found",
+            data: allRegionalAdmin,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+
+export const getRegionalAdminByEmailController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const { email } = req.params;
+        const foundRegionalAdmin = await getRegionalAdminByEmail(email);
     } catch (err: any) {
         return res.json({
             status: "Failed",

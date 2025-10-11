@@ -2,61 +2,169 @@
 
 This document provides a comprehensive list of all exposed RESTful API endpoints for the Vsave Backend. This specification enables seamless integration for the frontend development team.
 
-**Base URL (assumed):** `[Your Server Host]/api/v1`
+**Base URL:** `[Your Server Host]/api/v1`
 
 ## General Information
 
-- **Authentication:** All protected routes require a JSON Web Token (JWT) sent in the **Authorization** header as a Bearer token: `Authorization: Bearer <token>`.
-- **Request/Response Format:** All request bodies and successful responses are in **JSON** format.
-- **Password Hashing:** Passwords are hashed using **Argon2** on the server.
-- **User Types:** The system supports three main user types: **User**, **Regional Admin**, and **Super Admin**.
+-   **Authentication:** All protected routes require a JSON Web Token (JWT) sent in the **Authorization** header as a Bearer token: `Authorization: Bearer <token>`.
+-   **Request/Response Format:** All request bodies and successful responses are in **JSON** format.
+-   **Password Hashing:** Passwords are hashed using **Argon2** on the server.
+-   **User Types:** The system supports three main user types: **User**, **Regional Admin**, and **Super Admin**.
 
 ---
 
-## 1\. User Endpoints (`/user`)
+## 1. User Endpoints (`/user`)
 
-These endpoints are for general Vsave users, handling registration, login, email verification, and KYC stage 1 submission.
+These endpoints are for general Vsave users, handling registration, login, email verification, KYC, and value-added services.
 
-| Method   | Path                              | Description                                                            | Access          |
-| :------- | :-------------------------------- | :--------------------------------------------------------------------- | :-------------- |
-| **POST** | `/user/register`                  | Registers a new user account.                                          | Public          |
-| **POST** | `/user/login`                     | Logs in a user and returns a JWT.                                      | Public          |
-| **POST** | `/user/verify-email`              | Verifies a user's email using a token.                                 | Public          |
-| **POST** | `/user/resend-verification-token` | Requests a new email verification token.                               | Public          |
-| **GET**  | `/user/profile`                   | Retrieves the authenticated user's profile.                            | **Auth (User)** |
-| **GET**  | `/user/get-all-banks`             | Retrieves a list of supported banks and their codes (via Flutterwave). | **Auth (User)** |
-| **GET**  | `/user/register-kyc1`             | Submits the first stage of KYC information.                            | **Auth (User)** |
+| Method   | Path                              | Description                                   | Access          |
+| :------- | :-------------------------------- | :-------------------------------------------- | :-------------- |
+| **POST** | `/user/register`                  | Registers a new user account.                 | Public          |
+| **POST** | `/user/login`                     | Logs in a user and returns a JWT.             | Public          |
+| **POST** | `/user/verify-email`              | Verifies a user's email using a token.        | Public          |
+| **POST** | `/user/resend-verification-token` | Requests a new email verification token.      | Public          |
+| **GET**  | `/user/profile`                   | Retrieves the authenticated user's profile.   | **Auth (User)** |
+| **GET**  | `/user/register-kyc1`             | Submits the first stage of KYC information.   | **Auth (User)** |
+| **GET**  | `/user/get-data-plan/:network`    | Retrieves available data plans for a network. | **Auth (User)** |
+| **POST** | `/user/buy-airtime`               | Buys airtime for a phone number.              | **Auth (User)** |
+| **POST** | `/user/buy-data`                  | Buys data for a phone number.                 | **Auth (User)** |
 
-### 1.1. User Registration (`POST /user/register`)
+---
 
-| Parameter   | Location | Type   | Required | Description                                         |
-| :---------- | :------- | :----- | :------- | :-------------------------------------------------- |
-| `firstName` | Body     | string | Yes      | User's first name.                                  |
-| `lastName`  | Body     | string | Yes      | User's last name.                                   |
-| `email`     | Body     | string | Yes      | User's email address.                               |
-| `password`  | Body     | string | Yes      | User's password (min 8 chars, secured with Argon2). |
+## 2. Super Admin Endpoints (`/admin`)
 
-**Success Response (200 OK):**
+Endpoints for Super Admin, including registration, authentication, and region/admin management.
+
+| Method   | Path                            | Description                                          | Access                 |
+| :------- | :------------------------------ | :--------------------------------------------------- | :--------------------- |
+| **POST** | `/admin/register`               | Registers the Super Admin (likely a one-time setup). | Public                 |
+| **POST** | `/admin/login`                  | Logs in the Super Admin and returns a JWT.           | Public                 |
+| **GET**  | `/admin/profile`                | Retrieves the authenticated Super Admin's profile.   | **Auth (Super Admin)** |
+| **POST** | `/admin/create-region`          | Creates a new region.                                | **Auth (Super Admin)** |
+| **POST** | `/admin/create-regional-admin`  | Creates a new regional admin.                        | **Auth (Super Admin)** |
+| **GET**  | `/admin/get-all-regional-admin` | Gets all regional admins.                            | **Auth (Super Admin)** |
+| **POST** | `/admin/get-all-region`         | Gets all regions.                                    | **Auth (Super Admin)** |
+| **GET**  | `/admin/get-regional-admin`     | Gets a regional admin by email.                      | **Auth (Super Admin)** |
+
+---
+
+## 3. Regional Admin Endpoints (`/regional-admin`)
+
+Endpoints for Regional Administrators, including authentication and subregion management.
+
+| Method   | Path                                     | Description                                           | Access                    |
+| :------- | :--------------------------------------- | :---------------------------------------------------- | :------------------------ |
+| **POST** | `/regional-admin/login`                  | Logs in a Regional Admin and returns a JWT.           | Public                    |
+| **GET**  | `/regional-admin/profile`                | Retrieves the authenticated Regional Admin's profile. | **Auth (Regional Admin)** |
+| **POST** | `/regional-admin/create-subregion`       | Creates a new subregion.                              | **Auth (Regional Admin)** |
+| **POST** | `/regional-admin/create-subregion-admin` | Creates a new subregion admin.                        | **Auth (Regional Admin)** |
+| **GET**  | `/regional-admin/get-all-subregion`      | Gets all subregions.                                  | **Auth (Regional Admin)** |
+
+---
+
+## 4. Other/Value-Added Endpoints
+
+| Method   | Path                           | Description                                   | Access          |
+| :------- | :----------------------------- | :-------------------------------------------- | :-------------- |
+| **GET**  | `/user/get-data-plan/:network` | Retrieves available data plans for a network. | **Auth (User)** |
+| **POST** | `/user/buy-airtime`            | Buys airtime for a phone number.              | **Auth (User)** |
+| **POST** | `/user/buy-data`               | Buys data for a phone number.                 | **Auth (User)** |
+
+---
+
+## Guidelines
+
+-   All protected endpoints require JWT authentication in the `Authorization` header.
+-   All request and response bodies are JSON.
+-   Use the correct HTTP method for each endpoint (GET, POST).
+-   For resource creation, use POST; for retrieval, use GET.
+-   Error responses follow a consistent format with `status` and `message` fields.
+
+---
+
+## Example Request/Response Formats
+
+### User Registration (`POST /user/register`)
+
+**Request Body:**
+
+```json
+{
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john@example.com",
+    "password": "password123"
+}
+```
+
+**Success Response:**
 
 ```json
 {
     "status": "Success",
     "message": "User created successfully",
     "data": {
-        "firstName": "...",
-        "lastName": "...",
-        "email": "...",
-        "_id": "..." // User ID
+        "firstName": "John",
+        "lastName": "Doe",
+        "email": "john@example.com",
+        "_id": "..."
     }
 }
 ```
 
-### 1.2. User Login (`POST /user/login`)
+### User Login (`POST /user/login`)
 
-| Parameter  | Location | Type   | Required | Description           |
-| :--------- | :------- | :----- | :------- | :-------------------- |
-| `email`    | Body     | string | Yes      | User's email address. |
-| `password` | Body     | string | Yes      | User's password.      |
+**Request Body:**
+
+```json
+{
+    "email": "john@example.com",
+    "password": "password123"
+}
+```
+
+**Success Response:**
+
+```json
+{
+    "status": "success",
+    "message": "login successfuly",
+    "token": "..."
+}
+```
+
+### Register KYC Stage 1 (`GET /user/register-kyc1`)
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Request Body:**
+
+```json
+{
+    "profession": "Student",
+    "accountNumber": 1234567890,
+    "bank": "Access Bank",
+    "bankCode": "044",
+    "accountDetails": "John Doe",
+    "country": "Nigeria",
+    "state": "Lagos",
+    "bvn": "12345678901"
+}
+```
+
+**Success Response:**
+
+```json
+{
+    "status": "success",
+    "message": "KYC 1 created successfully",
+    "data": {
+        "profession": "Student",
+        "accountNumber": 1234567890
+        // ... other KYC 1 details
+    }
+}
+```
 
 **Success Response (200 OK):**
 

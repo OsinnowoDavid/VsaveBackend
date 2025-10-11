@@ -9,4 +9,7 @@ const regionalAdmin_1 = require("../controller/regionalAdmin");
 const router = express_1.default.Router();
 router.post("/login", regionalAdmin_1.LoginRegionalAdmin);
 router.get("/profile", JWT_1.verifyRegionalAdminToken, regionalAdmin_1.regionalAdminProfile);
+router.post("/create-subregion", JWT_1.verifyRegionalAdminToken, regionalAdmin_1.createSubRegionController);
+router.post("/create-subregion-admin", JWT_1.verifyRegionalAdminToken, regionalAdmin_1.createSubRegionalAdmincontroller);
+router.get("/get-all-subregion", JWT_1.verifyRegionalAdminToken, regionalAdmin_1.getAllSubRegionController);
 exports.default = router;

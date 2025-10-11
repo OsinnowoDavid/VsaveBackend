@@ -3,17 +3,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRegionByName = exports.getAllRegion = exports.getRegionalAdminByFullName = exports.getRegionalAdminByEmail = exports.getRegionalAdminById = exports.createRegionalAdmin = exports.createNewRegion = exports.getAllSuperAdminByEmail = exports.getAllSuperAdminById = exports.CreateSuperAdmin = void 0;
+exports.getRegionByName = exports.getAllRegion = exports.getRegionalAdminByEmail = exports.getRegionalAdminById = exports.getAllRegionalAdmin = exports.assignRegionalAdmin = exports.createRegionalAdmin = exports.createNewRegion = exports.getAllSuperAdminByEmail = exports.getAllSuperAdminById = exports.CreateSuperAdmin = void 0;
 const Super_admin_1 = __importDefault(require("../model/Super_admin"));
 const Regionaladmin_1 = __importDefault(require("../model/Regionaladmin"));
 const Region_1 = __importDefault(require("../model/Region"));
-const CreateSuperAdmin = async (fullName, email, phoneNumber, password, profilePicture) => {
+const CreateSuperAdmin = async (firstName, lastName, email, phoneNumber, password, profilePicture) => {
     try {
-        let type = "superadmin";
         const newSuperAdmin = await Super_admin_1.default.create({
-            fullName,
+            firstName,
+            lastName,
             email,
-            type,
             phoneNumber,
             password,
             profilePicture,
@@ -58,15 +57,16 @@ const createNewRegion = async (regionName, shortCode) => {
     }
 };
 exports.createNewRegion = createNewRegion;
-const createRegionalAdmin = async (fullName, email, phoneNumber, password, region, profilePicture) => {
+const createRegionalAdmin = async (firstName, lastName, email, phoneNumber, password, region, profilePicture) => {
     try {
         const newRegionalAdmin = await Regionaladmin_1.default.create({
-            fullName,
+            firstName,
+            lastName,
             email,
             phoneNumber,
             password,
-            profilePicture,
             region,
+            profilePicture
         });
         return newRegionalAdmin;
     }
@@ -75,6 +75,31 @@ const createRegionalAdmin = async (fullName, email, phoneNumber, password, regio
     }
 };
 exports.createRegionalAdmin = createRegionalAdmin;
+const assignRegionalAdmin = async (admin, region) => {
+    try {
+        const foundRegion = await Region_1.default.findById(region);
+        if (!foundRegion) {
+            throw "region not found !";
+        }
+        foundRegion.admin.push(admin._id);
+        await foundRegion.save();
+        return foundRegion;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.assignRegionalAdmin = assignRegionalAdmin;
+const getAllRegionalAdmin = async () => {
+    try {
+        const allRegionalAdmin = await Regionaladmin_1.default.find();
+        return allRegionalAdmin;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.getAllRegionalAdmin = getAllRegionalAdmin;
 const getRegionalAdminById = async (id) => {
     try {
         const foundAdmin = await Regionaladmin_1.default.findById(id);
@@ -95,16 +120,6 @@ const getRegionalAdminByEmail = async (email) => {
     }
 };
 exports.getRegionalAdminByEmail = getRegionalAdminByEmail;
-const getRegionalAdminByFullName = async (fullName) => {
-    try {
-        const foundAdmin = await Regionaladmin_1.default.findOne({ fullName });
-        return foundAdmin;
-    }
-    catch (err) {
-        throw err;
-    }
-};
-exports.getRegionalAdminByFullName = getRegionalAdminByFullName;
 const getAllRegion = async () => {
     try {
         const allRegion = await Region_1.default.find();

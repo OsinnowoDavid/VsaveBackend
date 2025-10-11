@@ -13,7 +13,7 @@ const validateUserRegitrationInput = (req, res, next) => {
     if (isNotValid) {
         return res.status(400).json({
             status: "failed",
-            isNotValid,
+            message: "inValid Input",
             error,
         });
     }
@@ -28,7 +28,7 @@ const validateUserLoginInput = (req, res, next) => {
     if (isNotValid) {
         return res.status(400).json({
             status: "failed",
-            isNotValid,
+            message: "inValid Input",
             error,
         });
     }
@@ -43,7 +43,7 @@ const validateUserKYC1Input = (req, res, next) => {
     if (isNotValid) {
         return res.status(400).json({
             status: "failed",
-            isNotValid,
+            message: "inValid Input",
             error,
         });
     }

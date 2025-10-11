@@ -70,10 +70,78 @@ Follow these steps to set up and run the Vsave backend locally for development.
 
     The server will start and listen on the configured port, typically `3000`. You're now ready to use this backend with your frontend or test it with an API client like Postman.
 
-### User Endpoints
+## API Endpoints
 
-### 1. Create User Account
+The backend exposes RESTful endpoints for:
+
+-   **User Management:** Registration, login, profile, KYC, and value-added services (airtime/data purchase).
+-   **Super Admin:** Registration, login, profile, region and admin management.
+-   **Regional Admin:** Login, profile, subregion and subregion admin management.
+
+See `API_SPECIFICATION.md` for a full list of endpoints, request/response formats, and integration guidelines.
+
+### Example Endpoints
+
+**User Registration:**
 
 ```http
-POST /api/client/createclient
+POST /api/v1/user/register
 ```
+
+**User Login:**
+
+```http
+POST /api/v1/user/login
+```
+
+**Super Admin Registration:**
+
+```http
+POST /api/v1/admin/register
+```
+
+**Regional Admin Login:**
+
+```http
+POST /api/v1/regional-admin/login
+```
+
+**Buy Airtime:**
+
+```http
+POST /api/v1/user/buy-airtime
+```
+
+**Buy Data:**
+
+```http
+POST /api/v1/user/buy-data
+```
+
+---
+
+## Project Structure
+
+```
+server/
+    index.ts
+    config/
+    controller/
+    model/
+    routes/
+    services/
+    types/
+    validate-input/
+```
+
+---
+
+## Contributing
+
+Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
+
+---
+
+## License
+
+This project is licensed under the MIT License.

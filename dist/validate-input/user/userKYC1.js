@@ -34,7 +34,8 @@ const validateKYC1input = (data) => {
     }
     // Validate account number length
     if (data.accountNumber.length < 10 || data.accountNumber.length > 10) {
-        error.accountNumber = "account number must be a valid 10 digit number .";
+        error.accountNumber =
+            "account number must be a valid 10 digit number .";
     }
     // Validate account Details
     if (validator_1.default.isEmpty(data.accountDetails)) {

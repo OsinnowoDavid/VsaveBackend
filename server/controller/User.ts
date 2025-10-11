@@ -13,8 +13,12 @@ import {
     verifyBankaccount,
     createVirtualAccountForPayment,
     buyAirtime,
+    getUserKyc1Record,
+    getDataPlan,
+    buyData,
+    createVirtualAccountIndex,
 } from "../services/User";
-import { IUser, IVerificationToken } from "../types";
+import { IUser, IVerificationToken, IKYC1 } from "../types";
 import { signUserToken } from "../config/JWT";
 import Transporter from "../config/nodemailer";
 import axios from "axios";
@@ -25,8 +29,15 @@ console.log("Q:", QOREID_BASE_URL);
 
 export const registerUser = async (req: Request, res: Response) => {
     try {
-        const { firstName, lastName, email, password, gender, dateOfBirth } =
-            req.body;
+        const {
+            firstName,
+            lastName,
+            email,
+            password,
+            gender,
+            dateOfBirth,
+            phoneNumber,
+        } = req.body;
         let hashPassword = await argon.hash(password);
         // check if user is already in the database
         const user = (await getUserByEmail(email)) as IUser;
@@ -46,6 +57,7 @@ export const registerUser = async (req: Request, res: Response) => {
             hashPassword,
             gender,
             dateOfBirth,
+            phoneNumber,
         );
         if (!newUser) {
             return res.json({
@@ -96,7 +108,7 @@ export const registerUser = async (req: Request, res: Response) => {
         });
     } catch (err: any) {
         res.json({
-            Status: "Failed",
+            status: "Failed",
             message: err.message,
         });
     }
@@ -131,7 +143,7 @@ export const verifyEmail = async (req: Request, res: Response) => {
         });
     } catch (err: any) {
         res.json({
-            Status: "Failed",
+            status: "Failed",
             message: err.message,
         });
     }
@@ -179,7 +191,7 @@ export const resendUserVerificationEmail = async (
         });
     } catch (err: any) {
         res.json({
-            Status: "Failed",
+            status: "Failed",
             message: err.message,
         });
     }
@@ -241,7 +253,7 @@ export const loginUser = async (req: Request, res: Response) => {
         });
     } catch (err: any) {
         res.json({
-            Status: "Failed",
+            status: "Failed",
             message: err.message,
         });
     }
@@ -252,7 +264,7 @@ export const userProfile = async (req: Request, res: Response) => {
         let user = req.user;
         if (!user) {
             return res.json({
-                Status: "Failed",
+                status: "Failed",
                 message: "user not found",
             });
         }
@@ -263,28 +275,7 @@ export const userProfile = async (req: Request, res: Response) => {
         });
     } catch (err: any) {
         res.json({
-            Status: "Failed",
-            message: err.message,
-        });
-    }
-};
-export const getBanksAndCode = async (req: Request, res: Response) => {
-    try {
-        const BanksAndCode = await getAllBanksAndCode();
-        if (!BanksAndCode) {
-            return res.json({
-                Status: "Failed",
-                message: "no Bank Code found",
-            });
-        }
-        return res.json({
-            Status: "Success",
-            message: "Bank Code found",
-            data: BanksAndCode,
-        });
-    } catch (err: any) {
-        res.json({
-            Status: "Failed",
+            status: "Failed",
             message: err.message,
         });
     }
@@ -301,22 +292,9 @@ export const registerKYC1 = async (req: Request, res: Response) => {
             country,
             state,
             bvn,
+            address,
         } = req.body;
         const user = req.user as IUser;
-
-        console.log("got here begining of the controller");
-        console.log("key:", QOREID_API_KEY);
-        const options = {
-            method: "POST",
-            url: "https://api.qoreid.com/v1/ng/identities/bvn-basic/95888168924",
-            headers: {
-                accept: "application/json",
-                "content-type": "application/json",
-            },
-            data: { firstname: "Bunch", lastname: "Dillon" },
-        };
-        const bvnData = await axios.request(options);
-
         // save KYC1
         const newKYC1 = await createKYC1Record(
             user,
@@ -327,6 +305,7 @@ export const registerKYC1 = async (req: Request, res: Response) => {
             country,
             state,
             bvn,
+            address,
         );
         if (!newKYC1) {
             return res.json({
@@ -336,45 +315,126 @@ export const registerKYC1 = async (req: Request, res: Response) => {
         }
         // change KYC status
         await kycStatusChange(user, "verified", 1);
+        const virtualAccount = await createVirtualAccountForPayment(
+            user,
+            bvn,
+            address,
+        );
+        if (virtualAccount.success === "false") {
+            return res.json({
+                status: "Failed",
+                message: "something went wrong, account number not created",
+                data: newKYC1,
+            });
+        }
+        await createVirtualAccountIndex(
+            user._id.toString(),
+            virtualAccount.data.virtual_account_number,
+        );
         return res.json({
-            Status: "success",
+            status: "success",
             message: "KYC1 record created successfuly",
             data: newKYC1,
         });
     } catch (err: any) {
         console.log("error:", err.message);
         return res.json({
-            Status: "Failed",
+            status: "Failed",
             message: err.message,
         });
     }
 };
 
-export const initiateVirtualAccountForDeposit = async (
+export const getUserKyc1RecordController = async (
     req: Request,
     res: Response,
 ) => {
     try {
-        const { amount, bvn } = req.body;
         const user = req.user as IUser;
-        const virtualAccount = await createVirtualAccountForPayment(user, bvn);
-        if (
-            virtualAccount.success === "false" ||
-            virtualAccount.status !== 200
-        ) {
+        const foundKYC = await getUserKyc1Record(user._id.toString());
+        if (!foundKYC) {
             return res.json({
-                Status: "Failed",
-                message: "somethind went wrong couldn't create virtual account",
+                status: "Failed",
+                message: "No Record Found",
             });
         }
         return res.json({
-            Status: "Success",
-            message: "Virtual Account Init",
-            data: virtualAccount,
+            status: "Success",
+            message: "Record Found",
+            data: foundKYC,
         });
     } catch (err: any) {
         return res.json({
-            Status: "Failed",
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+
+export const getDataPlanController = async (req: Request, res: Response) => {
+    try {
+        const { network } = req.params;
+        const dataPlan = await getDataPlan(network);
+        if (!dataPlan) {
+            return res.json({
+                status: "Failed",
+                message: "something went wrong",
+            });
+        }
+        return res.json({
+            status: "Success",
+            message: "Found Data Plan",
+            data: dataPlan,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+
+export const buyAirtimeController = async (req: Request, res: Response) => {
+    try {
+        const { phoneNumber, amount } = req.body;
+        const airtime = await buyAirtime(phoneNumber, amount);
+        if (!airtime) {
+            return res.json({
+                status: "Failed",
+                message: "something went wrong",
+            });
+        }
+        return res.json({
+            status: "Success",
+            message: "airtime purchase successful",
+            data: airtime,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+
+export const buyDataController = async (req: Request, res: Response) => {
+    try {
+        const { phoneNumber, amount, planCode } = req.body;
+        const dataPurchase = await buyData(phoneNumber, amount, planCode);
+        if (!dataPurchase) {
+            return res.json({
+                status: "Failed",
+                message: "something went wrong",
+            });
+        }
+        return res.json({
+            status: "Success",
+            message: "data purchased",
+            data: dataPurchase,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
             message: err.message,
         });
     }

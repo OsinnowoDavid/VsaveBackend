@@ -13,6 +13,7 @@ export const createNewUser = async (
     password: string,
     gender: string,
     dateOfBirth: string,
+    phoneNumber: string,
 ) => {
     try {
         const newUser = await User.create({
@@ -22,6 +23,7 @@ export const createNewUser = async (
             password,
             gender,
             dateOfBirth,
+            phoneNumber,
         });
         return newUser;
     } catch (err: any) {
@@ -102,7 +104,7 @@ export const kycStatusChange = async (
 ) => {
     try {
         const updatedKYCRecord = await KYC.findOneAndUpdate(
-            { user },
+            { user: user._id },
             { status, kycStage: stage },
             { new: true },
         );
@@ -120,6 +122,7 @@ export const createKYC1Record = async (
     country: string,
     state: string,
     bvn: string,
+    address: string,
 ) => {
     try {
         const newKYC1 = await KYC1.create({
@@ -131,6 +134,7 @@ export const createKYC1Record = async (
             country,
             state,
             bvn,
+            address,
         });
         const foundUser = await User.findById(user._id);
         foundUser;
@@ -186,9 +190,9 @@ export const verifyBankaccount = async (
 export const createVirtualAccountForPayment = async (
     user: IUser,
     bvn: string,
+    address: string,
 ) => {
     try {
-        console.log("user:", user);
         let getGenderCode = (gender: string) => {
             if (typeof gender !== "string") {
                 throw new Error("Invalid input: expected a string");
@@ -205,13 +209,6 @@ export const createVirtualAccountForPayment = async (
             }
         };
         let gender = getGenderCode(user.gender);
-        let sampleID = "SQUAD_101";
-        let checkForSampleUser = (id: string) => {
-            if (id === "68e546e495709e02560d167e") {
-                return sampleID;
-            }
-            return id;
-        };
         let formatDate = (date: Date) => {
             const day = String(date.getDate()).padStart(2, "0");
             const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -222,14 +219,14 @@ export const createVirtualAccountForPayment = async (
 
         let dob = formatDate(new Date(user.dateOfBirth));
         let data = JSON.stringify({
-            customer_identifier: checkForSampleUser(user._id.toString()),
+            customer_identifier: user._id.toString(),
             first_name: user.firstName,
             last_name: user.lastName,
             mobile_num: user.phoneNumber,
             email: user.email,
-            bvn: user.bvn,
+            bvn,
             dob,
-            address: user.address,
+            address,
             gender,
             beneficiary_account: "9006809223",
         });
@@ -252,14 +249,28 @@ export const createVirtualAccountForPayment = async (
         if (err.response) {
             console.error("Error Response Status:", err.response.status);
             console.error("Error Response Data:", err.response.data);
-            return err.response.data; // Return the exact response data from the provider
+            throw err.response.data; // Return the exact response data from the provider
         } else if (err.request) {
             console.error("No Response:", err.request);
-            return { error: "No response from the server" };
+            throw { error: "No response from the server" };
         } else {
             console.error("Error:", err.message);
-            return { error: "Unexpected error occurred" };
+            throw { error: "Unexpected error occurred" };
         }
+    }
+};
+
+export const createVirtualAccountIndex = async (
+    user: string,
+    account: string,
+) => {
+    try {
+        const foundUser = await User.findByIdAndUpdate(user, {
+            virtualAccountNumber: account,
+        });
+        return foundUser;
+    } catch (err: any) {
+        throw err;
     }
 };
 
@@ -296,6 +307,43 @@ export const getDataPlan = async (network: string) => {
                 Authorization: `Bearer ${process.env.SQUAD_SECRET_KEY}`,
                 "Content-Type": "application/json",
             },
+        };
+        const response = await axios.request(config);
+        return response.data;
+    } catch (err: any) {
+        throw err;
+    }
+};
+
+export const getUserKyc1Record = async (user: string) => {
+    try {
+        const foundKYC1 = await KYC1.findOne({ user });
+        return foundKYC1;
+    } catch (err: any) {
+        throw err;
+    }
+};
+
+export const buyData = async (
+    phoneNumber: string,
+    amount: string,
+    planCode: string,
+) => {
+    try {
+        let data = {
+            phone_number: phoneNumber,
+            amount,
+            plan_code: planCode,
+        };
+        let config = {
+            method: "post",
+            maxBodyLength: Infinity,
+            url: "https://sandbox-api-d.squadco.com/vending/purchase/data",
+            headers: {
+                Authorization: `Bearer ${process.env.SQUAD_SECRET_KEY}`,
+                "Content-Type": "application/json",
+            },
+            data: data,
         };
         const response = await axios.request(config);
         return response.data;

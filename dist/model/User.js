@@ -58,6 +58,19 @@ const userSchema = new Schema({
     address: {
         type: String,
     },
+    gender: {
+        type: String,
+        enum: ["Male", "Female"],
+    },
+    bvn: {
+        type: String,
+    },
+    dateOfBirth: {
+        type: Date,
+    },
+    virtualAccountNumber: {
+        type: String,
+    },
 });
 const User = mongoose_1.default.model("User", userSchema);
 exports.default = User;

@@ -1,33 +1,28 @@
 import Admin from "../model/Super_admin";
 import RegionalAdmin from "../model/Regionaladmin";
 import Region from "../model/Region";
-import SubRegion from "../model/SubRegion";
-import SubRegionalAdmin from "../model/SubRegionalAdmin";
-import subRegion from "../model/SubRegion";
-
+import {ISuperAdmin} from "../types"
 export const CreateSuperAdmin = async (
-  firstName: string,
-  lastName: string,
-  email: string,
-  phoneNumber: string,
-  password: string,
-  profilePicture?: string
+    firstName: string,
+    lastName: string,
+    email: string,
+    phoneNumber: string,
+    password: string,
+    profilePicture?: string,
 ) => {
-  try {
-    let type = "superadmin";
-    const newSuperAdmin = await Admin.create({
-      firstName,
-      lastName,
-      email,
-      type,
-      phoneNumber,
-      password,
-      profilePicture,
-    });
-    return newSuperAdmin;
-  } catch (err: any) {
-    throw err;
-  }
+    try {
+        const newSuperAdmin = await Admin.create({
+            firstName,
+            lastName,
+            email,
+            phoneNumber,
+            password,
+            profilePicture,
+        });
+        return newSuperAdmin;
+    } catch (err: any) {
+        throw err;
+    }
 };
 
 export const getAllSuperAdminById = async (id: string) => {
@@ -64,23 +59,46 @@ export const createNewRegion = async (
 };
 
 export const createRegionalAdmin = async (
-    fullName: string,
+    firstName:string,
+    lastName:string,
     email: string,
     phoneNumber: string,
     password: string,
     region: string,
-    profilePicture?: string,
+    profilePicture?:string
 ) => {
     try {
         const newRegionalAdmin = await RegionalAdmin.create({
-            fullName,
+           firstName,
+            lastName,
             email,
             phoneNumber,
             password,
-            profilePicture,
             region,
+            profilePicture
         });
         return newRegionalAdmin;
+    } catch (err: any) {
+        throw err;
+    }
+};
+export const assignRegionalAdmin = async (admin:ISuperAdmin, region:string) =>{
+    try{
+        const foundRegion = await Region.findById(region);
+        if(!foundRegion){
+            throw "region not found !"
+        }
+        foundRegion.admin.push(admin._id) 
+         await foundRegion.save() 
+         return foundRegion
+    }catch(err:any){
+        throw err
+    }
+}
+export const getAllRegionalAdmin = async () => {
+    try {
+        const allRegionalAdmin = await RegionalAdmin.find();
+        return allRegionalAdmin;
     } catch (err: any) {
         throw err;
     }
@@ -98,15 +116,6 @@ export const getRegionalAdminById = async (id: string) => {
 export const getRegionalAdminByEmail = async (email: string) => {
     try {
         const foundAdmin = await RegionalAdmin.findOne({ email });
-        return foundAdmin;
-    } catch (err: any) {
-        throw err;
-    }
-};
-
-export const getRegionalAdminByFullName = async (fullName: string) => {
-    try {
-        const foundAdmin = await RegionalAdmin.findOne({ fullName });
         return foundAdmin;
     } catch (err: any) {
         throw err;
@@ -138,3 +147,4 @@ export const getRegionByName = async (regionName: string) => {
         throw err;
     }
 };
+

@@ -28,7 +28,7 @@ const subRegionalAdminSchema = new Schema(
       type: String,
       required: false,
     },
-    subRegion: { type: mongoose.Schema.Types.ObjectId, ref: "SubRegion" },
+    subRegion: { type: mongoose.Schema.Types.ObjectId, ref: "SubRegion", required: true },
   },
   { timestamps: true }
 );

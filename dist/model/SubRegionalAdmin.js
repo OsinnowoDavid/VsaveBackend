@@ -5,47 +5,32 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
 const Schema = mongoose_1.default.Schema;
-const KYC1Schema = new mongoose_1.default.Schema({
-    user: { type: mongoose_1.default.Schema.Types.ObjectId, ref: "User" },
-    profession: {
-        type: String,
-        required: true,
-        enum: [
-            "Lottory Agent",
-            "Student",
-            "Self Employed",
-            "Unemployed",
-            "Other",
-        ],
-    },
-    accountNumber: {
-        type: Number,
-        required: true,
-    },
-    bank: {
+const subRegionalAdminSchema = new Schema({
+    firstName: {
         type: String,
         required: true,
     },
-    accountDetails: {
+    lastName: {
         type: String,
         required: true,
     },
-    country: {
+    email: {
         type: String,
         required: true,
     },
-    state: {
+    phoneNumber: {
         type: String,
         required: true,
     },
-    bvn: {
+    password: {
         type: String,
         required: true,
     },
-    address: {
+    profilePicture: {
         type: String,
-        required: true,
+        required: false,
     },
+    subRegion: { type: mongoose_1.default.Schema.Types.ObjectId, ref: "SubRegion", required: true },
 }, { timestamps: true });
-const KYC1 = mongoose_1.default.model("KYC1", KYC1Schema);
-exports.default = KYC1;
+const subRegionalAdmin = mongoose_1.default.model("SubRegionalAdmin", subRegionalAdminSchema);
+exports.default = subRegionalAdmin;
