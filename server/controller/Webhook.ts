@@ -4,17 +4,16 @@ import crypto from "crypto";
 
 export const squadWebhookController = async (req: Request, res: Response) => {
     try {
-        console.log("start webhook");
+        console.log("🚀 Squad webhook started");
+
         const signatureFromHeader = req.headers["x-squad-signature"];
         if (!signatureFromHeader) {
             return res
                 .status(400)
-                .send({ message: "Missing signature header" });
+                .json({ message: "Missing signature header" });
         }
 
         const payload = req.body;
-
-        // Build the string to sign (six fields, in order)
         const {
             transaction_reference,
             virtual_account_number,
@@ -25,55 +24,56 @@ export const squadWebhookController = async (req: Request, res: Response) => {
         } = payload;
 
         const dataToSign = [
-            transaction_reference,
-            virtual_account_number,
-            currency,
-            principal_amount,
-            settled_amount,
-            customer_identifier,
+            String(transaction_reference ?? "").trim(),
+            String(virtual_account_number ?? "").trim(),
+            String(currency ?? "").trim(),
+            String(principal_amount ?? "").trim(),
+            String(settled_amount ?? "").trim(),
+            String(customer_identifier ?? "").trim(),
         ].join("|");
 
-        // Compute HMAC-SHA512
-        const generateHmacSHA512 = (input: any, key: any) => {
-            const hmac = crypto.createHmac("sha512", key);
-            hmac.update(input);
-            return hmac.digest("hex");
-        };
+        console.log("🧾 String to sign:", dataToSign);
 
-        const generatedHash = generateHmacSHA512(
-            dataToSign,
-            process.env.SQUAD_SECRET_KEY,
-        );
+        const secret = process.env.SQUAD_SECRET_KEY;
+        if (!secret) {
+            throw new Error(
+                "SQUAD_SECRET_KEY missing in environment variables",
+            );
+        }
 
-        if (generatedHash !== signatureFromHeader) {
-            // signature mismatch
-            console.error("Signature mismatch", {
-                computed: generatedHash,
-                received: signatureFromHeader,
+        const hmac = crypto.createHmac("sha512", Buffer.from(secret, "utf8"));
+        hmac.update(dataToSign, "utf8");
+        const computedSignature = hmac.digest("hex").trim().toLowerCase();
+        const receivedSignature = (signatureFromHeader as string)
+            .trim()
+            .toLowerCase();
+
+        if (computedSignature !== receivedSignature) {
+            console.error("⚠️ Signature mismatch", {
+                computed: computedSignature,
+                received: receivedSignature,
             });
             return res.status(400).json({
                 response_code: 400,
-                transaction_reference: transaction_reference,
+                transaction_reference,
                 response_description: "Validation failure",
             });
         }
 
-        // signature good — now process
-        // 1. Check duplicates: have we seen this transaction_reference already?
-        // 2. If not, record payment, credit the user's account etc.
+        console.log("✅ Valid Squad webhook received:", transaction_reference);
 
-        console.log("got webhook payload", payload);
+        // process the valid payload
+        await squadWebhook(payload, receivedSignature);
 
-        await squadWebhook(payload, signatureFromHeader);
-        // Finally respond back to Squad
         return res.status(200).json({
             response_code: 200,
-            transaction_reference: transaction_reference,
+            transaction_reference,
             response_description: "Success",
         });
     } catch (err: any) {
-        return res.json({
-            status: "Failed",
+        console.error("❌ Webhook Error:", err);
+        return res.status(500).json({
+            response_code: 500,
             message: err.message,
         });
     }
