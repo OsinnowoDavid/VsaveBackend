@@ -4,7 +4,7 @@ import crypto from "crypto";
 
 export const squadWebhookController = async (req: Request, res: Response) => {
     try {
-        console.log("start webhook")
+        console.log("start webhook");
         const signatureFromHeader = req.headers["x-squad-signature"];
         if (!signatureFromHeader) {
             return res
@@ -34,14 +34,21 @@ export const squadWebhookController = async (req: Request, res: Response) => {
         ].join("|");
 
         // Compute HMAC-SHA512
-        const hmac = crypto.createHmac("sha512", process.env.SQUAD_SECRET_KEY!);
-        hmac.update(dataToSign);
-        const computedSignature = hmac.digest("hex");
+        const generateHmacSHA512 = (input: any, key: any) => {
+            const hmac = crypto.createHmac("sha512", key);
+            hmac.update(input);
+            return hmac.digest("hex");
+        };
 
-        if (computedSignature !== signatureFromHeader) {
+        const generatedHash = generateHmacSHA512(
+            dataToSign,
+            process.env.SQUAD_SECRET_KEY,
+        );
+
+        if (generatedHash !== signatureFromHeader) {
             // signature mismatch
             console.error("Signature mismatch", {
-                computed: computedSignature,
+                computed: generatedHash,
                 received: signatureFromHeader,
             });
             return res.status(400).json({
@@ -55,9 +62,9 @@ export const squadWebhookController = async (req: Request, res: Response) => {
         // 1. Check duplicates: have we seen this transaction_reference already?
         // 2. If not, record payment, credit the user's account etc.
 
-        console.log("got webhook payload", payload)
+        console.log("got webhook payload", payload);
 
-         await squadWebhook(payload,signatureFromHeader) ;
+        await squadWebhook(payload, signatureFromHeader);
         // Finally respond back to Squad
         return res.status(200).json({
             response_code: 200,
