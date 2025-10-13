@@ -158,29 +158,15 @@ export interface ISubRegionalAdmin extends Document {
 export interface ITransaction extends Document {
     _id: Types.ObjectId;
     userId: Types.ObjectId;
-    type: "deposit" | "withdrawal" | "transfer";
+    type: "deposit" | "withdrawal" | "transfer" | "airtime" | "data";
     amount: number;
+    settledAmount: number;
+    feeCharged: number;
     status: "pending" | "success" | "failed" | "reversed";
     reference: string;
     description?: string;
-    channel: "bank" | "card" | "wallet" | "ussd" | "other";
     balanceBefore?: number;
     balanceAfter?: number;
-    createdAt?: Date;
-    updatedAt?: Date;
-}
-
-export interface IWebhook extends Document {
-    _id: Types.ObjectId;
-    provider: "squad" | "paystack" | "flutterwave" | "other";
-    eventType?: string;
-    transactionReference?: string;
-    virtualAccountNumber?: string;
-    amount?: number;
-    currency?: string;
-    status: "pending" | "processed" | "failed";
-    rawPayload: object;
-    signature?: string;
     createdAt?: Date;
     updatedAt?: Date;
 }

@@ -10,6 +10,7 @@ const mongodB_1 = __importDefault(require("./config/mongodB"));
 const User_1 = __importDefault(require("./routes/User"));
 const Admin_1 = __importDefault(require("./routes/Admin"));
 const RegionalAdmin_1 = __importDefault(require("./routes/RegionalAdmin"));
+const Webhook_1 = __importDefault(require("./routes/Webhook"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 dotenv_1.default.config();
@@ -36,6 +37,7 @@ app.use("/user", User_1.default);
 app.use("/admin", Admin_1.default);
 // regionaladmin routes config
 app.use("/regionaladmin", RegionalAdmin_1.default);
+app.use("/webhook", Webhook_1.default);
 console.log("got here");
 app.listen(port, () => {
     console.log(`serve is running on ${port}}`);

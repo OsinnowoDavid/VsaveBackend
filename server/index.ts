@@ -5,6 +5,7 @@ import connectDB from "./config/mongodB";
 import userRouter from "./routes/User";
 import adminRouter from "./routes/Admin";
 import regionalAdminRouter from "./routes/RegionalAdmin";
+import webhookRouter from "./routes/Webhook";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 dotenv.config();
@@ -37,6 +38,8 @@ app.use("/admin", adminRouter);
 
 // regionaladmin routes config
 app.use("/regionaladmin", regionalAdminRouter);
+
+app.use("/webhook", webhookRouter);
 
 console.log("got here");
 

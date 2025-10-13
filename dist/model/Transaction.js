@@ -12,13 +12,21 @@ const transactionSchema = new mongoose_1.default.Schema({
     },
     type: {
         type: String,
-        enum: ["deposit", "withdrawal", "transfer"],
+        enum: ["deposit", "withdrawal", "transfer", "airtime", "data"],
         required: true,
     },
     amount: {
         type: Number,
         required: true,
         min: 0,
+    },
+    settledAmount: {
+        type: Number,
+        required: true,
+    },
+    feeCharged: {
+        type: Number,
+        required: true,
     },
     status: {
         type: String,
@@ -33,11 +41,6 @@ const transactionSchema = new mongoose_1.default.Schema({
     description: {
         type: String,
         trim: true,
-    },
-    channel: {
-        type: String,
-        enum: ["bank", "card", "wallet", "ussd", "other"],
-        default: "wallet",
     },
     balanceBefore: {
         type: Number,
