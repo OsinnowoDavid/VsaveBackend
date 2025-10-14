@@ -53,6 +53,7 @@ export const squadWebhookController = async (req: Request, res: Response) => {
             console.error("⚠️ Signature mismatch", {
                 computed: computedSignature,
                 received: receivedSignature,
+                payload: req.body,
             });
             return res.status(400).json({
                 response_code: 400,
