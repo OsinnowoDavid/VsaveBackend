@@ -31,7 +31,7 @@ export const squadWebhookController = async (req: Request, res: Response) => {
         //     String(settled_amount ?? "").trim(),
         //     String(customer_identifier ?? "").trim(),
         // ].join("|");
-
+        console.log("data:", req.body);
         let dataToHash = `${transaction_reference}|${virtual_account_number}|${currency}|${principal_amount}|${settled_amount}|${customer_identifier}`;
         console.log("🧾 String to sign:", dataToHash);
 
