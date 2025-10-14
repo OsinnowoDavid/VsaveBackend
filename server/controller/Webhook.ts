@@ -1,10 +1,14 @@
 import { Request, Response } from "express";
 import { squadWebhook } from "../services/Webhook";
 import crypto from "crypto";
-
+const generateHmacSHA512 = (input: any, key: any) => {
+    const hmac = crypto.createHmac("sha512", key);
+    hmac.update(input);
+    return hmac.digest("hex");
+};
 export const squadWebhookController = async (req: Request, res: Response) => {
     try {
-        console.log("🚀 Squad webhook started");
+        console.log("Squad webhook started");
 
         const signatureFromHeader = req.headers["x-squad-signature"];
         if (!signatureFromHeader) {
@@ -33,7 +37,7 @@ export const squadWebhookController = async (req: Request, res: Response) => {
         // ].join("|");
         console.log("data:", req.body);
         let dataToHash = `${transaction_reference}|${virtual_account_number}|${currency}|${principal_amount}|${settled_amount}|${customer_identifier}`;
-        console.log("🧾 String to sign:", dataToHash);
+        console.log("String to sign:", dataToHash);
 
         const secret = process.env.SQUAD_SECRET_KEY;
         if (!secret) {
@@ -41,18 +45,14 @@ export const squadWebhookController = async (req: Request, res: Response) => {
                 "SQUAD_SECRET_KEY missing in environment variables",
             );
         }
-
-        const hmac = crypto.createHmac("sha512", Buffer.from(secret, "utf8"));
-        hmac.update(dataToHash, "utf8");
-        const computedSignature = hmac.digest("hex").trim().toLowerCase();
-        const receivedSignature = (signatureFromHeader as string)
-            .trim()
-            .toLowerCase();
-
-        if (computedSignature !== receivedSignature) {
-            console.error("⚠️ Signature mismatch", {
-                computed: computedSignature,
-                received: receivedSignature,
+        const generatedHash = generateHmacSHA512(
+            dataToHash,
+            process.env.SQUAD_SECRET_KEY,
+        );
+        if (generatedHash !== signatureFromHeader) {
+            console.error("Signature mismatch", {
+                computed: generatedHash,
+                received: signatureFromHeader,
                 payload: req.body,
             });
             return res.status(400).json({
@@ -62,7 +62,7 @@ export const squadWebhookController = async (req: Request, res: Response) => {
             });
         }
 
-        console.log("✅ Valid Squad webhook received:", transaction_reference);
+        console.log("Valid Squad webhook received:", transaction_reference);
 
         // process the valid payload
 

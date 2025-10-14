@@ -6,9 +6,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.squadWebhookController = void 0;
 const Webhook_1 = require("../services/Webhook");
 const crypto_1 = __importDefault(require("crypto"));
+const generateHmacSHA512 = (input, key) => {
+    const hmac = crypto_1.default.createHmac("sha512", key);
+    hmac.update(input);
+    return hmac.digest("hex");
+};
 const squadWebhookController = async (req, res) => {
     try {
-        console.log("🚀 Squad webhook started");
+        console.log("Squad webhook started");
         const signatureFromHeader = req.headers["x-squad-signature"];
         if (!signatureFromHeader) {
             return res
@@ -28,21 +33,16 @@ const squadWebhookController = async (req, res) => {
         // ].join("|");
         console.log("data:", req.body);
         let dataToHash = `${transaction_reference}|${virtual_account_number}|${currency}|${principal_amount}|${settled_amount}|${customer_identifier}`;
-        console.log("🧾 String to sign:", dataToHash);
+        console.log("String to sign:", dataToHash);
         const secret = process.env.SQUAD_SECRET_KEY;
         if (!secret) {
             throw new Error("SQUAD_SECRET_KEY missing in environment variables");
         }
-        const hmac = crypto_1.default.createHmac("sha512", Buffer.from(secret, "utf8"));
-        hmac.update(dataToHash, "utf8");
-        const computedSignature = hmac.digest("hex").trim().toLowerCase();
-        const receivedSignature = signatureFromHeader
-            .trim()
-            .toLowerCase();
-        if (computedSignature !== receivedSignature) {
-            console.error("⚠️ Signature mismatch", {
-                computed: computedSignature,
-                received: receivedSignature,
+        const generatedHash = generateHmacSHA512(dataToHash, process.env.SQUAD_SECRET_KEY);
+        if (generatedHash !== signatureFromHeader) {
+            console.error("Signature mismatch", {
+                computed: generatedHash,
+                received: signatureFromHeader,
                 payload: req.body,
             });
             return res.status(400).json({
@@ -51,7 +51,7 @@ const squadWebhookController = async (req, res) => {
                 response_description: "Validation failure",
             });
         }
-        console.log("✅ Valid Squad webhook received:", transaction_reference);
+        console.log("Valid Squad webhook received:", transaction_reference);
         // process the valid payload
         return res.status(200).json({
             response_code: 200,
