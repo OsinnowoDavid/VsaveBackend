@@ -8,55 +8,61 @@ const Webhook_1 = require("../services/Webhook");
 const crypto_1 = __importDefault(require("crypto"));
 const squadWebhookController = async (req, res) => {
     try {
-        console.log("start webhook");
+        console.log("🚀 Squad webhook started");
         const signatureFromHeader = req.headers["x-squad-signature"];
         if (!signatureFromHeader) {
             return res
                 .status(400)
-                .send({ message: "Missing signature header" });
+                .json({ message: "Missing signature header" });
         }
         const payload = req.body;
-        // Build the string to sign (six fields, in order)
         const { transaction_reference, virtual_account_number, currency, principal_amount, settled_amount, customer_identifier, } = payload;
-        const dataToSign = [
-            transaction_reference,
-            virtual_account_number,
-            currency,
-            principal_amount,
-            settled_amount,
-            customer_identifier,
-        ].join("|");
-        // Compute HMAC-SHA512
-        const hmac = crypto_1.default.createHmac("sha512", process.env.SQUAD_SECRET_KEY);
-        hmac.update(dataToSign);
-        const computedSignature = hmac.digest("hex");
-        if (computedSignature !== signatureFromHeader) {
-            // signature mismatch
-            console.error("Signature mismatch", {
+        await (0, Webhook_1.squadWebhook)(payload, "signing");
+        // const dataToSign = [
+        //     String(transaction_reference ?? "").trim(),
+        //     String(virtual_account_number ?? "").trim(),
+        //     String(currency ?? "").trim(),
+        //     String(principal_amount ?? "").trim(),
+        //     String(settled_amount ?? "").trim(),
+        //     String(customer_identifier ?? "").trim(),
+        // ].join("|");
+        console.log("data:", req.body);
+        let dataToHash = `${transaction_reference}|${virtual_account_number}|${currency}|${principal_amount}|${settled_amount}|${customer_identifier}`;
+        console.log("🧾 String to sign:", dataToHash);
+        const secret = process.env.SQUAD_SECRET_KEY;
+        if (!secret) {
+            throw new Error("SQUAD_SECRET_KEY missing in environment variables");
+        }
+        const hmac = crypto_1.default.createHmac("sha512", Buffer.from(secret, "utf8"));
+        hmac.update(dataToHash, "utf8");
+        const computedSignature = hmac.digest("hex").trim().toLowerCase();
+        const receivedSignature = signatureFromHeader
+            .trim()
+            .toLowerCase();
+        if (computedSignature !== receivedSignature) {
+            console.error("⚠️ Signature mismatch", {
                 computed: computedSignature,
-                received: signatureFromHeader,
+                received: receivedSignature,
+                payload: req.body,
             });
             return res.status(400).json({
                 response_code: 400,
-                transaction_reference: transaction_reference,
+                transaction_reference,
                 response_description: "Validation failure",
             });
         }
-        // signature good — now process
-        // 1. Check duplicates: have we seen this transaction_reference already?
-        // 2. If not, record payment, credit the user's account etc.
-        console.log("got webhook payload", payload);
-        await (0, Webhook_1.squadWebhook)(payload, signatureFromHeader);
-        // Finally respond back to Squad
+        console.log("✅ Valid Squad webhook received:", transaction_reference);
+        // process the valid payload
         return res.status(200).json({
             response_code: 200,
-            transaction_reference: transaction_reference,
+            transaction_reference,
             response_description: "Success",
         });
     }
     catch (err) {
-        return res.json({
-            status: "Failed",
+        console.error("❌ Webhook Error:", err);
+        return res.status(500).json({
+            response_code: 500,
             message: err.message,
         });
     }

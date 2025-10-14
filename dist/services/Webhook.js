@@ -10,7 +10,7 @@ const squadWebhook = async (payload, signature) => {
         const newWebhook = await Webhook_1.default.create({
             user: payload.customer_identifier,
             payload,
-            signature
+            signature,
         });
         return newWebhook;
     }
