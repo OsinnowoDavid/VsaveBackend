@@ -23,16 +23,17 @@ export const squadWebhookController = async (req: Request, res: Response) => {
             customer_identifier,
         } = payload;
 
-        const dataToSign = [
-            String(transaction_reference ?? "").trim(),
-            String(virtual_account_number ?? "").trim(),
-            String(currency ?? "").trim(),
-            String(principal_amount ?? "").trim(),
-            String(settled_amount ?? "").trim(),
-            String(customer_identifier ?? "").trim(),
-        ].join("|");
+        // const dataToSign = [
+        //     String(transaction_reference ?? "").trim(),
+        //     String(virtual_account_number ?? "").trim(),
+        //     String(currency ?? "").trim(),
+        //     String(principal_amount ?? "").trim(),
+        //     String(settled_amount ?? "").trim(),
+        //     String(customer_identifier ?? "").trim(),
+        // ].join("|");
 
-        console.log("🧾 String to sign:", dataToSign);
+        let dataToHash = `${transaction_reference}|${virtual_account_number}|${currency}|${principal_amount}|${settled_amount}|${customer_identifier}`;
+        console.log("🧾 String to sign:", dataToHash);
 
         const secret = process.env.SQUAD_SECRET_KEY;
         if (!secret) {
@@ -42,7 +43,7 @@ export const squadWebhookController = async (req: Request, res: Response) => {
         }
 
         const hmac = crypto.createHmac("sha512", Buffer.from(secret, "utf8"));
-        hmac.update(dataToSign, "utf8");
+        hmac.update(dataToHash, "utf8");
         const computedSignature = hmac.digest("hex").trim().toLowerCase();
         const receivedSignature = (signatureFromHeader as string)
             .trim()
