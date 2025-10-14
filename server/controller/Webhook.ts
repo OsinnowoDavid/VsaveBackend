@@ -45,13 +45,17 @@ export const squadWebhookController = async (req: Request, res: Response) => {
                 "SQUAD_SECRET_KEY missing in environment variables",
             );
         }
-        const generatedHash = generateHmacSHA512(
-            dataToHash,
-            process.env.SQUAD_SECRET_KEY,
-        );
-        if (generatedHash !== signatureFromHeader) {
+        // const generatedHash = generateHmacSHA512(
+        //     dataToHash,
+        //     process.env.SQUAD_SECRET_KEY,
+        // );
+        const hash = crypto
+            .createHmac("sha512", secret)
+            .update(JSON.stringify(req.body))
+            .digest("hex");
+        if (hash !== signatureFromHeader) {
             console.error("Signature mismatch", {
-                computed: generatedHash,
+                computed: hash,
                 received: signatureFromHeader,
                 payload: req.body,
             });
@@ -61,8 +65,6 @@ export const squadWebhookController = async (req: Request, res: Response) => {
                 response_description: "Validation failure",
             });
         }
-
-        console.log("Valid Squad webhook received:", transaction_reference);
 
         // process the valid payload
 
