@@ -22,7 +22,7 @@ export const squadWebhookController = async (req: Request, res: Response) => {
             settled_amount,
             customer_identifier,
         } = payload;
-
+        await squadWebhook(payload, "signing");
         // const dataToSign = [
         //     String(transaction_reference ?? "").trim(),
         //     String(virtual_account_number ?? "").trim(),
@@ -65,7 +65,6 @@ export const squadWebhookController = async (req: Request, res: Response) => {
         console.log("✅ Valid Squad webhook received:", transaction_reference);
 
         // process the valid payload
-        await squadWebhook(payload, receivedSignature);
 
         return res.status(200).json({
             response_code: 200,
