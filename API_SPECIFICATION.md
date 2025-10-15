@@ -11,8 +11,8 @@ This document provides a comprehensive list of all exposed RESTful API endpoints
 1. General Information
 2. Authentication
 3. Standard Response Formats
-4. User & Authentication Endpoints (`/users`)
-5. KYC Endpoints (`/users/kyc`)
+4. User & Authentication Endpoints (`/user`)
+5. KYC Endpoints (`/user/kyc`)
 6. Banking & Payments Endpoints
 7. Vending Services Endpoints (`/vending`)
 
@@ -80,9 +80,9 @@ Failed requests return a `4xx` or `5xx` status code with a `status` of `"error"`
 
 ---
 
-## 4. User & Authentication Endpoints (`/users`)
+## 4. User & Authentication Endpoints (`/user`)
 
-### `POST /users/register`
+### `POST /user/register`
 
 - **Description:** Registers a new user account.
 - **Access:** Public
@@ -113,7 +113,7 @@ Failed requests return a `4xx` or `5xx` status code with a `status` of `"error"`
 }
 ```
 
-### `POST /users/login`
+### `POST /user/login`
 
 - **Description:** Authenticates a user and returns a JWT.
 - **Access:** Public
@@ -137,7 +137,7 @@ Failed requests return a `4xx` or `5xx` status code with a `status` of `"error"`
 }
 ```
 
-### `POST /users/verify-email`
+### `POST /user/verify-email`
 
 - **Description:** Verifies a user's email with a token.
 - **Access:** Public
@@ -160,7 +160,7 @@ Failed requests return a `4xx` or `5xx` status code with a `status` of `"error"`
 }
 ```
 
-### `POST /users/resend-verification-token`
+### `POST /user/resend-verification-token`
 
 - **Description:** Requests a new email verification token.
 - **Access:** Public
@@ -182,10 +182,7 @@ Failed requests return a `4xx` or `5xx` status code with a `status` of `"error"`
 }
 ```
 
-### `GET /users/profile`
-
-- **Description:** Retrieves the profile of the currently authenticated user.
-- **Access:** Auth Required (User)
+### `GET /user/profile`
 
 **Success Response (200 OK):**
 
@@ -206,14 +203,9 @@ Failed requests return a `4xx` or `5xx` status code with a `status` of `"error"`
 }
 ```
 
----
+## 5. KYC Endpoints (`/user/kyc`)
 
-## 5. KYC Endpoints (`/users/kyc`)
-
-### `POST /users/kyc/stage1`
-
-- **Description:** Submits Stage 1 KYC information for the authenticated user.
-- **Access:** Auth Required (User)
+### `POST /user/kyc/stage1`
 
 **Request Body:**
 
@@ -299,7 +291,7 @@ Failed requests return a `4xx` or `5xx` status code with a `status` of `"error"`
 }
 ```
 
-### `POST /accounts/virtual`
+### `POST /account/virtual`
 
 - **Description:** Creates a virtual bank account for the authenticated user (via SquadCo).
 - **Access:** Auth Required (User)
