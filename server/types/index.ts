@@ -22,7 +22,7 @@ export interface IUser extends Document {
 }
 
 export interface IVerificationToken extends Document {
-    user: object;
+    user?: Types.ObjectId;
     email: string;
     token: string;
     expiresAt: Date;
@@ -75,14 +75,14 @@ export interface ISubRegion extends Document {
 
 export interface IAgent extends Document {
     _id: Types.ObjectId;
-    fullName: string;
+    firstName: string;
+    lastName: string;
     email: string;
     phoneNumber: string;
-    region: Types.ObjectId;
+    subRegion: Types.ObjectId;
     password: string;
-    profilePicture?: string;
+    profilePicture?: string | null;
     referralCode: string;
-    referres: Types.ObjectId[];
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -160,13 +160,25 @@ export interface ITransaction extends Document {
     userId: Types.ObjectId;
     type: "deposit" | "withdrawal" | "transfer" | "airtime" | "data";
     amount: number;
-    settledAmount: number;
     feeCharged: number;
     status: "pending" | "success" | "failed" | "reversed";
-    reference: string;
-    description?: string;
-    balanceBefore?: number;
-    balanceAfter?: number;
+    transactionReference: string;
+    remark?: string;
+    balanceBefore: number;
+    balanceAfter: number;
+    sender?: string;
+    reciever?: string;
+    network?: string;
+    date: Date;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+export interface IAgentReferral extends Document {
+    _id: Types.ObjectId;
+    agent: Types.ObjectId;
+    referralCode: string;
+    referres: Types.ObjectId[];
     createdAt?: Date;
     updatedAt?: Date;
 }

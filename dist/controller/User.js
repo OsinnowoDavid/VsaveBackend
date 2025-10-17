@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.buyDataController = exports.buyAirtimeController = exports.getDataPlanController = exports.getUserKyc1RecordController = exports.registerKYC1 = exports.userProfile = exports.loginUser = exports.resendUserVerificationEmail = exports.verifyEmail = exports.registerUser = void 0;
 const argon2_1 = __importDefault(require("argon2"));
+const Agent_1 = require("../services/Agent");
 const User_1 = require("../services/User");
 const JWT_1 = require("../config/JWT");
 const nodemailer_1 = __importDefault(require("../config/nodemailer"));
@@ -13,7 +14,7 @@ const QOREID_BASE_URL = process.env.QOREID_BASE_URL;
 console.log("Q:", QOREID_BASE_URL);
 const registerUser = async (req, res) => {
     try {
-        const { firstName, lastName, email, password, gender, dateOfBirth, phoneNumber, } = req.body;
+        const { firstName, lastName, email, password, gender, dateOfBirth, phoneNumber, referralCode, } = req.body;
         let hashPassword = await argon2_1.default.hash(password);
         // check if user is already in the database
         const user = (await (0, User_1.getUserByEmail)(email));
@@ -26,7 +27,7 @@ const registerUser = async (req, res) => {
             });
         }
         // create new user
-        const newUser = await (0, User_1.createNewUser)(firstName, lastName, email, hashPassword, gender, dateOfBirth, phoneNumber);
+        const newUser = (await (0, User_1.createNewUser)(firstName, lastName, email, hashPassword, gender, dateOfBirth, phoneNumber));
         if (!newUser) {
             return res.json({
                 status: "Failed",
@@ -63,6 +64,8 @@ const registerUser = async (req, res) => {
         };
         // Send email
         await nodemailer_1.default.sendMail(mailOptions);
+        // assign referralCode
+        await (0, Agent_1.assignAgentReferral)(referralCode, newUser);
         return res.json({
             status: "Success",
             message: `User created successfuly verify your email ,verification code has been sent to ${newUser.email}`,
@@ -325,6 +328,7 @@ exports.getDataPlanController = getDataPlanController;
 const buyAirtimeController = async (req, res) => {
     try {
         const { phoneNumber, amount } = req.body;
+        const user = req.user;
         const airtime = await (0, User_1.buyAirtime)(phoneNumber, amount);
         if (!airtime) {
             return res.json({
@@ -332,6 +336,9 @@ const buyAirtimeController = async (req, res) => {
                 message: "something went wrong",
             });
         }
+        // withdraw money from account
+        await (0, User_1.withdraw)(user, amount);
+        // save transaction
         return res.json({
             status: "Success",
             message: "airtime purchase successful",

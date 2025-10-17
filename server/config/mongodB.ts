@@ -8,7 +8,7 @@ const connectDB = async () => {
         });
         let dev_DB = "mongodb://127.0.0.1/vsave";
         const uri = `${process.env.MONGODB_URI}/VSave`;
-        await mongoose.connect(uri);
+        await mongoose.connect(dev_DB);
         console.log("MongoDB connection established");
     } catch (error: any) {
         console.error("Error connecting to MongoDB:", error.message);

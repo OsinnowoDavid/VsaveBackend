@@ -13,7 +13,7 @@ const connectDB = async () => {
         });
         let dev_DB = "mongodb://127.0.0.1/vsave";
         const uri = `${process.env.MONGODB_URI}/VSave`;
-        await mongoose_1.default.connect(uri);
+        await mongoose_1.default.connect(dev_DB);
         console.log("MongoDB connection established");
     }
     catch (error) {

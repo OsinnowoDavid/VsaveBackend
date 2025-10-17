@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRegionByName = exports.getAllRegion = exports.getRegionalAdminByEmail = exports.getRegionalAdminById = exports.getAllRegionalAdmin = exports.assignRegionalAdmin = exports.createRegionalAdmin = exports.createNewRegion = exports.getAllSuperAdminByEmail = exports.getAllSuperAdminById = exports.CreateSuperAdmin = void 0;
+exports.getRegionByName = exports.getAllRegion = exports.getRegionalAdminByEmail = exports.getRegionalAdminById = exports.getAllRegionalAdmin = exports.assignRegionalAdmin = exports.createRegionalAdmin = exports.createNewRegion = exports.getAllSuperAdminByEmail = exports.getSuperAdminById = exports.CreateSuperAdmin = void 0;
 const Super_admin_1 = __importDefault(require("../model/Super_admin"));
 const Regionaladmin_1 = __importDefault(require("../model/Regionaladmin"));
 const Region_1 = __importDefault(require("../model/Region"));
@@ -24,7 +24,7 @@ const CreateSuperAdmin = async (firstName, lastName, email, phoneNumber, passwor
     }
 };
 exports.CreateSuperAdmin = CreateSuperAdmin;
-const getAllSuperAdminById = async (id) => {
+const getSuperAdminById = async (id) => {
     try {
         const foundAdmin = await Super_admin_1.default.findById(id);
         return foundAdmin;
@@ -33,7 +33,7 @@ const getAllSuperAdminById = async (id) => {
         throw err;
     }
 };
-exports.getAllSuperAdminById = getAllSuperAdminById;
+exports.getSuperAdminById = getSuperAdminById;
 const getAllSuperAdminByEmail = async (email) => {
     try {
         const foundAdmin = await Super_admin_1.default.findOne({ email });
@@ -66,7 +66,7 @@ const createRegionalAdmin = async (firstName, lastName, email, phoneNumber, pass
             phoneNumber,
             password,
             region,
-            profilePicture
+            profilePicture,
         });
         return newRegionalAdmin;
     }

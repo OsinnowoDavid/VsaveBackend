@@ -3,11 +3,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.buyData = exports.getUserKyc1Record = exports.getDataPlan = exports.buyAirtime = exports.createVirtualAccountIndex = exports.createVirtualAccountForPayment = exports.verifyBankaccount = exports.getAllBanksAndCode = exports.createKYC1Record = exports.kycStatusChange = exports.createKYCRecord = exports.getUserVerificationToken = exports.assignUserEmailVerificationToken = exports.getUserByEmail = exports.getUserById = exports.createNewUser = void 0;
+exports.checkTransferByRefrence = exports.createUserTransaction = exports.deposit = exports.withdraw = exports.buyData = exports.getUserKyc1Record = exports.getDataPlan = exports.buyAirtime = exports.createVirtualAccountIndex = exports.createVirtualAccountForPayment = exports.verifyBankaccount = exports.getAllBanksAndCode = exports.createKYC1Record = exports.kycStatusChange = exports.createKYCRecord = exports.getUserVerificationToken = exports.assignUserEmailVerificationToken = exports.getUserByEmail = exports.getUserById = exports.createNewUser = void 0;
 const User_1 = __importDefault(require("../model/User"));
 const VerificationToken_1 = __importDefault(require("../model/VerificationToken"));
 const KYC1_1 = __importDefault(require("../model/KYC1"));
 const KYC_1 = __importDefault(require("../model/KYC"));
+const Transaction_1 = __importDefault(require("../model/Transaction"));
 const axios_1 = __importDefault(require("axios"));
 const FLW_SECRET_KEY = process.env.FLW_SECRET_KEY;
 const createNewUser = async (firstName, lastName, email, password, gender, dateOfBirth, phoneNumber) => {
@@ -319,3 +320,63 @@ const buyData = async (phoneNumber, amount, planCode) => {
     }
 };
 exports.buyData = buyData;
+const withdraw = async (user, amount) => {
+    try {
+        const foundUser = (await User_1.default.findById(user._id));
+        foundUser.availableBalance -= amount;
+        await foundUser.save();
+        return foundUser;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.withdraw = withdraw;
+const deposit = async (user, amount) => {
+    try {
+        const foundUser = (await User_1.default.findById(user._id));
+        foundUser.availableBalance += amount;
+        await foundUser.save();
+        return foundUser;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.deposit = deposit;
+const createUserTransaction = async (user, type, transactionReference, amount, balanceBefore, balanceAfter, remark, status, date, sender, reciever, feeCharged) => {
+    try {
+        const foundUser = (await User_1.default.findById(user));
+        const newTransaction = await Transaction_1.default.create({
+            userId: foundUser._id,
+            type,
+            transactionReference,
+            amount,
+            balanceBefore,
+            balanceAfter,
+            status,
+            remark,
+            sender,
+            reciever,
+            date,
+            feeCharged,
+        });
+        return newTransaction;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.createUserTransaction = createUserTransaction;
+const checkTransferByRefrence = async (refrence) => {
+    try {
+        const foundTransaction = await Transaction_1.default.findOne({
+            transactionReference: refrence,
+        });
+        return foundTransaction;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.checkTransferByRefrence = checkTransferByRefrence;

@@ -2,6 +2,7 @@ import User from "../model/User";
 import VerificationToken from "../model/VerificationToken";
 import KYC1 from "../model/KYC1";
 import KYC from "../model/KYC";
+import Transaction from "../model/Transaction";
 import { IUser } from "../types";
 import axios from "axios";
 const FLW_SECRET_KEY = process.env.FLW_SECRET_KEY;
@@ -347,6 +348,73 @@ export const buyData = async (
         };
         const response = await axios.request(config);
         return response.data;
+    } catch (err: any) {
+        throw err;
+    }
+};
+
+export const withdraw = async (user: IUser, amount: number) => {
+    try {
+        const foundUser = (await User.findById(user._id)) as IUser;
+        foundUser.availableBalance -= amount;
+        await foundUser.save();
+        return foundUser;
+    } catch (err: any) {
+        throw err;
+    }
+};
+
+export const deposit = async (user: IUser, amount: number) => {
+    try {
+        const foundUser = (await User.findById(user._id)) as IUser;
+        foundUser.availableBalance += amount;
+        await foundUser.save();
+        return foundUser;
+    } catch (err: any) {
+        throw err;
+    }
+};
+export const createUserTransaction = async (
+    user: string,
+    type: string,
+    transactionReference: string,
+    amount: number,
+    balanceBefore: number,
+    balanceAfter: number,
+    remark: string,
+    status: string,
+    date: Date,
+    sender?: string,
+    reciever?: string,
+    feeCharged?: number,
+) => {
+    try {
+        const foundUser = (await User.findById(user)) as IUser;
+        const newTransaction = await Transaction.create({
+            userId: foundUser._id,
+            type,
+            transactionReference,
+            amount,
+            balanceBefore,
+            balanceAfter,
+            status,
+            remark,
+            sender,
+            reciever,
+            date,
+            feeCharged,
+        });
+        return newTransaction;
+    } catch (err: any) {
+        throw err;
+    }
+};
+export const checkTransferByRefrence = async (refrence: string) => {
+    try {
+        const foundTransaction = await Transaction.findOne({
+            transactionReference: refrence,
+        });
+        return foundTransaction;
     } catch (err: any) {
         throw err;
     }

@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import argon from "argon2";
+import { assignAgentReferral } from "../services/Agent";
 import {
     createNewUser,
     getUserByEmail,
@@ -17,6 +18,9 @@ import {
     getDataPlan,
     buyData,
     createVirtualAccountIndex,
+    deposit,
+    withdraw,
+    createUserTransaction,
 } from "../services/User";
 import { IUser, IVerificationToken, IKYC1 } from "../types";
 import { signUserToken } from "../config/JWT";
@@ -37,6 +41,7 @@ export const registerUser = async (req: Request, res: Response) => {
             gender,
             dateOfBirth,
             phoneNumber,
+            referralCode,
         } = req.body;
         let hashPassword = await argon.hash(password);
         // check if user is already in the database
@@ -50,7 +55,7 @@ export const registerUser = async (req: Request, res: Response) => {
             });
         }
         // create new user
-        const newUser = await createNewUser(
+        const newUser = (await createNewUser(
             firstName,
             lastName,
             email,
@@ -58,7 +63,7 @@ export const registerUser = async (req: Request, res: Response) => {
             gender,
             dateOfBirth,
             phoneNumber,
-        );
+        )) as IUser;
         if (!newUser) {
             return res.json({
                 status: "Failed",
@@ -100,7 +105,8 @@ export const registerUser = async (req: Request, res: Response) => {
 
         // Send email
         await Transporter.sendMail(mailOptions);
-
+        // assign referralCode
+        await assignAgentReferral(referralCode, newUser);
         return res.json({
             status: "Success",
             message: `User created successfuly verify your email ,verification code has been sent to ${newUser.email}`,
@@ -397,6 +403,7 @@ export const getDataPlanController = async (req: Request, res: Response) => {
 export const buyAirtimeController = async (req: Request, res: Response) => {
     try {
         const { phoneNumber, amount } = req.body;
+        const user = req.user as IUser;
         const airtime = await buyAirtime(phoneNumber, amount);
         if (!airtime) {
             return res.json({
@@ -404,6 +411,9 @@ export const buyAirtimeController = async (req: Request, res: Response) => {
                 message: "something went wrong",
             });
         }
+        // withdraw money from account
+        await withdraw(user, amount);
+        // save transaction
         return res.json({
             status: "Success",
             message: "airtime purchase successful",

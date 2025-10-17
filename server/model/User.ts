@@ -26,9 +26,6 @@ const userSchema = new Schema({
     profilePicture: {
         type: String,
     },
-    referral: {
-        type: String,
-    },
     vsavePoint: {
         type: Number,
         default: 0,
