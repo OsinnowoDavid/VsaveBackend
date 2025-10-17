@@ -22,6 +22,6 @@ const agentReferalSchema = new Schema(
     { timestamps: true },
 );
 
-const agentReferal = mongoose.model("Agent", agentReferalSchema);
+const agentReferal = mongoose.model("Agent-referral", agentReferalSchema);
 
 export default agentReferal;
