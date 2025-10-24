@@ -3,14 +3,25 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.checkTransferByRefrence = exports.createUserTransaction = exports.deposit = exports.withdraw = exports.buyData = exports.getUserKyc1Record = exports.getDataPlan = exports.buyAirtime = exports.createVirtualAccountIndex = exports.createVirtualAccountForPayment = exports.verifyBankaccount = exports.getAllBanksAndCode = exports.createKYC1Record = exports.kycStatusChange = exports.createKYCRecord = exports.getUserVerificationToken = exports.assignUserEmailVerificationToken = exports.getUserByEmail = exports.getUserById = exports.createNewUser = void 0;
+exports.payOut = exports.accountLookUp = exports.getBankCode = exports.createUserAirtimeTransaction = exports.createUserDataTransaction = exports.checkTransferByRefrence = exports.createUserTransaction = exports.deposit = exports.withdraw = exports.buyData = exports.getUserKyc1Record = exports.getDataPlan = exports.buyAirtime = exports.createVirtualAccountIndex = exports.createVirtualAccountForPayment = exports.verifyBankaccount = exports.getAllBanksAndCode = exports.createKYC1Record = exports.kycStatusChange = exports.createKYCRecord = exports.getUserVerificationToken = exports.assignUserEmailVerificationToken = exports.getUserByEmail = exports.getUserById = exports.createNewUser = void 0;
 const User_1 = __importDefault(require("../model/User"));
 const VerificationToken_1 = __importDefault(require("../model/VerificationToken"));
 const KYC1_1 = __importDefault(require("../model/KYC1"));
 const KYC_1 = __importDefault(require("../model/KYC"));
 const Transaction_1 = __importDefault(require("../model/Transaction"));
 const axios_1 = __importDefault(require("axios"));
+const Bank_code_1 = __importDefault(require("../model/Bank_code"));
 const FLW_SECRET_KEY = process.env.FLW_SECRET_KEY;
+const generateRefrenceCode = () => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let code = "";
+    let marchantId = process.env.MARCHANT_ID;
+    for (let i = 0; i < 15; i++) {
+        const randomIndex = Math.floor(Math.random() * chars.length);
+        code += chars[randomIndex];
+    }
+    return `${marchantId}_${code}`;
+};
 const createNewUser = async (firstName, lastName, email, password, gender, dateOfBirth, phoneNumber) => {
     try {
         const newUser = await User_1.default.create({
@@ -160,30 +171,30 @@ const verifyBankaccount = async (accountNumber, bankCode) => {
     }
 };
 exports.verifyBankaccount = verifyBankaccount;
+let getGenderCode = (gender) => {
+    if (typeof gender !== "string") {
+        throw new Error("Invalid input: expected a string");
+    }
+    const formatted = gender.trim().toLowerCase();
+    if (formatted === "male") {
+        return "1";
+    }
+    else if (formatted === "female") {
+        return "2";
+    }
+    else {
+        throw new Error("Invalid gender: must be 'Male' or 'Female'");
+    }
+};
+let formatDate = (date) => {
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${month}/${day}/${year}`;
+};
 const createVirtualAccountForPayment = async (user, bvn, address) => {
     try {
-        let getGenderCode = (gender) => {
-            if (typeof gender !== "string") {
-                throw new Error("Invalid input: expected a string");
-            }
-            const formatted = gender.trim().toLowerCase();
-            if (formatted === "male") {
-                return "1";
-            }
-            else if (formatted === "female") {
-                return "2";
-            }
-            else {
-                throw new Error("Invalid gender: must be 'Male' or 'Female'");
-            }
-        };
         let gender = getGenderCode(user.gender);
-        let formatDate = (date) => {
-            const day = String(date.getDate()).padStart(2, "0");
-            const month = String(date.getMonth() + 1).padStart(2, "0");
-            const year = date.getFullYear();
-            return `${month}/${day}/${year}`;
-        };
         let dob = formatDate(new Date(user.dateOfBirth));
         let data = JSON.stringify({
             customer_identifier: user._id.toString(),
@@ -246,7 +257,7 @@ const buyAirtime = async (phoneNumber, amount) => {
     try {
         const data = {
             phone_number: phoneNumber,
-            amount: 5000,
+            amount,
         };
         let config = {
             method: "post",
@@ -262,7 +273,20 @@ const buyAirtime = async (phoneNumber, amount) => {
         return response.data;
     }
     catch (err) {
-        throw err;
+        // If the request fails, we log the response from the provider
+        if (err.response) {
+            console.error("Error Response Status:", err.response.status);
+            console.error("Error Response Data:", err.response.data);
+            throw err.response.data; // Return the exact response data from the provider
+        }
+        else if (err.request) {
+            console.error("No Response:", err.request);
+            throw { error: "No response from the server" };
+        }
+        else {
+            console.error("Error:", err.message);
+            throw { error: "Unexpected error occurred" };
+        }
     }
 };
 exports.buyAirtime = buyAirtime;
@@ -281,7 +305,20 @@ const getDataPlan = async (network) => {
         return response.data;
     }
     catch (err) {
-        throw err;
+        // If the request fails, we log the response from the provider
+        if (err.response) {
+            console.error("Error Response Status:", err.response.status);
+            console.error("Error Response Data:", err.response.data);
+            throw err.response.data; // Return the exact response data from the provider
+        }
+        else if (err.request) {
+            console.error("No Response:", err.request);
+            throw { error: "No response from the server" };
+        }
+        else {
+            console.error("Error:", err.message);
+            throw { error: "Unexpected error occurred" };
+        }
     }
 };
 exports.getDataPlan = getDataPlan;
@@ -313,10 +350,24 @@ const buyData = async (phoneNumber, amount, planCode) => {
             data: data,
         };
         const response = await axios_1.default.request(config);
+        console.log("squadres", response.data);
         return response.data;
     }
     catch (err) {
-        throw err;
+        // If the request fails, we log the response from the provider
+        if (err.response) {
+            console.error("Error Response Status:", err.response.status);
+            console.error("Error Response Data:", err.response.data);
+            throw err.response.data; // Return the exact response data from the provider
+        }
+        else if (err.request) {
+            console.error("No Response:", err.request);
+            throw { error: "No response from the server" };
+        }
+        else {
+            console.error("Error:", err.message);
+            throw { error: "Unexpected error occurred" };
+        }
     }
 };
 exports.buyData = buyData;
@@ -380,3 +431,142 @@ const checkTransferByRefrence = async (refrence) => {
     }
 };
 exports.checkTransferByRefrence = checkTransferByRefrence;
+const createUserDataTransaction = async (user, transactionReference, amount, balanceBefore, balanceAfter, reciever, network, bundle, feeCharged) => {
+    try {
+        const foundUser = (await User_1.default.findById(user));
+        const newTransaction = await Transaction_1.default.create({
+            userId: foundUser._id,
+            type: "data",
+            transactionReference,
+            amount,
+            balanceBefore,
+            balanceAfter,
+            status: "success",
+            reciever,
+            date: new Date(),
+            network,
+            feeCharged,
+            bundle,
+        });
+        return newTransaction;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.createUserDataTransaction = createUserDataTransaction;
+const createUserAirtimeTransaction = async (user, transactionReference, amount, balanceBefore, balanceAfter, reciever, network, feeCharged) => {
+    try {
+        const foundUser = (await User_1.default.findById(user));
+        const newTransaction = await Transaction_1.default.create({
+            userId: foundUser._id,
+            type: "airtime",
+            transactionReference,
+            amount,
+            balanceBefore,
+            balanceAfter,
+            status: "success",
+            reciever,
+            date: new Date(),
+            network,
+            feeCharged,
+        });
+        return newTransaction;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.createUserAirtimeTransaction = createUserAirtimeTransaction;
+const getBankCode = async () => {
+    try {
+        const allBankCode = await Bank_code_1.default.find();
+        return allBankCode;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.getBankCode = getBankCode;
+const accountLookUp = async (account_number, bank_code) => {
+    try {
+        let data = {
+            bank_code,
+            account_number,
+        };
+        let config = {
+            method: "post",
+            maxBodyLength: Infinity,
+            url: "https://sandbox-api-d.squadco.com/payout/account/lookup",
+            headers: {
+                Authorization: `Bearer ${process.env.SQUAD_SECRET_KEY}`,
+                "Content-Type": "application/json",
+            },
+            data: data,
+        };
+        const response = await axios_1.default.request(config);
+        console.log("squadres", response.data);
+        return response.data;
+    }
+    catch (err) {
+        // If the request fails, we log the response from the provider
+        if (err.response) {
+            console.error("Error Response Status:", err.response.status);
+            console.error("Error Response Data:", err.response.data);
+            throw err.response.data; // Return the exact response data from the provider
+        }
+        else if (err.request) {
+            console.error("No Response:", err.request);
+            throw { error: "No response from the server" };
+        }
+        else {
+            console.error("Error:", err.message);
+            throw { error: "Unexpected error occurred" };
+        }
+    }
+};
+exports.accountLookUp = accountLookUp;
+const payOut = async (user, bank_code, amount, account_number, account_name) => {
+    try {
+        console.log("ref", generateRefrenceCode());
+        let data = {
+            bank_code,
+            amount,
+            account_number,
+            account_name,
+            transaction_reference: generateRefrenceCode(),
+            currency_id: "NGN",
+            remark: `${user.firstName} ${user.lastName} payout to ${account_name}`,
+        };
+        let config = {
+            method: "post",
+            maxBodyLength: Infinity,
+            url: "https://sandbox-api-d.squadco.com/payout/transfer",
+            headers: {
+                Authorization: `Bearer ${process.env.SQUAD_SECRET_KEY}`,
+                "Content-Type": "application/json",
+            },
+            data: data,
+        };
+        const response = await axios_1.default.request(config);
+        console.log("squadres", response.data);
+        return response.data;
+    }
+    catch (err) {
+        // If the request fails, we log the response from the provider
+        if (err.response) {
+            console.error("Error Response Status:", err.response.status);
+            console.error("Error Response Data:", err.response.data);
+            throw err.response.data; // Return the exact response data from the provider
+        }
+        else if (err.request) {
+            console.error("No Response:", err.request);
+            throw { error: "No response from the server" };
+        }
+        else {
+            console.error("Error:", err.message);
+            throw { error: "Unexpected error occurred" };
+        }
+    }
+};
+exports.payOut = payOut;

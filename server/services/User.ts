@@ -5,8 +5,19 @@ import KYC from "../model/KYC";
 import Transaction from "../model/Transaction";
 import { IUser } from "../types";
 import axios from "axios";
+import BankCode from "../model/Bank_code";
 const FLW_SECRET_KEY = process.env.FLW_SECRET_KEY;
+const generateRefrenceCode = () => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let code = "";
+    let marchantId = process.env.MARCHANT_ID;
+    for (let i = 0; i < 15; i++) {
+        const randomIndex = Math.floor(Math.random() * chars.length);
+        code += chars[randomIndex];
+    }
 
+    return `${marchantId}_${code}`;
+};
 export const createNewUser = async (
     firstName: string,
     lastName: string,
@@ -188,35 +199,37 @@ export const verifyBankaccount = async (
     }
 };
 
+let getGenderCode = (gender: string) => {
+    if (typeof gender !== "string") {
+        throw new Error("Invalid input: expected a string");
+    }
+
+    const formatted = gender.trim().toLowerCase();
+
+    if (formatted === "male") {
+        return "1";
+    } else if (formatted === "female") {
+        return "2";
+    } else {
+        throw new Error("Invalid gender: must be 'Male' or 'Female'");
+    }
+};
+
+let formatDate = (date: Date) => {
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+
+    return `${month}/${day}/${year}`;
+};
+
 export const createVirtualAccountForPayment = async (
     user: IUser,
     bvn: string,
     address: string,
 ) => {
     try {
-        let getGenderCode = (gender: string) => {
-            if (typeof gender !== "string") {
-                throw new Error("Invalid input: expected a string");
-            }
-
-            const formatted = gender.trim().toLowerCase();
-
-            if (formatted === "male") {
-                return "1";
-            } else if (formatted === "female") {
-                return "2";
-            } else {
-                throw new Error("Invalid gender: must be 'Male' or 'Female'");
-            }
-        };
         let gender = getGenderCode(user.gender);
-        let formatDate = (date: Date) => {
-            const day = String(date.getDate()).padStart(2, "0");
-            const month = String(date.getMonth() + 1).padStart(2, "0");
-            const year = date.getFullYear();
-
-            return `${month}/${day}/${year}`;
-        };
 
         let dob = formatDate(new Date(user.dateOfBirth));
         let data = JSON.stringify({
@@ -279,7 +292,7 @@ export const buyAirtime = async (phoneNumber: string, amount: number) => {
     try {
         const data = {
             phone_number: phoneNumber,
-            amount: 5000,
+            amount,
         };
         let config = {
             method: "post",
@@ -294,7 +307,18 @@ export const buyAirtime = async (phoneNumber: string, amount: number) => {
         const response = await axios.request(config);
         return response.data;
     } catch (err: any) {
-        throw err;
+        // If the request fails, we log the response from the provider
+        if (err.response) {
+            console.error("Error Response Status:", err.response.status);
+            console.error("Error Response Data:", err.response.data);
+            throw err.response.data; // Return the exact response data from the provider
+        } else if (err.request) {
+            console.error("No Response:", err.request);
+            throw { error: "No response from the server" };
+        } else {
+            console.error("Error:", err.message);
+            throw { error: "Unexpected error occurred" };
+        }
     }
 };
 
@@ -312,7 +336,18 @@ export const getDataPlan = async (network: string) => {
         const response = await axios.request(config);
         return response.data;
     } catch (err: any) {
-        throw err;
+        // If the request fails, we log the response from the provider
+        if (err.response) {
+            console.error("Error Response Status:", err.response.status);
+            console.error("Error Response Data:", err.response.data);
+            throw err.response.data; // Return the exact response data from the provider
+        } else if (err.request) {
+            console.error("No Response:", err.request);
+            throw { error: "No response from the server" };
+        } else {
+            console.error("Error:", err.message);
+            throw { error: "Unexpected error occurred" };
+        }
     }
 };
 
@@ -347,9 +382,21 @@ export const buyData = async (
             data: data,
         };
         const response = await axios.request(config);
+        console.log("squadres", response.data);
         return response.data;
     } catch (err: any) {
-        throw err;
+        // If the request fails, we log the response from the provider
+        if (err.response) {
+            console.error("Error Response Status:", err.response.status);
+            console.error("Error Response Data:", err.response.data);
+            throw err.response.data; // Return the exact response data from the provider
+        } else if (err.request) {
+            console.error("No Response:", err.request);
+            throw { error: "No response from the server" };
+        } else {
+            console.error("Error:", err.message);
+            throw { error: "Unexpected error occurred" };
+        }
     }
 };
 
@@ -374,6 +421,7 @@ export const deposit = async (user: IUser, amount: number) => {
         throw err;
     }
 };
+
 export const createUserTransaction = async (
     user: string,
     type: string,
@@ -417,5 +465,159 @@ export const checkTransferByRefrence = async (refrence: string) => {
         return foundTransaction;
     } catch (err: any) {
         throw err;
+    }
+};
+export const createUserDataTransaction = async (
+    user: string,
+    transactionReference: string,
+    amount: string,
+    balanceBefore: number,
+    balanceAfter: number,
+    reciever: string,
+    network: string,
+    bundle: any,
+    feeCharged?: string,
+) => {
+    try {
+        const foundUser = (await User.findById(user)) as IUser;
+        const newTransaction = await Transaction.create({
+            userId: foundUser._id,
+            type: "data",
+            transactionReference,
+            amount,
+            balanceBefore,
+            balanceAfter,
+            status: "success",
+            reciever,
+            date: new Date(),
+            network,
+            feeCharged,
+            bundle,
+        });
+        return newTransaction;
+    } catch (err: any) {
+        throw err;
+    }
+};
+
+export const createUserAirtimeTransaction = async (
+    user: string,
+    transactionReference: string,
+    amount: string,
+    balanceBefore: number,
+    balanceAfter: number,
+    reciever: string,
+    network: string,
+    feeCharged?: string,
+) => {
+    try {
+        const foundUser = (await User.findById(user)) as IUser;
+        const newTransaction = await Transaction.create({
+            userId: foundUser._id,
+            type: "airtime",
+            transactionReference,
+            amount,
+            balanceBefore,
+            balanceAfter,
+            status: "success",
+            reciever,
+            date: new Date(),
+            network,
+            feeCharged,
+        });
+        return newTransaction;
+    } catch (err: any) {
+        throw err;
+    }
+};
+export const getBankCode = async () => {
+    try {
+        const allBankCode = await BankCode.find();
+        return allBankCode;
+    } catch (err: any) {
+        throw err;
+    }
+};
+export const accountLookUp = async (
+    account_number: string,
+    bank_code: string,
+) => {
+    try {
+        let data = {
+            bank_code,
+            account_number,
+        };
+        let config = {
+            method: "post",
+            maxBodyLength: Infinity,
+            url: "https://sandbox-api-d.squadco.com/payout/account/lookup",
+            headers: {
+                Authorization: `Bearer ${process.env.SQUAD_SECRET_KEY}`,
+                "Content-Type": "application/json",
+            },
+            data: data,
+        };
+        const response = await axios.request(config);
+        console.log("squadres", response.data);
+        return response.data;
+    } catch (err: any) {
+        // If the request fails, we log the response from the provider
+        if (err.response) {
+            console.error("Error Response Status:", err.response.status);
+            console.error("Error Response Data:", err.response.data);
+            throw err.response.data; // Return the exact response data from the provider
+        } else if (err.request) {
+            console.error("No Response:", err.request);
+            throw { error: "No response from the server" };
+        } else {
+            console.error("Error:", err.message);
+            throw { error: "Unexpected error occurred" };
+        }
+    }
+};
+export const payOut = async (
+    user: IUser,
+    bank_code: string,
+    amount: string,
+    account_number: string,
+    account_name: string,
+) => {
+    try {
+        console.log("ref", generateRefrenceCode());
+        let data = {
+            bank_code,
+            amount,
+            account_number,
+            account_name,
+            transaction_reference: generateRefrenceCode(),
+            currency_id: "NGN",
+            remark: `${user.firstName} ${user.lastName} payout to ${account_name}`,
+        };
+        let config = {
+            method: "post",
+            maxBodyLength: Infinity,
+            url: "https://sandbox-api-d.squadco.com/payout/transfer",
+            headers: {
+                Authorization: `Bearer ${process.env.SQUAD_SECRET_KEY}`,
+                "Content-Type": "application/json",
+            },
+            data: data,
+        };
+        const response = await axios.request(config);
+        console.log("squadres", response.data);
+        return response.data;
+    } catch (err: any) {
+        // If the request fails, we log the response from the provider
+        if (err.response) {
+            console.error("Error Response Status:", err.response.status);
+            console.error("Error Response Data:", err.response.data);
+            throw err.response.data; // Return the exact response data from the provider
+        } else if (err.request) {
+            console.error("No Response:", err.request);
+            throw { error: "No response from the server" };
+        } else {
+            console.error("Error:", err.message);
+            throw { error: "Unexpected error occurred" };
+        }
     }
 };

@@ -19,7 +19,7 @@ const transactionSchema = new mongoose.Schema(
         },
         feeCharged: {
             type: Number,
-            required: true,
+            required: false,
         },
         status: {
             type: String,
@@ -54,6 +54,10 @@ const transactionSchema = new mongoose.Schema(
         },
         date: {
             type: Date,
+        },
+        bundle: {
+            type: Object,
+            required: false,
         },
     },
     { timestamps: true },

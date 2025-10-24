@@ -9,14 +9,14 @@ export interface IUser extends Document {
     password: string;
     profilePicture: string;
     vsavePoint: number;
-    KYC: object;
+    KYC: Types.ObjectId | null;
     availableBalance: number;
     pendingBalance: number;
     isEmailVerified: boolean;
     status: string;
     address: string;
-    bvn: string;
-    gender: string;
+    bvn?: string;
+    gender: "Male" | "Female" | string;
     dateOfBirth: Date | string;
     virtualAccountNumber: string;
 }
@@ -33,7 +33,7 @@ export interface ISuperAdmin extends Document {
     firstName: string;
     lastName: string;
     email: string;
-    phoneNumber: string;
+    phoneNumber?: string;
     password: string;
     profilePicture?: string | null | undefined;
 }
@@ -79,9 +79,9 @@ export interface IAgent extends Document {
     lastName: string;
     email: string;
     phoneNumber: string;
-    subRegion: Types.ObjectId;
+    subRegion: Types.ObjectId; // ref: Region in code (field name is subRegion)
     password: string;
-    profilePicture?: string | null;
+    profilePicture?: string;
     referralCode: string;
     createdAt?: Date;
     updatedAt?: Date;
@@ -142,6 +142,15 @@ export interface INotification extends Document {
     message: string;
 }
 
+export interface IWebhook extends Document {
+    _id: Types.ObjectId;
+    user?: Types.ObjectId;
+    payload: object;
+    signature?: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
 export interface ISubRegionalAdmin extends Document {
     _id: Types.ObjectId;
     firstName: string;
@@ -160,25 +169,27 @@ export interface ITransaction extends Document {
     userId: Types.ObjectId;
     type: "deposit" | "withdrawal" | "transfer" | "airtime" | "data";
     amount: number;
-    feeCharged: number;
+    feeCharged?: number;
     status: "pending" | "success" | "failed" | "reversed";
     transactionReference: string;
     remark?: string;
-    balanceBefore: number;
-    balanceAfter: number;
+    balanceBefore?: number;
+    balanceAfter?: number;
     sender?: string;
     reciever?: string;
     network?: string;
-    date: Date;
+    date?: Date;
+    bundle?: object;
     createdAt?: Date;
     updatedAt?: Date;
 }
 
-export interface IAgentReferral extends Document {
+export interface ISavings extends Document {
     _id: Types.ObjectId;
-    agent: Types.ObjectId;
-    referralCode: string;
-    referres: Types.ObjectId[];
-    createdAt?: Date;
-    updatedAt?: Date;
+    // savings model not defined in models folder yet; placeholder for future fields
+}
+
+export interface IStaticsInfo extends Document {
+    _id: Types.ObjectId;
+    // statics_info model not defined; placeholder for future fields
 }

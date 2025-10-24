@@ -1,91 +1,90 @@
 # Vsave Backend API Specification
 
-This document provides a comprehensive list of all exposed RESTful API endpoints for the Vsave Backend. This specification is the single source of truth for frontend developers and other API consumers.
+This document provides a comprehensive list of all exposed RESTful API endpoints for the Vsave Backend. This specification enables seamless integration for the frontend development team.
 
-**Base URL:** `https://[Your-Server-Host]/api/v1`
+**Base URL:** `[Your Server Host]/api/v1`
 
----
+## General Information
 
-## Table of Contents
-
-1. General Information
-2. Authentication
-3. Standard Response Formats
-4. User & Authentication Endpoints (`/user`)
-5. KYC Endpoints (`/user/kyc`)
-6. Banking & Payments Endpoints
-7. Vending Services Endpoints (`/vending`)
+-   **Authentication:** All protected routes require a JSON Web Token (JWT) sent in the **Authorization** header as a Bearer token: `Authorization: Bearer <token>`.
+-   **Request/Response Format:** All request bodies and successful responses are in **JSON** format.
+-   **Password Hashing:** Passwords are hashed using **Argon2** on the server.
+-   **User Types:** The system supports three main user types: **User**, **Regional Admin**, and **Super Admin**.
 
 ---
 
-## 1. General Information
+## 1. User Endpoints (`/user`)
 
-- **Protocol:** All API communication must be over **HTTPS**.
-- **Data Format:** All request and response bodies must be in **JSON** format.
-- **Content-Type:** The `Content-Type: application/json` header is required for all `POST`, `PUT`, and `PATCH` requests.
-- **Password Hashing:** Passwords are never returned in responses. They are securely hashed using **Argon2**.
+These endpoints are for general Vsave users, handling registration, login, email verification, KYC, and value-added services.
 
----
-
-## 2. Authentication
-
-Most endpoints are protected and require a JSON Web Token (JWT). The token must be sent in the `Authorization` header using the Bearer scheme.
-
-```json
-{
-    "Authorization": "Bearer <your_jwt_token>"
-}
-```
+| Method   | Path                              | Description                                   | Access          |
+| :------- | :-------------------------------- | :-------------------------------------------- | :-------------- |
+| **POST** | `/user/register`                  | Registers a new user account.                 | Public          |
+| **POST** | `/user/login`                     | Logs in a user and returns a JWT.             | Public          |
+| **POST** | `/user/verify-email`              | Verifies a user's email using a token.        | Public          |
+| **POST** | `/user/resend-verification-token` | Requests a new email verification token.      | Public          |
+| **GET**  | `/user/profile`                   | Retrieves the authenticated user's profile.   | **Auth (User)** |
+| **GET**  | `/user/register-kyc1`             | Submits the first stage of KYC information.   | **Auth (User)** |
+| **GET**  | `/user/get-data-plan/:network`    | Retrieves available data plans for a network. | **Auth (User)** |
+| **POST** | `/user/buy-airtime`               | Buys airtime for a phone number.              | **Auth (User)** |
+| **POST** | `/user/buy-data`                  | Buys data for a phone number.                 | **Auth (User)** |
 
 ---
 
-## 3. Standard Response Formats
+## 2. Super Admin Endpoints (`/admin`)
 
-### Success Response
+Endpoints for Super Admin, including registration, authentication, and region/admin management.
 
-Successful requests return a `2xx` status code with a `status` of `"success"`.
-
-```json
-{
-    "status": "success",
-    "message": "Operation completed successfully.",
-    "data": { "key": "value" }
-}
-```
-
-### Error Response
-
-Failed requests return a `4xx` or `5xx` status code with a `status` of `"error"`. For validation errors, an `errors` array may be included.
-
-**Example (404 Not Found):**
-
-```json
-{
-    "status": "error",
-    "message": "Resource not found."
-}
-```
-
-**Example (400 Validation Error):**
-
-```json
-{
-    "status": "error",
-    "message": "Validation failed.",
-    "errors": [
-        { "field": "email", "message": "Email is already in use." }
-    ]
-}
-```
+| Method   | Path                            | Description                                          | Access                 |
+| :------- | :------------------------------ | :--------------------------------------------------- | :--------------------- |
+| **POST** | `/admin/register`               | Registers the Super Admin (likely a one-time setup). | Public                 |
+| **POST** | `/admin/login`                  | Logs in the Super Admin and returns a JWT.           | Public                 |
+| **GET**  | `/admin/profile`                | Retrieves the authenticated Super Admin's profile.   | **Auth (Super Admin)** |
+| **POST** | `/admin/create-region`          | Creates a new region.                                | **Auth (Super Admin)** |
+| **POST** | `/admin/create-regional-admin`  | Creates a new regional admin.                        | **Auth (Super Admin)** |
+| **GET**  | `/admin/get-all-regional-admin` | Gets all regional admins.                            | **Auth (Super Admin)** |
+| **POST** | `/admin/get-all-region`         | Gets all regions.                                    | **Auth (Super Admin)** |
+| **GET**  | `/admin/get-regional-admin`     | Gets a regional admin by email.                      | **Auth (Super Admin)** |
 
 ---
 
-## 4. User & Authentication Endpoints (`/user`)
+## 3. Regional Admin Endpoints (`/regional-admin`)
 
-### `POST /user/register`
+Endpoints for Regional Administrators, including authentication and subregion management.
 
-- **Description:** Registers a new user account.
-- **Access:** Public
+| Method   | Path                                     | Description                                           | Access                    |
+| :------- | :--------------------------------------- | :---------------------------------------------------- | :------------------------ |
+| **POST** | `/regional-admin/login`                  | Logs in a Regional Admin and returns a JWT.           | Public                    |
+| **GET**  | `/regional-admin/profile`                | Retrieves the authenticated Regional Admin's profile. | **Auth (Regional Admin)** |
+| **POST** | `/regional-admin/create-subregion`       | Creates a new subregion.                              | **Auth (Regional Admin)** |
+| **POST** | `/regional-admin/create-subregion-admin` | Creates a new subregion admin.                        | **Auth (Regional Admin)** |
+| **GET**  | `/regional-admin/get-all-subregion`      | Gets all subregions.                                  | **Auth (Regional Admin)** |
+
+---
+
+## 4. Other/Value-Added Endpoints
+
+| Method   | Path                           | Description                                   | Access          |
+| :------- | :----------------------------- | :-------------------------------------------- | :-------------- |
+| **GET**  | `/user/get-data-plan/:network` | Retrieves available data plans for a network. | **Auth (User)** |
+| **POST** | `/user/buy-airtime`            | Buys airtime for a phone number.              | **Auth (User)** |
+| **POST** | `/user/buy-data`               | Buys data for a phone number.                 | **Auth (User)** |
+
+---
+
+## Guidelines
+
+-   All protected endpoints require JWT authentication in the `Authorization` header.
+-   All request and response bodies are JSON.
+-   Use the correct HTTP method for each endpoint (GET, POST).
+-   For resource creation, use POST; for retrieval, use GET.
+-   Error responses follow a consistent format with `status` and `message` fields.
+
+---
+
+## Example Request/Response Formats
+
+### User Registration (`POST /user/register`)
 
 **Request Body:**
 
@@ -93,310 +92,308 @@ Failed requests return a `4xx` or `5xx` status code with a `status` of `"error"`
 {
     "firstName": "John",
     "lastName": "Doe",
-    "email": "john.doe@example.com",
-    "password": "a_strong_password",
-    "gender": "Male",
-    "dateOfBirth": "1990-05-15",
-    "phoneNumber": "08012345678"
+    "email": "john@example.com",
+    "password": "password123"
 }
 ```
 
-**Success Response (201 Created):**
+**Success Response:**
 
 ```json
 {
-    "status": "success",
-    "message": "User created successfully. Please check your email to verify your account.",
-    "data": {
-        "userId": "60c72b2f9b1d8c001f8e4d2a"
-    }
-}
-```
-
-### `POST /user/login`
-
-- **Description:** Authenticates a user and returns a JWT.
-- **Access:** Public
-
-**Request Body:**
-
-```json
-{
-    "email": "john.doe@example.com",
-    "password": "a_strong_password"
-}
-```
-
-**Success Response (200 OK):**
-
-```json
-{
-    "status": "success",
-    "message": "Login successful.",
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-}
-```
-
-### `POST /user/verify-email`
-
-- **Description:** Verifies a user's email with a token.
-- **Access:** Public
-
-**Request Body:**
-
-```json
-{
-    "email": "john.doe@example.com",
-    "token": "123456"
-}
-```
-
-**Success Response (200 OK):**
-
-```json
-{
-    "status": "success",
-    "message": "Email verified successfully."
-}
-```
-
-### `POST /user/resend-verification-token`
-
-- **Description:** Requests a new email verification token.
-- **Access:** Public
-
-**Request Body:**
-
-```json
-{
-    "email": "john.doe@example.com"
-}
-```
-
-**Success Response (200 OK):**
-
-```json
-{
-    "status": "success",
-    "message": "A new verification token has been sent to your email."
-}
-```
-
-### `GET /user/profile`
-
-**Success Response (200 OK):**
-
-```json
-{
-    "status": "success",
-    "message": "Profile retrieved successfully.",
+    "status": "Success",
+    "message": "User created successfully",
     "data": {
         "firstName": "John",
         "lastName": "Doe",
-        "email": "john.doe@example.com",
-        "gender": "Male",
-        "dateOfBirth": "1990-05-15T00:00:00.000Z",
-        "phoneNumber": "08012345678",
-        "virtualAccountNumber": "9006809223",
-        "isVerified": true
+        "email": "john@example.com",
+        "_id": "..."
     }
 }
 ```
 
-## 5. KYC Endpoints (`/user/kyc`)
-
-### `POST /user/kyc/stage1`
+### User Login (`POST /user/login`)
 
 **Request Body:**
 
 ```json
 {
-    "profession": "Software Engineer",
-    "accountNumber": "0123456789",
-    "bank": "044",
+    "email": "john@example.com",
+    "password": "password123"
+}
+```
+
+**Success Response:**
+
+```json
+{
+    "status": "success",
+    "message": "login successfuly",
+    "token": "..."
+}
+```
+
+### Register KYC Stage 1 (`GET /user/register-kyc1`)
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Request Body:**
+
+```json
+{
+    "profession": "Student",
+    "accountNumber": 1234567890,
+    "bank": "Access Bank",
+    "bankCode": "044",
+    "accountDetails": "John Doe",
     "country": "Nigeria",
     "state": "Lagos",
-    "bvn": "22223333444",
-    "address": "123 Techie Lane, Ikeja"
+    "bvn": "12345678901"
 }
 ```
 
-**Success Response (200 OK):**
+**Success Response:**
 
 ```json
 {
     "status": "success",
-    "message": "KYC Stage 1 information submitted successfully.",
+    "message": "KYC 1 created successfully",
     "data": {
-        "kycStatus": "pending",
-        "kycStage": 1
+        "profession": "Student",
+        "accountNumber": 1234567890
+        // ... other KYC 1 details
     }
 }
 ```
 
----
+**Success Response (200 OK):**
 
-## 6. Banking & Payments Endpoints
+```json
+{
+    "Status": "success",
+    "message": "login successfuly",
+    "token": "..." // JWT to be used for protected routes
+}
+```
 
-### `GET /banks`
+### 1.3. Verify Email (`POST /user/verify-email`)
 
-- **Description:** Retrieves a list of all available banks and their codes (from Flutterwave).
-- **Access:** Auth Required (User)
+| Parameter | Location | Type   | Required | Description                                             |
+| :-------- | :------- | :----- | :------- | :------------------------------------------------------ |
+| `email`   | Body     | string | Yes      | User's email address.                                   |
+| `token`   | Body     | number | Yes      | The 6-digit verification code sent to the user's email. |
 
 **Success Response (200 OK):**
 
 ```json
 {
-    "status": "success",
-    "message": "Banks retrieved successfully.",
+    "Status": "success",
+    "message": "email verification successful"
+}
+```
+
+### 1.4. Resend Verification Token (`POST /user/resend-verification-token`)
+
+| Parameter | Location | Type   | Required | Description           |
+| :-------- | :------- | :----- | :------- | :-------------------- |
+| `email`   | Body     | string | Yes      | User's email address. |
+
+**Success Response (200 OK):**
+
+```json
+{
+    "Status": "success",
+    "message": "verification token sent successfully"
+}
+```
+
+### 1.5. Get User Profile (`GET /user/profile`)
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Success Response (200 OK):**
+
+```json
+{
+    "Status": "success",
+    "message": "welcome back",
+    "data": {
+        "firstName": "...",
+        "lastName": "...",
+        "email": "...",
+        "isEmailVerified": true,
+        // ... other user details
+        "kycStatus": "PENDING" // (Assumed field based on service logic)
+    }
+}
+```
+
+### 1.6. Get All Banks (`GET /user/get-all-banks`)
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Success Response (200 OK):** Returns a list of banks for Nigeria (`/v3/banks/NG` Flutterwave call).
+
+```json
+{
+    "Status": "success",
+    "message": "all banks",
     "data": [
         {
-            "id": 132,
+            "id": 1,
             "code": "044",
             "name": "Access Bank"
-        },
-        {
-            "id": 133,
-            "code": "063",
-            "name": "Access Bank (Diamond)"
         }
+        // ... list of banks
     ]
 }
 ```
 
-### `POST /accounts/resolve`
+### 1.7. Register KYC Stage 1 (`GET /user/register-kyc1`)
 
-- **Description:** Verifies bank account details.
-- **Access:** Auth Required (User)
+**Note:** The route is a `GET` in the route file but the controller expects a `req.body`, suggesting it should probably be a **POST** request. **Assuming POST for data submission.**
 
-**Request Body:**
+**Headers:** `Authorization: Bearer <token>`
 
-```json
-{
-    "accountNumber": "0123456789",
-    "bankCode": "044"
-}
-```
+| Parameter        | Location | Type   | Required | Description                                     |
+| :--------------- | :------- | :----- | :------- | :---------------------------------------------- |
+| `profession`     | Body     | string | Yes      | User's profession.                              |
+| `accountNumber`  | Body     | number | Yes      | User's bank account number.                     |
+| `bank`           | Body     | string | Yes      | User's bank name.                               |
+| `bankCode`       | Body     | string | Yes      | User's bank code (from `/get-all-banks`).       |
+| `accountDetails` | Body     | string | Yes      | Account name (likely for validation reference). |
+| `country`        | Body     | string | Yes      | User's country.                                 |
+| `state`          | Body     | string | Yes      | User's state/region.                            |
+| `bvn`            | Body     | string | Yes      | User's Bank Verification Number.                |
 
 **Success Response (200 OK):**
 
 ```json
 {
-    "status": "success",
-    "message": "Account details resolved successfully.",
+    "Status": "success",
+    "message": "KYC 1 created successfully",
     "data": {
-        "account_number": "0123456789",
-        "account_name": "JOHN DOE"
-    }
-}
-```
-
-### `POST /account/virtual`
-
-- **Description:** Creates a virtual bank account for the authenticated user (via SquadCo).
-- **Access:** Auth Required (User)
-
-**Request Body:**
-
-```json
-{
-    "bvn": "22223333444",
-    "address": "123 Techie Lane, Ikeja"
-}
-```
-
-**Success Response (201 Created):**
-
-```json
-{
-    "status": "success",
-    "message": "Virtual account created successfully.",
-    "data": {
-        "bank_name": "VFD Microfinance Bank",
-        "virtual_account_number": "9006809223",
-        "customer_identifier": "60c72b2f9b1d8c001f8e4d2a"
+        "profession": "...",
+        "accountNumber": "..."
+        // ... other KYC 1 details
     }
 }
 ```
 
 ---
 
-## 7. Vending Services Endpoints (`/vending`)
+## 2\. Super Admin Endpoints (`/admin`)
 
-### `POST /vending/airtime`
+These endpoints are for the Super Admin, including initial registration and authentication.
 
-- **Description:** Purchases airtime for a specified phone number.
-- **Access:** Auth Required (User)
+| Method   | Path              | Description                                          | Access                 |
+| :------- | :---------------- | :--------------------------------------------------- | :--------------------- |
+| **POST** | `/admin/register` | Registers the Super Admin (likely a one-time setup). | Public                 |
+| **POST** | `/admin/login`    | Logs in the Super Admin and returns a JWT.           | Public                 |
+| **GET**  | `/admin/profile`  | Retrieves the authenticated Super Admin's profile.   | **Auth (Super Admin)** |
 
-**Request Body:**
+### 2.1. Super Admin Registration (`POST /admin/register`)
 
-```json
-{
-    "phoneNumber": "08012345678",
-    "amount": 500
-}
-```
+| Parameter     | Location | Type   | Required | Description                  |
+| :------------ | :------- | :----- | :------- | :--------------------------- |
+| `fullName`    | Body     | string | Yes      | Super Admin's full name.     |
+| `email`       | Body     | string | Yes      | Super Admin's email address. |
+| `phoneNumber` | Body     | string | Yes      | Super Admin's phone number.  |
+| `password`    | Body     | string | Yes      | Super Admin's password.      |
 
 **Success Response (200 OK):**
 
 ```json
 {
-    "status": "success",
-    "message": "Airtime purchase successful.",
+    "status": "Success",
+    "message": "Super admin created successfully",
     "data": {
-        "transaction_reference": "SAB-168..."
+        "fullName": "...",
+        "email": "..."
+        // ... other Super Admin details
     }
 }
 ```
 
-### `GET /vending/data-plans/:network`
+### 2.2. Super Admin Login (`POST /admin/login`)
 
-- **Description:** Retrieves available data plans for a specified network.
-- **Access:** Auth Required (User)
-- **URL Params:** `network` (e.g., `MTN`, `GLO`, `AIRTEL`)
-
-**Example URL:** `/api/v1/vending/data-plans/MTN`
-
-**Success Response (200 OK):**
-
-```json
-{
-    "status": "success",
-    "message": "Data plans retrieved successfully.",
-    "data": [
-        {
-            "plan_code": "MTN_50MB_DAILY",
-            "price": "50.00",
-            "allowance": "50MB",
-            "validity": "1 Day"
-        }
-    ]
-}
-```
-
-### `POST /vending/data`
-
-- **Description:** Purchases a data plan for a specified phone number.
-- **Access:** Auth Required (User)
-
-**Request Body:**
-
-```json
-{
-    "phoneNumber": "08012345678",
-    "amount": "50.00",
-    "planCode": "MTN_50MB_DAILY"
-}
-```
+| Parameter  | Location | Type   | Required | Description                  |
+| :--------- | :------- | :----- | :------- | :--------------------------- |
+| `email`    | Body     | string | Yes      | Super Admin's email address. |
+| `password` | Body     | string | Yes      | Super Admin's password.      |
 
 **Success Response (200 OK):**
 
 ```json
 {
-    "status": "success",
-    "message": "Data purchase successful.",
+    "Status": "success",
+    "message": "Login successful",
+    "token": "..." // JWT to be used for protected routes
+}
+```
+
+### 2.3. Super Admin Profile (`GET /admin/profile`)
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Success Response (200 OK):**
+
+```json
+{
+    "Status": "success",
+    "message": "welcome back",
     "data": {
-        "transaction_reference": "SDB-168..."
+        "fullName": "...",
+        "email": "...",
+        "type": "superadmin"
+        // ... other Super Admin details
+    }
+}
+```
+
+---
+
+## 3\. Regional Admin Endpoints (`/regional-admin`)
+
+These endpoints are for Regional Administrators.
+
+| Method   | Path                      | Description                                           | Access                    |
+| :------- | :------------------------ | :---------------------------------------------------- | :------------------------ |
+| **POST** | `/regional-admin/login`   | Logs in a Regional Admin and returns a JWT.           | Public                    |
+| **GET**  | `/regional-admin/profile` | Retrieves the authenticated Regional Admin's profile. | **Auth (Regional Admin)** |
+
+### 3.1. Regional Admin Login (`POST /regional-admin/login`)
+
+| Parameter  | Location | Type   | Required | Description                     |
+| :--------- | :------- | :----- | :------- | :------------------------------ |
+| `email`    | Body     | string | Yes      | Regional Admin's email address. |
+| `password` | Body     | string | Yes      | Regional Admin's password.      |
+
+**Success Response (200 OK):**
+
+```json
+{
+    "Status": "success",
+    "message": "login successfuly",
+    "token": "..." // JWT to be used for protected routes
+}
+```
+
+### 3.2. Regional Admin Profile (`GET /regional-admin/profile`)
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Success Response (200 OK):**
+
+```json
+{
+    "Status": "success",
+    "message": "welcome back",
+    "data": {
+        "fullName": "...",
+        "email": "...",
+        "region": "..."
+        // ... other Regional Admin details
     }
 }
 ```

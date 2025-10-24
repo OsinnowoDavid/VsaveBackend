@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.buyDataController = exports.buyAirtimeController = exports.getDataPlanController = exports.getUserKyc1RecordController = exports.registerKYC1 = exports.userProfile = exports.loginUser = exports.resendUserVerificationEmail = exports.verifyEmail = exports.registerUser = void 0;
+exports.payOutController = exports.accountLookUpController = exports.getBankCodeController = exports.buyDataController = exports.buyAirtimeController = exports.getDataPlanController = exports.getUserKyc1RecordController = exports.registerKYC1 = exports.userProfile = exports.loginUser = exports.resendUserVerificationEmail = exports.verifyEmail = exports.registerUser = void 0;
 const argon2_1 = __importDefault(require("argon2"));
 const Agent_1 = require("../services/Agent");
 const User_1 = require("../services/User");
@@ -11,7 +11,6 @@ const JWT_1 = require("../config/JWT");
 const nodemailer_1 = __importDefault(require("../config/nodemailer"));
 const QOREID_API_KEY = process.env.QOREID_SECRET_KEY;
 const QOREID_BASE_URL = process.env.QOREID_BASE_URL;
-console.log("Q:", QOREID_BASE_URL);
 const registerUser = async (req, res) => {
     try {
         const { firstName, lastName, email, password, gender, dateOfBirth, phoneNumber, referralCode, } = req.body;
@@ -329,6 +328,13 @@ const buyAirtimeController = async (req, res) => {
     try {
         const { phoneNumber, amount } = req.body;
         const user = req.user;
+        // check if avaliablebalance is greater than the purchased amount
+        if (amount > user.availableBalance) {
+            return res.json({
+                status: "Failed",
+                message: "Insufficient Fund Topup your account and try again",
+            });
+        }
         const airtime = await (0, User_1.buyAirtime)(phoneNumber, amount);
         if (!airtime) {
             return res.json({
@@ -336,13 +342,17 @@ const buyAirtimeController = async (req, res) => {
                 message: "something went wrong",
             });
         }
+        const { data } = airtime;
+        let balanceBefore = user.availableBalance;
+        let balanceAfter = user.availableBalance - Number(amount);
         // withdraw money from account
         await (0, User_1.withdraw)(user, amount);
         // save transaction
+        const transaction = await (0, User_1.createUserAirtimeTransaction)(user._id.toString(), data.reference, data.amount, balanceBefore, balanceAfter, data.phone_number, data.network);
         return res.json({
             status: "Success",
             message: "airtime purchase successful",
-            data: airtime,
+            data: transaction,
         });
     }
     catch (err) {
@@ -356,6 +366,15 @@ exports.buyAirtimeController = buyAirtimeController;
 const buyDataController = async (req, res) => {
     try {
         const { phoneNumber, amount, planCode } = req.body;
+        const user = req.user;
+        // check if avaliablebalance is greater than the purchased amount
+        if (amount > user.availableBalance) {
+            return res.json({
+                status: "Failed",
+                message: "Insufficient Fund Topup your account and try again",
+            });
+        }
+        console.log("got here");
         const dataPurchase = await (0, User_1.buyData)(phoneNumber, amount, planCode);
         if (!dataPurchase) {
             return res.json({
@@ -363,10 +382,18 @@ const buyDataController = async (req, res) => {
                 message: "something went wrong",
             });
         }
+        console.log("user:", user);
+        const { data } = dataPurchase;
+        let balanceBefore = user.availableBalance;
+        let balanceAfter = user.availableBalance - Number(amount);
+        // withdraw money from account
+        await (0, User_1.withdraw)(user, amount);
+        // save transaction record
+        const transaction = await (0, User_1.createUserDataTransaction)(user._id.toString(), data.reference, data.amount, balanceBefore, balanceAfter, data.phone_number, data.network, data.meta_json.bundle);
         return res.json({
             status: "Success",
             message: "data purchased",
-            data: dataPurchase,
+            data: transaction,
         });
     }
     catch (err) {
@@ -377,3 +404,71 @@ const buyDataController = async (req, res) => {
     }
 };
 exports.buyDataController = buyDataController;
+const getBankCodeController = async (req, res) => {
+    try {
+        const allBankCode = await (0, User_1.getBankCode)();
+        return res.json({
+            status: "Success",
+            message: "found bankcode",
+            data: allBankCode,
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.getBankCodeController = getBankCodeController;
+const accountLookUpController = async (req, res) => {
+    try {
+        const { accountNumber, bankCode } = req.body;
+        const foundAccount = await (0, User_1.accountLookUp)(accountNumber, bankCode);
+        return res.json({
+            status: "Success",
+            message: "found account",
+            data: foundAccount.data,
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.accountLookUpController = accountLookUpController;
+const payOutController = async (req, res) => {
+    try {
+        const { bankCode, accountNumber, accountName, amount } = req.body;
+        const user = req.user;
+        //check if user avaliableBalance is greater than the amount
+        if (amount > user.availableBalance) {
+            return res.json({
+                status: "Failed",
+                message: "insufficient fund",
+            });
+        }
+        const payment = await (0, User_1.payOut)(user, bankCode, amount, accountNumber, accountName);
+        let balanceBefore = user.availableBalance;
+        let balanceAfter = user.availableBalance - Number(amount);
+        let remark = `${user.firstName} ${user.lastName} payout to ${accountName}`;
+        //withdraw money fro  user availiable
+        await (0, User_1.withdraw)(user, amount);
+        //save transaction record
+        const transaction = await (0, User_1.createUserTransaction)(user._id.toString(), "withdrawal", payment.data.transaction_reference, amount, balanceBefore, balanceAfter, remark, "success", new Date(), `${user.firstName} ${user.lastName}`, accountName);
+        return res.json({
+            status: "Success",
+            message: "transaction completed",
+            data: transaction,
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.payOutController = payOutController;

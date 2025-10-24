@@ -22,7 +22,7 @@ const transactionSchema = new mongoose_1.default.Schema({
     },
     feeCharged: {
         type: Number,
-        required: true,
+        required: false,
     },
     status: {
         type: String,
@@ -57,6 +57,10 @@ const transactionSchema = new mongoose_1.default.Schema({
     },
     date: {
         type: Date,
+    },
+    bundle: {
+        type: Object,
+        required: false,
     },
 }, { timestamps: true });
 exports.default = mongoose_1.default.model("Transaction", transactionSchema);

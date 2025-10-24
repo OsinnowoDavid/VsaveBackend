@@ -1,0 +1,51 @@
+import mongoose from "mongoose";
+
+const userSavingsRecordSchema = new mongoose.Schema(
+    {
+        user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User", // Reference to your User model
+            required: true,
+        },
+        savingId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Savings", // Reference to your User model
+            required: true,
+        },
+        circleId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Savings_circle", // Reference to your User model
+            required: true,
+        },
+        records: [
+            {
+                period: String,
+                periodIndex: String,
+                amount: Number,
+                status: {
+                    type: String,
+                    enum: ["pending", "paid"],
+                },
+            },
+        ],
+        status: {
+            type: String,
+            enum: ["ACTIVE", "PAUSED", "ENDED"],
+            default: "ACTIVE",
+        },
+        maturityAmount: {
+            type: Number,
+        },
+        payOut: {
+            type: Number,
+        },
+    },
+    { timestamps: true },
+);
+
+const userSavingsRecord = mongoose.model(
+    "User_savings_record",
+    userSavingsRecordSchema,
+);
+
+export default userSavingsRecord;

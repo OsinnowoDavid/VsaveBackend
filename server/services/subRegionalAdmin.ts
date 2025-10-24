@@ -61,3 +61,17 @@ export const createAgent = async (
         throw err;
     }
 };
+
+export const initSavingsPlan = async (
+    user: any,
+    frequency: string,
+    savingAmount: number,
+    startDate: Date,
+    endDate: Date,
+    autoRestartEnabled: boolean,
+) => {
+    try {
+    } catch (err: any) {
+        throw err;
+    }
+};

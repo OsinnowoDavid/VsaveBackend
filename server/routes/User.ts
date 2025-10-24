@@ -9,7 +9,10 @@ import {
     // verifyBankAccountController,
     getDataPlanController,
     buyAirtimeController,
-    buyDataController
+    buyDataController,
+    getBankCodeController,
+    accountLookUpController,
+    payOutController,
 } from "../controller/User";
 import {
     validateUserRegitrationInput,
@@ -29,11 +32,18 @@ router.get("/profile", verifyUserToken, userProfile);
 //   verifyUserToken,
 //   verifyBankAccountController
 // );
-router.get("/register-kyc1", verifyUserToken, registerKYC1); 
+router.get("/register-kyc1", verifyUserToken, registerKYC1);
 
-router.get("/get-data-plan/:network", verifyUserToken, getDataPlanController) 
+router.get("/get-data-plan/:network", verifyUserToken, getDataPlanController);
 
-router.post("/buy-airtime", verifyUserToken, buyAirtimeController) ; 
+router.post("/buy-airtime", verifyUserToken, buyAirtimeController);
 
-router.post("/buy-data", verifyUserToken , buyDataController ) ;
+router.post("/buy-data", verifyUserToken, buyDataController);
+
+router.get("/get-bank-code", verifyUserToken, getBankCodeController);
+
+router.post("/account-lookup", verifyUserToken, accountLookUpController);
+
+router.post("/payout", verifyUserToken, payOutController);
+
 export default router;

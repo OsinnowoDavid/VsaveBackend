@@ -22,4 +22,7 @@ router.get("/register-kyc1", JWT_1.verifyUserToken, User_1.registerKYC1);
 router.get("/get-data-plan/:network", JWT_1.verifyUserToken, User_1.getDataPlanController);
 router.post("/buy-airtime", JWT_1.verifyUserToken, User_1.buyAirtimeController);
 router.post("/buy-data", JWT_1.verifyUserToken, User_1.buyDataController);
+router.get("/get-bank-code", JWT_1.verifyUserToken, User_1.getBankCodeController);
+router.post("/account-lookup", JWT_1.verifyUserToken, User_1.accountLookUpController);
+router.post("/payout", JWT_1.verifyUserToken, User_1.payOutController);
 exports.default = router;

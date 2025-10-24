@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createAgent = void 0;
+exports.initSavingsPlan = exports.createAgent = void 0;
 const Agents_1 = __importDefault(require("../model/Agents"));
 const Agents_referral_1 = __importDefault(require("../model/Agents_referral"));
 //import Savings from "../model/Savings"
@@ -56,3 +56,11 @@ const createAgent = async (firstName, lastName, email, phoneNumber, subRegion, p
     }
 };
 exports.createAgent = createAgent;
+const initSavingsPlan = async (user, frequency, savingAmount, startDate, endDate, autoRestartEnabled) => {
+    try {
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.initSavingsPlan = initSavingsPlan;

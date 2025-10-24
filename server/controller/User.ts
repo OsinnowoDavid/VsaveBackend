@@ -21,6 +21,11 @@ import {
     deposit,
     withdraw,
     createUserTransaction,
+    createUserAirtimeTransaction,
+    createUserDataTransaction,
+    getBankCode,
+    accountLookUp,
+    payOut,
 } from "../services/User";
 import { IUser, IVerificationToken, IKYC1 } from "../types";
 import { signUserToken } from "../config/JWT";
@@ -29,7 +34,6 @@ import axios from "axios";
 import { format } from "path";
 const QOREID_API_KEY = process.env.QOREID_SECRET_KEY as string;
 const QOREID_BASE_URL = process.env.QOREID_BASE_URL as string;
-console.log("Q:", QOREID_BASE_URL);
 
 export const registerUser = async (req: Request, res: Response) => {
     try {
@@ -404,6 +408,13 @@ export const buyAirtimeController = async (req: Request, res: Response) => {
     try {
         const { phoneNumber, amount } = req.body;
         const user = req.user as IUser;
+        // check if avaliablebalance is greater than the purchased amount
+        if (amount > user.availableBalance) {
+            return res.json({
+                status: "Failed",
+                message: "Insufficient Fund Topup your account and try again",
+            });
+        }
         const airtime = await buyAirtime(phoneNumber, amount);
         if (!airtime) {
             return res.json({
@@ -411,13 +422,25 @@ export const buyAirtimeController = async (req: Request, res: Response) => {
                 message: "something went wrong",
             });
         }
+        const { data } = airtime;
+        let balanceBefore = user.availableBalance;
+        let balanceAfter = user.availableBalance - Number(amount);
         // withdraw money from account
         await withdraw(user, amount);
         // save transaction
+        const transaction = await createUserAirtimeTransaction(
+            user._id.toString(),
+            data.reference,
+            data.amount,
+            balanceBefore,
+            balanceAfter,
+            data.phone_number,
+            data.network,
+        );
         return res.json({
             status: "Success",
             message: "airtime purchase successful",
-            data: airtime,
+            data: transaction,
         });
     } catch (err: any) {
         return res.json({
@@ -430,6 +453,15 @@ export const buyAirtimeController = async (req: Request, res: Response) => {
 export const buyDataController = async (req: Request, res: Response) => {
     try {
         const { phoneNumber, amount, planCode } = req.body;
+        const user = req.user as IUser;
+        // check if avaliablebalance is greater than the purchased amount
+        if (amount > user.availableBalance) {
+            return res.json({
+                status: "Failed",
+                message: "Insufficient Fund Topup your account and try again",
+            });
+        }
+        console.log("got here");
         const dataPurchase = await buyData(phoneNumber, amount, planCode);
         if (!dataPurchase) {
             return res.json({
@@ -437,10 +469,107 @@ export const buyDataController = async (req: Request, res: Response) => {
                 message: "something went wrong",
             });
         }
+        console.log("user:", user);
+        const { data } = dataPurchase;
+        let balanceBefore = user.availableBalance;
+        let balanceAfter = user.availableBalance - Number(amount);
+        // withdraw money from account
+        await withdraw(user, amount);
+        // save transaction record
+        const transaction = await createUserDataTransaction(
+            user._id.toString(),
+            data.reference,
+            data.amount,
+            balanceBefore,
+            balanceAfter,
+            data.phone_number,
+            data.network,
+            data.meta_json.bundle,
+        );
         return res.json({
             status: "Success",
             message: "data purchased",
-            data: dataPurchase,
+            data: transaction,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+export const getBankCodeController = async (req: Request, res: Response) => {
+    try {
+        const allBankCode = await getBankCode();
+        return res.json({
+            status: "Success",
+            message: "found bankcode",
+            data: allBankCode,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+export const accountLookUpController = async (req: Request, res: Response) => {
+    try {
+        const { accountNumber, bankCode } = req.body;
+        const foundAccount = await accountLookUp(accountNumber, bankCode);
+        return res.json({
+            status: "Success",
+            message: "found account",
+            data: foundAccount.data,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+export const payOutController = async (req: Request, res: Response) => {
+    try {
+        const { bankCode, accountNumber, accountName, amount } = req.body;
+        const user = req.user as IUser;
+        //check if user avaliableBalance is greater than the amount
+        if (amount > user.availableBalance) {
+            return res.json({
+                status: "Failed",
+                message: "insufficient fund",
+            });
+        }
+        const payment = await payOut(
+            user,
+            bankCode,
+            amount,
+            accountNumber,
+            accountName,
+        );
+        let balanceBefore = user.availableBalance;
+        let balanceAfter = user.availableBalance - Number(amount);
+        let remark = `${user.firstName} ${user.lastName} payout to ${accountName}`;
+        //withdraw money fro  user availiable
+        await withdraw(user, amount);
+        //save transaction record
+        const transaction = await createUserTransaction(
+            user._id.toString(),
+            "withdrawal",
+            payment.data.transaction_reference,
+            amount,
+            balanceBefore,
+            balanceAfter,
+            remark,
+            "success",
+            new Date(),
+            `${user.firstName} ${user.lastName}`,
+            accountName,
+        );
+        return res.json({
+            status: "Success",
+            message: "transaction completed",
+            data: transaction,
         });
     } catch (err: any) {
         return res.json({
