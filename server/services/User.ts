@@ -621,3 +621,50 @@ export const payOut = async (
         }
     }
 };
+
+export const getUserTransactions = async (user: string) => {
+    try {
+        const userTransaction = await Transaction.find({ userId: user });
+        return userTransaction;
+    } catch (err: any) {
+        throw err;
+    }
+};
+
+export const getUserSingleTransaction = async (
+    user: string,
+    transactionId: string,
+) => {
+    try {
+        const userSingleTransaction = await Transaction.findOne({
+            userId: user,
+            _id: transactionId,
+        });
+        return userSingleTransaction;
+    } catch (err: any) {
+        throw err;
+    }
+};
+export const getUserTransactionByStatus = async (
+    user: string,
+    status: string,
+) => {
+    try {
+        const userTransaction = await Transaction.find({
+            userId: user,
+            status,
+        });
+        return userTransaction;
+    } catch (err: any) {
+        throw err;
+    }
+};
+
+export const getUserTransactionByType = async (user: string, type: string) => {
+    try {
+        const userTransaction = await Transaction.find({ userId: user, type });
+        return userTransaction;
+    } catch (err: any) {
+        throw err;
+    }
+};

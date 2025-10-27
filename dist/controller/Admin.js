@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRegionalAdminByEmailController = exports.getAllRegionalAdminController = exports.getAllRegionController = exports.createNewRegionController = exports.createRegionalAdminController = exports.superAdminProfileController = exports.LoginSuperAdminController = exports.registerAdminController = void 0;
+exports.getAdminSavingsConfigController = exports.setAdminConfigController = exports.getRegionalAdminByEmailController = exports.getAllRegionalAdminController = exports.getAllRegionController = exports.createNewRegionController = exports.createRegionalAdminController = exports.superAdminProfileController = exports.LoginSuperAdminController = exports.registerAdminController = void 0;
 const argon2_1 = __importDefault(require("argon2"));
 const Admin_1 = require("../services/Admin");
 const JWT_1 = require("../config/JWT");
@@ -197,3 +197,44 @@ const getRegionalAdminByEmailController = async (req, res) => {
     }
 };
 exports.getRegionalAdminByEmailController = getRegionalAdminByEmailController;
+const setAdminConfigController = async (req, res) => {
+    try {
+        const { defaultPenaltyFee, firstTimeAdminFee } = req.body;
+        const config = await (0, Admin_1.setAdminSavingsConfig)(defaultPenaltyFee, firstTimeAdminFee);
+        if (!config) {
+            return res.json({
+                status: "Failed",
+                message: "something went wrong",
+            });
+        }
+        return res.json({
+            status: "Success",
+            message: "record updated",
+            data: config,
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.setAdminConfigController = setAdminConfigController;
+const getAdminSavingsConfigController = async (req, res) => {
+    try {
+        const configSettings = await (0, Admin_1.getAdminSavingsConfig)();
+        return res.json({
+            status: "Success",
+            message: "config setting",
+            data: configSettings,
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.getAdminSavingsConfigController = getAdminSavingsConfigController;

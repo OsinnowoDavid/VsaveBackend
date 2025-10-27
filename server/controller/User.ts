@@ -26,6 +26,10 @@ import {
     getBankCode,
     accountLookUp,
     payOut,
+    getUserTransactions,
+    getUserSingleTransaction,
+    getUserTransactionByStatus,
+    getUserTransactionByType,
 } from "../services/User";
 import { IUser, IVerificationToken, IKYC1 } from "../types";
 import { signUserToken } from "../config/JWT";
@@ -206,6 +210,11 @@ export const resendUserVerificationEmail = async (
         });
     }
 };
+const getNextFiveMinutes = () => {
+    const now = new Date();
+    const next = new Date(now.getTime() + 5 * 60 * 1000); // add 5 minutes
+    return next;
+};
 export const loginUser = async (req: Request, res: Response) => {
     try {
         const { email, password } = req.body;
@@ -230,11 +239,7 @@ export const loginUser = async (req: Request, res: Response) => {
             };
             // Send email
             await Transporter.sendMail(mailOptions);
-            const getNextFiveMinutes = () => {
-                const now = new Date();
-                const next = new Date(now.getTime() + 5 * 60 * 1000); // add 5 minutes
-                return next;
-            };
+
             const expTime = getNextFiveMinutes();
             await assignUserEmailVerificationToken(
                 user.email,
@@ -570,6 +575,95 @@ export const payOutController = async (req: Request, res: Response) => {
             status: "Success",
             message: "transaction completed",
             data: transaction,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+export const getUserTransactionsController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const user = req.user as IUser;
+        const foundTransaction = await getUserTransactions(user._id.toString());
+        return res.json({
+            status: "Success",
+            message: "Found Transaction",
+            data: foundTransaction,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+export const getUserSingleTransactionController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const { id } = req.params;
+        const user = req.user as IUser;
+        const foundTransaction = await getUserSingleTransaction(
+            user._id.toString(),
+            id,
+        );
+        return res.json({
+            status: "Success",
+            message: "Found Transaction",
+            data: foundTransaction,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+
+export const getUserTransactionByStatusController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const { status } = req.params;
+        const user = req.user as IUser;
+        const foundTransaction = await getUserTransactionByStatus(
+            user._id.toString(),
+            status,
+        );
+        return res.json({
+            status: "Success",
+            message: "Found Transaction",
+            data: foundTransaction,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+export const getUserTransactionByTypeController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const { type } = req.params;
+        const user = req.user as IUser;
+        const foundTransaction = await getUserTransactionByType(
+            user._id.toString(),
+            type,
+        );
+        return res.json({
+            status: "Success",
+            message: "Found Transaction",
+            data: foundTransaction,
         });
     } catch (err: any) {
         return res.json({

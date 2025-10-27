@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.payOut = exports.accountLookUp = exports.getBankCode = exports.createUserAirtimeTransaction = exports.createUserDataTransaction = exports.checkTransferByRefrence = exports.createUserTransaction = exports.deposit = exports.withdraw = exports.buyData = exports.getUserKyc1Record = exports.getDataPlan = exports.buyAirtime = exports.createVirtualAccountIndex = exports.createVirtualAccountForPayment = exports.verifyBankaccount = exports.getAllBanksAndCode = exports.createKYC1Record = exports.kycStatusChange = exports.createKYCRecord = exports.getUserVerificationToken = exports.assignUserEmailVerificationToken = exports.getUserByEmail = exports.getUserById = exports.createNewUser = void 0;
+exports.getUserTransactionByType = exports.getUserTransactionByStatus = exports.getUserSingleTransaction = exports.getUserTransactions = exports.payOut = exports.accountLookUp = exports.getBankCode = exports.createUserAirtimeTransaction = exports.createUserDataTransaction = exports.checkTransferByRefrence = exports.createUserTransaction = exports.deposit = exports.withdraw = exports.buyData = exports.getUserKyc1Record = exports.getDataPlan = exports.buyAirtime = exports.createVirtualAccountIndex = exports.createVirtualAccountForPayment = exports.verifyBankaccount = exports.getAllBanksAndCode = exports.createKYC1Record = exports.kycStatusChange = exports.createKYCRecord = exports.getUserVerificationToken = exports.assignUserEmailVerificationToken = exports.getUserByEmail = exports.getUserById = exports.createNewUser = void 0;
 const User_1 = __importDefault(require("../model/User"));
 const VerificationToken_1 = __importDefault(require("../model/VerificationToken"));
 const KYC1_1 = __importDefault(require("../model/KYC1"));
@@ -570,3 +570,49 @@ const payOut = async (user, bank_code, amount, account_number, account_name) => 
     }
 };
 exports.payOut = payOut;
+const getUserTransactions = async (user) => {
+    try {
+        const userTransaction = await Transaction_1.default.find({ userId: user });
+        return userTransaction;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.getUserTransactions = getUserTransactions;
+const getUserSingleTransaction = async (user, transactionId) => {
+    try {
+        const userSingleTransaction = await Transaction_1.default.findOne({
+            userId: user,
+            _id: transactionId,
+        });
+        return userSingleTransaction;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.getUserSingleTransaction = getUserSingleTransaction;
+const getUserTransactionByStatus = async (user, status) => {
+    try {
+        const userTransaction = await Transaction_1.default.find({
+            userId: user,
+            status,
+        });
+        return userTransaction;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.getUserTransactionByStatus = getUserTransactionByStatus;
+const getUserTransactionByType = async (user, type) => {
+    try {
+        const userTransaction = await Transaction_1.default.find({ userId: user, type });
+        return userTransaction;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.getUserTransactionByType = getUserTransactionByType;

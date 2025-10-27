@@ -3,6 +3,7 @@ const jwt_secret: any = process.env.jwt_secret;
 import { NextFunction, Request, Response } from "express";
 import { getUserById } from "../services/User";
 import { getSuperAdminById } from "../services/Admin";
+import { ISuperAdmin, IRegionalAdmin, ISubRegionalAdmin } from "../types";
 import {
     getRegionalAdminById,
     getSubRegionalAdminById,
@@ -109,9 +110,13 @@ export const verifyRegionalAdminToken = async (
         }
         const decoded: any = jwt.verify(authorization, jwt_secret);
         const foundId = decoded.user;
-        const foundSuperAdmin = await getSuperAdminById(foundId);
-        const foundRegionalAdmin = await getRegionalAdminById(foundId);
-        if (!foundSuperAdmin || !foundRegionalAdmin) {
+        const foundSuperAdmin = (await getSuperAdminById(
+            foundId,
+        )) as ISuperAdmin;
+        const foundRegionalAdmin = (await getRegionalAdminById(
+            foundId,
+        )) as IRegionalAdmin;
+        if (!(foundSuperAdmin || foundRegionalAdmin)) {
             return res.json({
                 status: "failed!",
                 msg: "user not authorized!!",
@@ -144,10 +149,22 @@ export const verifySubRegionalAdminToken = async (
         }
         const decoded: any = jwt.verify(authorization, jwt_secret);
         const foundId = decoded.user;
-        const foundSuperAdmin = await getSuperAdminById(foundId);
-        const foundRegionalAdmin = await getRegionalAdminById(foundId);
-        const foundSubRegionalAdmin = await getSubRegionalAdminById(foundId);
-        if (!foundSuperAdmin || !foundRegionalAdmin || foundSubRegionalAdmin) {
+        const foundSuperAdmin = (await getSuperAdminById(
+            foundId,
+        )) as ISuperAdmin;
+        const foundRegionalAdmin = (await getRegionalAdminById(
+            foundId,
+        )) as IRegionalAdmin;
+        const foundSubRegionalAdmin = (await getSubRegionalAdminById(
+            foundId,
+        )) as ISubRegionalAdmin;
+        console.log("user", {
+            superAdmin: foundSuperAdmin,
+            regionalAdmin: foundRegionalAdmin,
+            subRegionalAdmin: foundSubRegionalAdmin,
+        });
+        if (!(foundSuperAdmin || foundRegionalAdmin || foundSubRegionalAdmin)) {
+            console.log("got to superadmin");
             return res.json({
                 status: "failed!",
                 msg: "user not authorized!!",

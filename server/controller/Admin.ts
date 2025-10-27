@@ -11,6 +11,8 @@ import {
     getRegionalAdminByEmail,
     getAllRegionalAdmin,
     assignRegionalAdmin,
+    setAdminSavingsConfig,
+    getAdminSavingsConfig,
 } from "../services/Admin";
 import { signUserToken } from "../config/JWT";
 
@@ -230,6 +232,51 @@ export const getRegionalAdminByEmailController = async (
     try {
         const { email } = req.params;
         const foundRegionalAdmin = await getRegionalAdminByEmail(email);
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+
+export const setAdminConfigController = async (req: Request, res: Response) => {
+    try {
+        const { defaultPenaltyFee, firstTimeAdminFee } = req.body;
+        const config = await setAdminSavingsConfig(
+            defaultPenaltyFee,
+            firstTimeAdminFee,
+        );
+        if (!config) {
+            return res.json({
+                status: "Failed",
+                message: "something went wrong",
+            });
+        }
+        return res.json({
+            status: "Success",
+            message: "record updated",
+            data: config,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+
+export const getAdminSavingsConfigController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const configSettings = await getAdminSavingsConfig();
+        return res.json({
+            status: "Success",
+            message: "config setting",
+            data: configSettings,
+        });
     } catch (err: any) {
         return res.json({
             status: "Failed",

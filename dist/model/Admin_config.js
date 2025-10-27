@@ -11,6 +11,18 @@ const adminConfigSchema = new mongoose_1.default.Schema({
     firstTimeAdminFee: {
         type: String,
     },
-});
-const adminConfig = mongoose_1.default.model("Admin_config", adminConfigSchema);
-exports.default = adminConfig;
+}, { collection: "settings" });
+adminConfigSchema.statics.getSettings = async function () {
+    const settings = await this.findOne();
+    if (!settings) {
+        const defaultSettings = new this({
+            defaultPenaltyFee: "0",
+            firstTimeAdminFee: "0",
+        });
+        await defaultSettings.save();
+        return defaultSettings;
+    }
+    return settings;
+};
+const AdminConfig = mongoose_1.default.model("Admin_config", adminConfigSchema);
+exports.default = AdminConfig;

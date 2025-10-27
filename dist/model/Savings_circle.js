@@ -16,9 +16,10 @@ const savingsCircleSchema = new mongoose_1.default.Schema({
         required: true,
     },
     numberOfPeriod: {
-        type: String,
+        type: Number,
+        default: 1,
     },
-    savingAmount: { type: Number, required: true },
+    savingsAmount: { type: Number, required: true },
     startDate: { type: Date, default: Date.now },
     endDate: { type: Date },
     circleIndex: { type: Number, default: 1 },

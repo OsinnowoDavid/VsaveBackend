@@ -184,12 +184,78 @@ export interface ITransaction extends Document {
     updatedAt?: Date;
 }
 
-export interface ISavings extends Document {
+export interface IAdminConfig extends Document {
     _id: Types.ObjectId;
-    // savings model not defined in models folder yet; placeholder for future fields
+    defaultPenaltyFee?: string;
+    firstTimeAdminFee?: string;
 }
 
-export interface IStaticsInfo extends Document {
+export interface IAgentReferral extends Document {
     _id: Types.ObjectId;
-    // statics_info model not defined; placeholder for future fields
+    agent: Types.ObjectId;
+    referralCode: string;
+    referres?: Types.ObjectId[];
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+export interface IBankCode extends Document {
+    _id: Types.ObjectId;
+    bankCode?: string;
+    bank?: string;
+}
+
+export interface ISavingsCircle extends Document {
+    _id: Types.ObjectId;
+    savingsPlanId: Types.ObjectId;
+    frequency: "DAILY" | "WEEKLY" | "MONTHLY";
+    numberOfPeriod?: number;
+    savingsAmount: number;
+    startDate?: Date;
+    endDate?: Date;
+    circleIndex?: number;
+    status?: "ACTIVE" | "PAUSED" | "ENDED";
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+export interface ISavingsGroup extends Document {
+    _id: Types.ObjectId;
+    savingsId: Types.ObjectId;
+    savingsCircleId: Types.ObjectId;
+    users: Types.ObjectId[];
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+export interface IUserSavingsRecord extends Document {
+    _id: Types.ObjectId;
+    user: Types.ObjectId;
+    savingId: Types.ObjectId;
+    savingsCircleId: Types.ObjectId;
+    records?: {
+        period?: string;
+        periodIndex?: string;
+        amount?: number;
+        status?: "pending" | "paid";
+    }[];
+    status?: "ACTIVE" | "PAUSED" | "ENDED";
+    maturityAmount?: number;
+    payOut?: number;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+export interface ISavingsPlan extends Document {
+    _id: Types.ObjectId;
+    subRegion: Types.ObjectId;
+    frequency: "DAILY" | "WEEKLY" | "MONTHLY";
+    savingsAmount: number;
+    noOfcircleIndex?: number;
+    firstTimeAdminFee?: string;
+    autoRestartEnabled?: boolean;
+    status?: "ACTIVE" | "PAUSED" | "ENDED";
+    adminId?: string;
+    createdAt?: Date;
+    updatedAt?: Date;
 }

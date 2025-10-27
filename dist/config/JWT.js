@@ -95,9 +95,9 @@ const verifyRegionalAdminToken = async (req, res, next) => {
         }
         const decoded = jsonwebtoken_1.default.verify(authorization, jwt_secret);
         const foundId = decoded.user;
-        const foundSuperAdmin = await (0, Admin_1.getSuperAdminById)(foundId);
-        const foundRegionalAdmin = await (0, RegionalAdmin_1.getRegionalAdminById)(foundId);
-        if (!foundSuperAdmin || !foundRegionalAdmin) {
+        const foundSuperAdmin = (await (0, Admin_1.getSuperAdminById)(foundId));
+        const foundRegionalAdmin = (await (0, RegionalAdmin_1.getRegionalAdminById)(foundId));
+        if (!(foundSuperAdmin || foundRegionalAdmin)) {
             return res.json({
                 status: "failed!",
                 msg: "user not authorized!!",
@@ -127,10 +127,16 @@ const verifySubRegionalAdminToken = async (req, res, next) => {
         }
         const decoded = jsonwebtoken_1.default.verify(authorization, jwt_secret);
         const foundId = decoded.user;
-        const foundSuperAdmin = await (0, Admin_1.getSuperAdminById)(foundId);
-        const foundRegionalAdmin = await (0, RegionalAdmin_1.getRegionalAdminById)(foundId);
-        const foundSubRegionalAdmin = await (0, RegionalAdmin_1.getSubRegionalAdminById)(foundId);
-        if (!foundSuperAdmin || !foundRegionalAdmin || foundSubRegionalAdmin) {
+        const foundSuperAdmin = (await (0, Admin_1.getSuperAdminById)(foundId));
+        const foundRegionalAdmin = (await (0, RegionalAdmin_1.getRegionalAdminById)(foundId));
+        const foundSubRegionalAdmin = (await (0, RegionalAdmin_1.getSubRegionalAdminById)(foundId));
+        console.log("user", {
+            superAdmin: foundSuperAdmin,
+            regionalAdmin: foundRegionalAdmin,
+            subRegionalAdmin: foundSubRegionalAdmin,
+        });
+        if (!(foundSuperAdmin || foundRegionalAdmin || foundSubRegionalAdmin)) {
+            console.log("got to superadmin");
             return res.json({
                 status: "failed!",
                 msg: "user not authorized!!",

@@ -5,6 +5,7 @@ import connectDB from "./config/mongodB";
 import userRouter from "./routes/User";
 import adminRouter from "./routes/Admin";
 import regionalAdminRouter from "./routes/RegionalAdmin";
+import savingsRouter from "./routes/Savings";
 import webhookRouter from "./routes/Webhook";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
@@ -39,9 +40,9 @@ app.use("/admin", adminRouter);
 // regionaladmin routes config
 app.use("/regionaladmin", regionalAdminRouter);
 
-app.use("/webhook", webhookRouter);
+app.use("/savings", savingsRouter);
 
-console.log("got here");
+app.use("/webhook", webhookRouter);
 
 app.listen(port, () => {
     console.log(`serve is running on ${port}}`);

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.payOutController = exports.accountLookUpController = exports.getBankCodeController = exports.buyDataController = exports.buyAirtimeController = exports.getDataPlanController = exports.getUserKyc1RecordController = exports.registerKYC1 = exports.userProfile = exports.loginUser = exports.resendUserVerificationEmail = exports.verifyEmail = exports.registerUser = void 0;
+exports.getUserTransactionByTypeController = exports.getUserTransactionByStatusController = exports.getUserSingleTransactionController = exports.getUserTransactionsController = exports.payOutController = exports.accountLookUpController = exports.getBankCodeController = exports.buyDataController = exports.buyAirtimeController = exports.getDataPlanController = exports.getUserKyc1RecordController = exports.registerKYC1 = exports.userProfile = exports.loginUser = exports.resendUserVerificationEmail = exports.verifyEmail = exports.registerUser = void 0;
 const argon2_1 = __importDefault(require("argon2"));
 const Agent_1 = require("../services/Agent");
 const User_1 = require("../services/User");
@@ -156,6 +156,11 @@ const resendUserVerificationEmail = async (req, res) => {
     }
 };
 exports.resendUserVerificationEmail = resendUserVerificationEmail;
+const getNextFiveMinutes = () => {
+    const now = new Date();
+    const next = new Date(now.getTime() + 5 * 60 * 1000); // add 5 minutes
+    return next;
+};
 const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -180,11 +185,6 @@ const loginUser = async (req, res) => {
             };
             // Send email
             await nodemailer_1.default.sendMail(mailOptions);
-            const getNextFiveMinutes = () => {
-                const now = new Date();
-                const next = new Date(now.getTime() + 5 * 60 * 1000); // add 5 minutes
-                return next;
-            };
             const expTime = getNextFiveMinutes();
             await (0, User_1.assignUserEmailVerificationToken)(user.email, tokenNumber, expTime);
             return res.json({
@@ -472,3 +472,78 @@ const payOutController = async (req, res) => {
     }
 };
 exports.payOutController = payOutController;
+const getUserTransactionsController = async (req, res) => {
+    try {
+        const user = req.user;
+        const foundTransaction = await (0, User_1.getUserTransactions)(user._id.toString());
+        return res.json({
+            status: "Success",
+            message: "Found Transaction",
+            data: foundTransaction,
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.getUserTransactionsController = getUserTransactionsController;
+const getUserSingleTransactionController = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const user = req.user;
+        const foundTransaction = await (0, User_1.getUserSingleTransaction)(user._id.toString(), id);
+        return res.json({
+            status: "Success",
+            message: "Found Transaction",
+            data: foundTransaction,
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.getUserSingleTransactionController = getUserSingleTransactionController;
+const getUserTransactionByStatusController = async (req, res) => {
+    try {
+        const { status } = req.params;
+        const user = req.user;
+        const foundTransaction = await (0, User_1.getUserTransactionByStatus)(user._id.toString(), status);
+        return res.json({
+            status: "Success",
+            message: "Found Transaction",
+            data: foundTransaction,
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.getUserTransactionByStatusController = getUserTransactionByStatusController;
+const getUserTransactionByTypeController = async (req, res) => {
+    try {
+        const { type } = req.params;
+        const user = req.user;
+        const foundTransaction = await (0, User_1.getUserTransactionByType)(user._id.toString(), type);
+        return res.json({
+            status: "Success",
+            message: "Found Transaction",
+            data: foundTransaction,
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.getUserTransactionByTypeController = getUserTransactionByTypeController;

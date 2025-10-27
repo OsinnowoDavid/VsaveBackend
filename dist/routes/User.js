@@ -19,10 +19,15 @@ router.get("/profile", JWT_1.verifyUserToken, User_1.userProfile);
 //   verifyBankAccountController
 // );
 router.get("/register-kyc1", JWT_1.verifyUserToken, User_1.registerKYC1);
+router.get("/kyc1", JWT_1.verifyUserToken, User_1.getUserKyc1RecordController);
 router.get("/get-data-plan/:network", JWT_1.verifyUserToken, User_1.getDataPlanController);
 router.post("/buy-airtime", JWT_1.verifyUserToken, User_1.buyAirtimeController);
 router.post("/buy-data", JWT_1.verifyUserToken, User_1.buyDataController);
 router.get("/get-bank-code", JWT_1.verifyUserToken, User_1.getBankCodeController);
 router.post("/account-lookup", JWT_1.verifyUserToken, User_1.accountLookUpController);
 router.post("/payout", JWT_1.verifyUserToken, User_1.payOutController);
+router.get("/transactions", JWT_1.verifyUserToken, User_1.getUserTransactionsController);
+router.get("/single-transaction/:id", JWT_1.verifyUserToken, User_1.getUserSingleTransactionController);
+router.get("/transaction-by-status/:status", JWT_1.verifyUserToken, User_1.getUserTransactionByStatusController);
+router.get("/transaction-by-type/:type", JWT_1.verifyUserToken, User_1.getUserTransactionByTypeController);
 exports.default = router;

@@ -11,13 +11,17 @@ const savingsSchema = new mongoose.Schema({
         enum: ["DAILY", "WEEKLY", "MONTHLY"],
         required: true,
     },
-    savingAmount: { type: Number, required: true },
-    circleIndex: { type: Number, default: 1 },
-    autoRestartEnabled: { type: Boolean, default: true },
+    savingsAmount: { type: Number, required: true },
+    noOfcircleIndex: { type: Number, default: 1 },
+    firstTimeAdminFee: { type: String },
+    autoRestartEnabled: { type: Boolean, default: false },
     status: {
         type: String,
         enum: ["ACTIVE", "PAUSED", "ENDED"],
         default: "ACTIVE",
+    },
+    adminId: {
+        type: String,
     },
 });
 

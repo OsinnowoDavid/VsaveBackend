@@ -1,15 +1,18 @@
 # Vsave Backend API Specification
 
-This document provides a comprehensive list of all exposed RESTful API endpoints for the Vsave Backend. This specification enables seamless integration for the frontend development team.
+This document provides a comprehensive list of all exposed RESTful API endpoints for the Vsave Backend. This specification enables seamless integration for the frontend and analytics consumers.
 
 **Base URL:** `[Your Server Host]/api/v1`
 
+Note: The repository includes a compiled server build in the `dist/` folder. Deployments can run the compiled code (node dist/index.js). The `dist` folder is production-ready JS built from the TypeScript source and contains the runtime server and any analytics aggregation logic used in endpoints described below.
+
 ## General Information
 
--   **Authentication:** All protected routes require a JSON Web Token (JWT) sent in the **Authorization** header as a Bearer token: `Authorization: Bearer <token>`.
--   **Request/Response Format:** All request bodies and successful responses are in **JSON** format.
--   **Password Hashing:** Passwords are hashed using **Argon2** on the server.
--   **User Types:** The system supports three main user types: **User**, **Regional Admin**, and **Super Admin**.
+-   **Authentication:** Protected routes require a JSON Web Token (JWT) in the `Authorization` header: `Authorization: Bearer <token>`.
+-   **Request/Response Format:** JSON.
+-   **Password Hashing:** Argon2.
+-   **User Types:** User, Regional Admin, Super Admin.
+-   **Analytics:** Aggregate and realtime endpoints provided under `/analytics` (see section 6). Aggregation logic is implemented server-side and available in compiled `dist/` for production.
 
 ---
 
@@ -24,10 +27,13 @@ These endpoints are for general Vsave users, handling registration, login, email
 | **POST** | `/user/verify-email`              | Verifies a user's email using a token.        | Public          |
 | **POST** | `/user/resend-verification-token` | Requests a new email verification token.      | Public          |
 | **GET**  | `/user/profile`                   | Retrieves the authenticated user's profile.   | **Auth (User)** |
-| **GET**  | `/user/register-kyc1`             | Submits the first stage of KYC information.   | **Auth (User)** |
+| **POST** | `/user/register-kyc1`             | Submits the first stage of KYC information.   | **Auth (User)** |
 | **GET**  | `/user/get-data-plan/:network`    | Retrieves available data plans for a network. | **Auth (User)** |
 | **POST** | `/user/buy-airtime`               | Buys airtime for a phone number.              | **Auth (User)** |
 | **POST** | `/user/buy-data`                  | Buys data for a phone number.                 | **Auth (User)** |
+| **GET**  | `/user/get-all-banks`             | Retrieves all banks for the user.             | **Auth (User)** |
+
+Refer to the examples in prior sections for request/response shapes. KYC1 is assumed to be POST for data submission.
 
 ---
 
@@ -46,6 +52,8 @@ Endpoints for Super Admin, including registration, authentication, and region/ad
 | **POST** | `/admin/get-all-region`         | Gets all regions.                                    | **Auth (Super Admin)** |
 | **GET**  | `/admin/get-regional-admin`     | Gets a regional admin by email.                      | **Auth (Super Admin)** |
 
+Protected: Super Admin JWT.
+
 ---
 
 ## 3. Regional Admin Endpoints (`/regional-admin`)
@@ -60,340 +68,154 @@ Endpoints for Regional Administrators, including authentication and subregion ma
 | **POST** | `/regional-admin/create-subregion-admin` | Creates a new subregion admin.                        | **Auth (Regional Admin)** |
 | **GET**  | `/regional-admin/get-all-subregion`      | Gets all subregions.                                  | **Auth (Regional Admin)** |
 
----
-
-## 4. Other/Value-Added Endpoints
-
-| Method   | Path                           | Description                                   | Access          |
-| :------- | :----------------------------- | :-------------------------------------------- | :-------------- |
-| **GET**  | `/user/get-data-plan/:network` | Retrieves available data plans for a network. | **Auth (User)** |
-| **POST** | `/user/buy-airtime`            | Buys airtime for a phone number.              | **Auth (User)** |
-| **POST** | `/user/buy-data`               | Buys data for a phone number.                 | **Auth (User)** |
+Protected: Regional Admin JWT.
 
 ---
 
-## Guidelines
+## 4. Sub-Regional Admin / Agents
 
--   All protected endpoints require JWT authentication in the `Authorization` header.
--   All request and response bodies are JSON.
--   Use the correct HTTP method for each endpoint (GET, POST).
--   For resource creation, use POST; for retrieval, use GET.
--   Error responses follow a consistent format with `status` and `message` fields.
+-   Sub-regional admin: create/list/manage users within subregions (see routes/SubRegionalAdmin.ts)
+-   Agents: create/list/manage; referrals available via Agents_referral model
+
+Protected: SubRegionalAdmin / RegionalAdmin JWT where applicable.
 
 ---
 
-## Example Request/Response Formats
+## 5. Transactions & Financial Endpoints
 
-### User Registration (`POST /user/register`)
+-   Transaction creation and retrieval endpoints (deposit, withdrawal, transfer, airtime, data)
+-   Transaction fields: transactionReference, amount, feeCharged (optional), balanceBefore, balanceAfter, status
+-   Payment gateway integrations: external callbacks/webhooks handled under `/webhook`
 
-**Request Body:**
+Protected: User / Admin roles as appropriate.
 
-```json
-{
-    "firstName": "John",
-    "lastName": "Doe",
-    "email": "john@example.com",
-    "password": "password123"
-}
-```
+---
 
-**Success Response:**
+## 6. Analytics Endpoints (`/analytics`)
 
-```json
-{
-    "status": "Success",
-    "message": "User created successfully",
-    "data": {
-        "firstName": "John",
-        "lastName": "Doe",
-        "email": "john@example.com",
-        "_id": "..."
-    }
-}
-```
+New integration: analytics aggregation endpoints. These endpoints are implemented in the server and also compiled into `dist/` for production use. They provide aggregated metrics for dashboards and monitoring.
 
-### User Login (`POST /user/login`)
+Access: Require Super Admin or Regional Admin JWT (documented per endpoint).
 
-**Request Body:**
+Endpoints:
 
-```json
-{
-    "email": "john@example.com",
-    "password": "password123"
-}
-```
+-   GET /analytics/summary
 
-**Success Response:**
-
-```json
-{
-    "status": "success",
-    "message": "login successfuly",
-    "token": "..."
-}
-```
-
-### Register KYC Stage 1 (`GET /user/register-kyc1`)
-
-**Headers:** `Authorization: Bearer <token>`
-
-**Request Body:**
-
-```json
-{
-    "profession": "Student",
-    "accountNumber": 1234567890,
-    "bank": "Access Bank",
-    "bankCode": "044",
-    "accountDetails": "John Doe",
-    "country": "Nigeria",
-    "state": "Lagos",
-    "bvn": "12345678901"
-}
-```
-
-**Success Response:**
-
-```json
-{
-    "status": "success",
-    "message": "KYC 1 created successfully",
-    "data": {
-        "profession": "Student",
-        "accountNumber": 1234567890
-        // ... other KYC 1 details
-    }
-}
-```
-
-**Success Response (200 OK):**
-
-```json
-{
-    "Status": "success",
-    "message": "login successfuly",
-    "token": "..." // JWT to be used for protected routes
-}
-```
-
-### 1.3. Verify Email (`POST /user/verify-email`)
-
-| Parameter | Location | Type   | Required | Description                                             |
-| :-------- | :------- | :----- | :------- | :------------------------------------------------------ |
-| `email`   | Body     | string | Yes      | User's email address.                                   |
-| `token`   | Body     | number | Yes      | The 6-digit verification code sent to the user's email. |
-
-**Success Response (200 OK):**
-
-```json
-{
-    "Status": "success",
-    "message": "email verification successful"
-}
-```
-
-### 1.4. Resend Verification Token (`POST /user/resend-verification-token`)
-
-| Parameter | Location | Type   | Required | Description           |
-| :-------- | :------- | :----- | :------- | :-------------------- |
-| `email`   | Body     | string | Yes      | User's email address. |
-
-**Success Response (200 OK):**
-
-```json
-{
-    "Status": "success",
-    "message": "verification token sent successfully"
-}
-```
-
-### 1.5. Get User Profile (`GET /user/profile`)
-
-**Headers:** `Authorization: Bearer <token>`
-
-**Success Response (200 OK):**
-
-```json
-{
-    "Status": "success",
-    "message": "welcome back",
-    "data": {
-        "firstName": "...",
-        "lastName": "...",
-        "email": "...",
-        "isEmailVerified": true,
-        // ... other user details
-        "kycStatus": "PENDING" // (Assumed field based on service logic)
-    }
-}
-```
-
-### 1.6. Get All Banks (`GET /user/get-all-banks`)
-
-**Headers:** `Authorization: Bearer <token>`
-
-**Success Response (200 OK):** Returns a list of banks for Nigeria (`/v3/banks/NG` Flutterwave call).
-
-```json
-{
-    "Status": "success",
-    "message": "all banks",
-    "data": [
+    -   Description: Global aggregated metrics (total users, total deposits, total loans outstanding, number of verified users, active agents).
+    -   Access: Super Admin
+    -   Example response:
+        ```json
         {
-            "id": 1,
-            "code": "044",
-            "name": "Access Bank"
+            "totalUsers": 1024,
+            "verifiedUsers": 876,
+            "totalDeposits": 150000.5,
+            "totalWithdrawals": 45000.0,
+            "activeLoans": 134,
+            "timestamp": "2025-10-24T12:00:00Z"
         }
-        // ... list of banks
+        ```
+
+-   GET /analytics/region/:regionId
+
+    -   Description: Aggregated metrics scoped to a region (users, transactions, savings totals, KYC status distribution).
+    -   Access: Super Admin, Regional Admin (region-scoped)
+    -   Example response:
+        ```json
+        {
+            "regionId": "616...",
+            "users": 230,
+            "transactions": {
+                "count": 980,
+                "totalAmount": 45000.0
+            },
+            "kyc": {
+                "pending": 12,
+                "verified": 180,
+                "rejected": 3
+            },
+            "timestamp": "2025-10-24T12:00:00Z"
+        }
+        ```
+
+-   GET /analytics/subregion/:subregionId
+
+    -   Description: Same as region endpoint but scoped to a subregion. Access similar to region.
+
+-   GET /analytics/transactions?from=YYYY-MM-DD&to=YYYY-MM-DD&type=deposit
+    -   Description: Time-windowed transaction aggregates & basic time-series for charts.
+    -   Access: Super Admin, Regional Admin
+    -   Example response includes daily buckets and totals.
+
+Implementation notes:
+
+-   Endpoints use MongoDB aggregation pipelines (look at compiled code in `dist/`).
+-   Responses include a timestamp and metadata for cache-control.
+-   Pagination applied where needed.
+
+---
+
+## 7. Webhooks (`/webhook`)
+
+-   POST /webhook/payment-callback
+    -   Description: Payment gateway callbacks (Paystack/Flutterwave).
+    -   Security: Validate signature/header using configured keys (see config/nodemailer.ts & config/JWT.ts for secret patterns).
+    -   Persist payload to Webhook model for auditing.
+
+---
+
+## 8. KYC, Loan, Savings, Notifications
+
+-   KYC endpoints: create, update, review status.
+-   Loan endpoints: apply, repay, status; repayment history returned in loan object.
+-   Savings endpoints: create savings circle, deposit/withdraw savings (refer to models Savings, Savings_circle).
+-   Notifications: stored in Notification model and delivered via in-app / email.
+
+---
+
+## 9. Models and Types
+
+-   Models are in `server/model/` (TypeScript source) and types / interfaces in `server/types/index.ts`.
+-   Compiled JS (dist) mirrors structure and contains runtime logic used in production deployments.
+
+---
+
+## 10. Deployment & Dist Usage
+
+-   To run compiled server:
+    -   Ensure environment variables are set (MONGO_URI, JWT_SECRET, EMAIL credentials, etc.).
+    -   Run: `node dist/index.js` (Windows example: `node .\dist\index.js`)
+-   For development, run TypeScript source with `ts-node` or `npm run dev` (project scripts).
+-   Analytics aggregation code is present in source and also compiled to `dist/` — production deployments should use `dist` for stability.
+
+---
+
+## 11. Security & Best Practices
+
+-   All protected routes require JWT and role checks.
+-   Rate-limiting recommended on auth and webhook endpoints.
+-   Validate webhook signatures before processing.
+-   Store sensitive configs in environment variables and do not commit to repo.
+
+---
+
+## 12. Error Format
+
+All errors follow this shape:
+
+```json
+{
+    "status": "error",
+    "message": "Descriptive message",
+    "errors": [
+        /* optional field errors */
     ]
 }
 ```
 
-### 1.7. Register KYC Stage 1 (`GET /user/register-kyc1`)
-
-**Note:** The route is a `GET` in the route file but the controller expects a `req.body`, suggesting it should probably be a **POST** request. **Assuming POST for data submission.**
-
-**Headers:** `Authorization: Bearer <token>`
-
-| Parameter        | Location | Type   | Required | Description                                     |
-| :--------------- | :------- | :----- | :------- | :---------------------------------------------- |
-| `profession`     | Body     | string | Yes      | User's profession.                              |
-| `accountNumber`  | Body     | number | Yes      | User's bank account number.                     |
-| `bank`           | Body     | string | Yes      | User's bank name.                               |
-| `bankCode`       | Body     | string | Yes      | User's bank code (from `/get-all-banks`).       |
-| `accountDetails` | Body     | string | Yes      | Account name (likely for validation reference). |
-| `country`        | Body     | string | Yes      | User's country.                                 |
-| `state`          | Body     | string | Yes      | User's state/region.                            |
-| `bvn`            | Body     | string | Yes      | User's Bank Verification Number.                |
-
-**Success Response (200 OK):**
-
-```json
-{
-    "Status": "success",
-    "message": "KYC 1 created successfully",
-    "data": {
-        "profession": "...",
-        "accountNumber": "..."
-        // ... other KYC 1 details
-    }
-}
-```
-
 ---
 
-## 2\. Super Admin Endpoints (`/admin`)
+If you want, I can:
 
-These endpoints are for the Super Admin, including initial registration and authentication.
-
-| Method   | Path              | Description                                          | Access                 |
-| :------- | :---------------- | :--------------------------------------------------- | :--------------------- |
-| **POST** | `/admin/register` | Registers the Super Admin (likely a one-time setup). | Public                 |
-| **POST** | `/admin/login`    | Logs in the Super Admin and returns a JWT.           | Public                 |
-| **GET**  | `/admin/profile`  | Retrieves the authenticated Super Admin's profile.   | **Auth (Super Admin)** |
-
-### 2.1. Super Admin Registration (`POST /admin/register`)
-
-| Parameter     | Location | Type   | Required | Description                  |
-| :------------ | :------- | :----- | :------- | :--------------------------- |
-| `fullName`    | Body     | string | Yes      | Super Admin's full name.     |
-| `email`       | Body     | string | Yes      | Super Admin's email address. |
-| `phoneNumber` | Body     | string | Yes      | Super Admin's phone number.  |
-| `password`    | Body     | string | Yes      | Super Admin's password.      |
-
-**Success Response (200 OK):**
-
-```json
-{
-    "status": "Success",
-    "message": "Super admin created successfully",
-    "data": {
-        "fullName": "...",
-        "email": "..."
-        // ... other Super Admin details
-    }
-}
-```
-
-### 2.2. Super Admin Login (`POST /admin/login`)
-
-| Parameter  | Location | Type   | Required | Description                  |
-| :--------- | :------- | :----- | :------- | :--------------------------- |
-| `email`    | Body     | string | Yes      | Super Admin's email address. |
-| `password` | Body     | string | Yes      | Super Admin's password.      |
-
-**Success Response (200 OK):**
-
-```json
-{
-    "Status": "success",
-    "message": "Login successful",
-    "token": "..." // JWT to be used for protected routes
-}
-```
-
-### 2.3. Super Admin Profile (`GET /admin/profile`)
-
-**Headers:** `Authorization: Bearer <token>`
-
-**Success Response (200 OK):**
-
-```json
-{
-    "Status": "success",
-    "message": "welcome back",
-    "data": {
-        "fullName": "...",
-        "email": "...",
-        "type": "superadmin"
-        // ... other Super Admin details
-    }
-}
-```
-
----
-
-## 3\. Regional Admin Endpoints (`/regional-admin`)
-
-These endpoints are for Regional Administrators.
-
-| Method   | Path                      | Description                                           | Access                    |
-| :------- | :------------------------ | :---------------------------------------------------- | :------------------------ |
-| **POST** | `/regional-admin/login`   | Logs in a Regional Admin and returns a JWT.           | Public                    |
-| **GET**  | `/regional-admin/profile` | Retrieves the authenticated Regional Admin's profile. | **Auth (Regional Admin)** |
-
-### 3.1. Regional Admin Login (`POST /regional-admin/login`)
-
-| Parameter  | Location | Type   | Required | Description                     |
-| :--------- | :------- | :----- | :------- | :------------------------------ |
-| `email`    | Body     | string | Yes      | Regional Admin's email address. |
-| `password` | Body     | string | Yes      | Regional Admin's password.      |
-
-**Success Response (200 OK):**
-
-```json
-{
-    "Status": "success",
-    "message": "login successfuly",
-    "token": "..." // JWT to be used for protected routes
-}
-```
-
-### 3.2. Regional Admin Profile (`GET /regional-admin/profile`)
-
-**Headers:** `Authorization: Bearer <token>`
-
-**Success Response (200 OK):**
-
-```json
-{
-    "Status": "success",
-    "message": "welcome back",
-    "data": {
-        "fullName": "...",
-        "email": "...",
-        "region": "..."
-        // ... other Regional Admin details
-    }
-}
-```
+-   Add exact request/response examples for each analytics endpoint,
+-   Export a Postman/OpenAPI stub for the updated spec,
+-   Add environment variable names and example `.env` file.

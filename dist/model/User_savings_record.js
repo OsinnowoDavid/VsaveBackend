@@ -15,7 +15,7 @@ const userSavingsRecordSchema = new mongoose_1.default.Schema({
         ref: "Savings", // Reference to your User model
         required: true,
     },
-    circleId: {
+    savingsCircleId: {
         type: mongoose_1.default.Schema.Types.ObjectId,
         ref: "Savings_circle", // Reference to your User model
         required: true,
