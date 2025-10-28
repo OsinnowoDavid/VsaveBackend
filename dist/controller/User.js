@@ -218,16 +218,21 @@ exports.loginUser = loginUser;
 const userProfile = async (req, res) => {
     try {
         let user = req.user;
+        let kycRecord = await (0, User_1.getUserKyc1Record)(user._id.toString());
         if (!user) {
             return res.json({
                 status: "Failed",
                 message: "user not found",
             });
         }
+        let data = {
+            profile: user,
+            kyc: kycRecord,
+        };
         return res.json({
             Status: "success",
             message: "welcome back",
-            data: user,
+            data,
         });
     }
     catch (err) {
@@ -240,7 +245,7 @@ const userProfile = async (req, res) => {
 exports.userProfile = userProfile;
 const registerKYC1 = async (req, res) => {
     try {
-        const { profession, accountNumber, bank, accountDetails, country, state, bvn, address, subRegion } = req.body;
+        const { profession, accountNumber, bank, accountDetails, country, state, bvn, address, subRegion, } = req.body;
         const user = req.user;
         // save KYC1
         const newKYC1 = await (0, User_1.createKYC1Record)(user, profession, accountNumber, bank, accountDetails, country, state, bvn, address, subRegion);
@@ -553,13 +558,13 @@ const userGetAllSubRegionController = async (req, res) => {
         return res.json({
             status: "Success",
             message: "found all subregion",
-            data: subRegions
+            data: subRegions,
         });
     }
     catch (err) {
         return res.json({
             status: "Failed",
-            message: err.message
+            message: err.message,
         });
     }
 };

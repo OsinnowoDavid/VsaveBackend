@@ -30,7 +30,7 @@ import {
     getUserSingleTransaction,
     getUserTransactionByStatus,
     getUserTransactionByType,
-    userGetAllSubRegion
+    userGetAllSubRegion,
 } from "../services/User";
 import { IUser, IVerificationToken, IKYC1 } from "../types";
 import { signUserToken } from "../config/JWT";
@@ -225,7 +225,7 @@ export const loginUser = async (req: Request, res: Response) => {
                 status: "Failed",
                 message: "User not found",
             });
-        } 
+        }
         // check is user verify Email
         if (!user.isEmailVerified) {
             const tokenNumber = Math.floor(100000 + Math.random() * 900000);
@@ -277,17 +277,22 @@ export const loginUser = async (req: Request, res: Response) => {
 
 export const userProfile = async (req: Request, res: Response) => {
     try {
-        let user = req.user;
+        let user = req.user as IUser;
+        let kycRecord = await getUserKyc1Record(user._id.toString());
         if (!user) {
             return res.json({
                 status: "Failed",
                 message: "user not found",
             });
         }
+        let data = {
+            profile: user,
+            kyc: kycRecord,
+        };
         return res.json({
             Status: "success",
             message: "welcome back",
-            data: user,
+            data,
         });
     } catch (err: any) {
         res.json({
@@ -308,7 +313,7 @@ export const registerKYC1 = async (req: Request, res: Response) => {
             state,
             bvn,
             address,
-            subRegion
+            subRegion,
         } = req.body;
         const user = req.user as IUser;
         // save KYC1
@@ -322,7 +327,7 @@ export const registerKYC1 = async (req: Request, res: Response) => {
             state,
             bvn,
             address,
-            subRegion
+            subRegion,
         );
         if (!newKYC1) {
             return res.json({
@@ -675,18 +680,21 @@ export const getUserTransactionByTypeController = async (
     }
 };
 
-export const userGetAllSubRegionController = async (req:Request, res:Response) =>{
-    try{
-        const subRegions = await userGetAllSubRegion() 
+export const userGetAllSubRegionController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const subRegions = await userGetAllSubRegion();
         return res.json({
-            status:"Success",
-            message:"found all subregion",
-            data :subRegions
-        })
-    }catch(err:any){
+            status: "Success",
+            message: "found all subregion",
+            data: subRegions,
+        });
+    } catch (err: any) {
         return res.json({
-            status:"Failed",
-            message: err.message
-        })
+            status: "Failed",
+            message: err.message,
+        });
     }
-}
+};
