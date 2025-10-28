@@ -4,9 +4,9 @@ exports.createSavingPlanController = void 0;
 const Savings_1 = require("../services/Savings");
 const createSavingPlanController = async (req, res) => {
     try {
-        const { subRegion, frequency, savingAmount, startDate, endDate, status, autoRestartEnabled, } = req.body;
+        const { subRegion, frequency, savingAmount, startDate, endDate, status, autoRestartEnabled, deductionPeriod, } = req.body;
         const user = req.user;
-        const newSavings = await (0, Savings_1.initSavingsPlan)(user._id.toString(), subRegion, frequency, savingAmount, startDate, endDate, status, autoRestartEnabled);
+        const newSavings = await (0, Savings_1.initSavingsPlan)(user._id.toString(), subRegion, frequency, savingAmount, startDate, endDate, status, autoRestartEnabled, deductionPeriod);
         return res.json({
             status: "success",
             message: "plan created",

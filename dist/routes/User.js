@@ -30,4 +30,5 @@ router.get("/transactions", JWT_1.verifyUserToken, User_1.getUserTransactionsCon
 router.get("/single-transaction/:id", JWT_1.verifyUserToken, User_1.getUserSingleTransactionController);
 router.get("/transaction-by-status/:status", JWT_1.verifyUserToken, User_1.getUserTransactionByStatusController);
 router.get("/transaction-by-type/:type", JWT_1.verifyUserToken, User_1.getUserTransactionByTypeController);
+router.get("/subregions", JWT_1.verifyUserToken, User_1.userGetAllSubRegionController);
 exports.default = router;

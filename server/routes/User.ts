@@ -18,6 +18,7 @@ import {
     getUserSingleTransactionController,
     getUserTransactionByStatusController,
     getUserTransactionByTypeController,
+    userGetAllSubRegionController
 } from "../controller/User";
 import {
     validateUserRegitrationInput,
@@ -72,5 +73,7 @@ router.get(
     verifyUserToken,
     getUserTransactionByTypeController,
 );
+
+router.get("/subregions", verifyUserToken, userGetAllSubRegionController)
 
 export default router;

@@ -6,6 +6,10 @@ import Transaction from "../model/Transaction";
 import { IUser } from "../types";
 import axios from "axios";
 import BankCode from "../model/Bank_code";
+import SavingsGroup from "../model/Savings_group";
+import UserSavingsRecord from "../model/User_savings_record";
+import SavingsCircle from "../model/Savings_circle";
+import {getAllSubRegion} from "./RegionalAdmin"
 const FLW_SECRET_KEY = process.env.FLW_SECRET_KEY;
 const generateRefrenceCode = () => {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -135,6 +139,7 @@ export const createKYC1Record = async (
     state: string,
     bvn: string,
     address: string,
+    subRegion: string,
 ) => {
     try {
         const newKYC1 = await KYC1.create({
@@ -148,14 +153,21 @@ export const createKYC1Record = async (
             bvn,
             address,
         });
-        const foundUser = await User.findById(user._id);
-        foundUser;
+        const foundUser = (await User.findById(user._id)) as IUser;
+        foundUser.subRegion = subRegion;
+        await foundUser.save();
         return newKYC1;
     } catch (err: any) {
         throw err;
     }
 };
-
+export const updateKYC1Record = async (user: IUser, bank: string) => {
+    try {
+        const foundUser = await KYC1.findOneAndUpdate({ user: user._id }, {});
+    } catch (err: any) {
+        throw err;
+    }
+};
 export const getAllBanksAndCode = async () => {
     try {
         const response = await axios.get(
@@ -668,3 +680,36 @@ export const getUserTransactionByType = async (user: string, type: string) => {
         throw err;
     }
 };
+
+export const joinSavings = async (user: IUser, circleId: string) => {
+    try {
+        const savingsGroup = await SavingsGroup.findOne({
+            savingsCircleId: circleId,
+        });
+        let currentCircle = await SavingsCircle.findById(circleId);
+        if (!savingsGroup) {
+            throw { message: "No SavingsGroup found with this CircleID" };
+        }
+        savingsGroup.users.push(user._id);
+        await savingsGroup.save();
+        // create user savings record
+        const userSavingsRecord = await UserSavingsRecord.create({
+            user: user._id,
+            savingsId: savingsGroup.savingsId,
+            savingsCircleId: savingsGroup.savingsCircleId,
+            maturityAmount: currentCircle?.maturityAmount,
+        });
+        return userSavingsRecord;
+    } catch (err: any) {
+        throw err;
+    }
+};
+
+export const userGetAllSubRegion = async () =>{
+    try{
+        const allSubRegion = await getAllSubRegion() 
+        return allSubRegion 
+    }catch(err:any){
+        throw err
+    }
+}

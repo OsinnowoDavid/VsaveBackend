@@ -42,6 +42,11 @@ const userSchema = new Schema({
         type: Number,
         default: 0,
     },
+    subRegion: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "SubRegion",
+        required: false,
+    },
     isEmailVerified: {
         type: Boolean,
         default: false,
@@ -64,6 +69,7 @@ const userSchema = new Schema({
     },
     virtualAccountNumber: {
         type: String,
+        unique: true,
     },
 });
 

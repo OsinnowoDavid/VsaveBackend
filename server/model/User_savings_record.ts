@@ -7,7 +7,7 @@ const userSavingsRecordSchema = new mongoose.Schema(
             ref: "User", // Reference to your User model
             required: true,
         },
-        savingId: {
+        savingsId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Savings", // Reference to your User model
             required: true,

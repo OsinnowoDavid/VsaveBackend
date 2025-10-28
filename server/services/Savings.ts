@@ -2,6 +2,7 @@ import Savings from "../model/Savings";
 import SavingsGroup from "../model/Savings_group";
 import AdminSavingsConfig from "../model/Admin_config";
 import SavingsCircle from "../model/Savings_circle";
+import { calculateSavingsTotalAmount } from "../config/tools";
 
 export const initSavingsPlan = async (
     user: string,
@@ -12,6 +13,7 @@ export const initSavingsPlan = async (
     endDate: Date,
     status: string,
     autoRestartEnabled: boolean,
+    deductionPeriod: string,
 ) => {
     try {
         const { firstTimeAdminFee, defaultPenaltyFee } =
@@ -29,6 +31,13 @@ export const initSavingsPlan = async (
         if (!newSavingsPlan) {
             throw { message: "something went wrong" };
         }
+        // calculate maturity amount
+        const maturityAmount = calculateSavingsTotalAmount(
+            startDate,
+            endDate,
+            savingsAmount,
+            frequency,
+        );
         const newSavingsCircle = await SavingsCircle.create({
             savingsPlanId: newSavingsPlan._id,
             frequency,
@@ -36,6 +45,8 @@ export const initSavingsPlan = async (
             startDate,
             endDate,
             status,
+            deductionPeriod,
+            maturityAmount,
         });
 
         if (!newSavingsCircle) {

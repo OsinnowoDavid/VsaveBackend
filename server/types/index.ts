@@ -9,6 +9,7 @@ export interface IUser extends Document {
     password: string;
     profilePicture: string;
     vsavePoint: number;
+    subRegion: Types.ObjectId | string;
     KYC: Types.ObjectId | null;
     availableBalance: number;
     pendingBalance: number;

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getUserTransactionByTypeController = exports.getUserTransactionByStatusController = exports.getUserSingleTransactionController = exports.getUserTransactionsController = exports.payOutController = exports.accountLookUpController = exports.getBankCodeController = exports.buyDataController = exports.buyAirtimeController = exports.getDataPlanController = exports.getUserKyc1RecordController = exports.registerKYC1 = exports.userProfile = exports.loginUser = exports.resendUserVerificationEmail = exports.verifyEmail = exports.registerUser = void 0;
+exports.userGetAllSubRegionController = exports.getUserTransactionByTypeController = exports.getUserTransactionByStatusController = exports.getUserSingleTransactionController = exports.getUserTransactionsController = exports.payOutController = exports.accountLookUpController = exports.getBankCodeController = exports.buyDataController = exports.buyAirtimeController = exports.getDataPlanController = exports.getUserKyc1RecordController = exports.registerKYC1 = exports.userProfile = exports.loginUser = exports.resendUserVerificationEmail = exports.verifyEmail = exports.registerUser = void 0;
 const argon2_1 = __importDefault(require("argon2"));
 const Agent_1 = require("../services/Agent");
 const User_1 = require("../services/User");
@@ -240,10 +240,10 @@ const userProfile = async (req, res) => {
 exports.userProfile = userProfile;
 const registerKYC1 = async (req, res) => {
     try {
-        const { profession, accountNumber, bank, bankCode, accountDetails, country, state, bvn, address, } = req.body;
+        const { profession, accountNumber, bank, accountDetails, country, state, bvn, address, subRegion } = req.body;
         const user = req.user;
         // save KYC1
-        const newKYC1 = await (0, User_1.createKYC1Record)(user, profession, accountNumber, bank, accountDetails, country, state, bvn, address);
+        const newKYC1 = await (0, User_1.createKYC1Record)(user, profession, accountNumber, bank, accountDetails, country, state, bvn, address, subRegion);
         if (!newKYC1) {
             return res.json({
                 status: "Failed",
@@ -547,3 +547,20 @@ const getUserTransactionByTypeController = async (req, res) => {
     }
 };
 exports.getUserTransactionByTypeController = getUserTransactionByTypeController;
+const userGetAllSubRegionController = async (req, res) => {
+    try {
+        const subRegions = await (0, User_1.userGetAllSubRegion)();
+        return res.json({
+            status: "Success",
+            message: "found all subregion",
+            data: subRegions
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message
+        });
+    }
+};
+exports.userGetAllSubRegionController = userGetAllSubRegionController;

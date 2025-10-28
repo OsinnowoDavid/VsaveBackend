@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getUserTransactionByType = exports.getUserTransactionByStatus = exports.getUserSingleTransaction = exports.getUserTransactions = exports.payOut = exports.accountLookUp = exports.getBankCode = exports.createUserAirtimeTransaction = exports.createUserDataTransaction = exports.checkTransferByRefrence = exports.createUserTransaction = exports.deposit = exports.withdraw = exports.buyData = exports.getUserKyc1Record = exports.getDataPlan = exports.buyAirtime = exports.createVirtualAccountIndex = exports.createVirtualAccountForPayment = exports.verifyBankaccount = exports.getAllBanksAndCode = exports.createKYC1Record = exports.kycStatusChange = exports.createKYCRecord = exports.getUserVerificationToken = exports.assignUserEmailVerificationToken = exports.getUserByEmail = exports.getUserById = exports.createNewUser = void 0;
+exports.userGetAllSubRegion = exports.joinSavings = exports.getUserTransactionByType = exports.getUserTransactionByStatus = exports.getUserSingleTransaction = exports.getUserTransactions = exports.payOut = exports.accountLookUp = exports.getBankCode = exports.createUserAirtimeTransaction = exports.createUserDataTransaction = exports.checkTransferByRefrence = exports.createUserTransaction = exports.deposit = exports.withdraw = exports.buyData = exports.getUserKyc1Record = exports.getDataPlan = exports.buyAirtime = exports.createVirtualAccountIndex = exports.createVirtualAccountForPayment = exports.verifyBankaccount = exports.getAllBanksAndCode = exports.updateKYC1Record = exports.createKYC1Record = exports.kycStatusChange = exports.createKYCRecord = exports.getUserVerificationToken = exports.assignUserEmailVerificationToken = exports.getUserByEmail = exports.getUserById = exports.createNewUser = void 0;
 const User_1 = __importDefault(require("../model/User"));
 const VerificationToken_1 = __importDefault(require("../model/VerificationToken"));
 const KYC1_1 = __importDefault(require("../model/KYC1"));
@@ -11,6 +11,10 @@ const KYC_1 = __importDefault(require("../model/KYC"));
 const Transaction_1 = __importDefault(require("../model/Transaction"));
 const axios_1 = __importDefault(require("axios"));
 const Bank_code_1 = __importDefault(require("../model/Bank_code"));
+const Savings_group_1 = __importDefault(require("../model/Savings_group"));
+const User_savings_record_1 = __importDefault(require("../model/User_savings_record"));
+const Savings_circle_1 = __importDefault(require("../model/Savings_circle"));
+const RegionalAdmin_1 = require("./RegionalAdmin");
 const FLW_SECRET_KEY = process.env.FLW_SECRET_KEY;
 const generateRefrenceCode = () => {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -116,7 +120,7 @@ const kycStatusChange = async (user, status, stage) => {
     }
 };
 exports.kycStatusChange = kycStatusChange;
-const createKYC1Record = async (user, profession, accountNumber, bank, accountDetails, country, state, bvn, address) => {
+const createKYC1Record = async (user, profession, accountNumber, bank, accountDetails, country, state, bvn, address, subRegion) => {
     try {
         const newKYC1 = await KYC1_1.default.create({
             user,
@@ -129,8 +133,9 @@ const createKYC1Record = async (user, profession, accountNumber, bank, accountDe
             bvn,
             address,
         });
-        const foundUser = await User_1.default.findById(user._id);
-        foundUser;
+        const foundUser = (await User_1.default.findById(user._id));
+        foundUser.subRegion = subRegion;
+        await foundUser.save();
         return newKYC1;
     }
     catch (err) {
@@ -138,6 +143,15 @@ const createKYC1Record = async (user, profession, accountNumber, bank, accountDe
     }
 };
 exports.createKYC1Record = createKYC1Record;
+const updateKYC1Record = async (user, bank) => {
+    try {
+        const foundUser = await KYC1_1.default.findOneAndUpdate({ user: user._id }, {});
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.updateKYC1Record = updateKYC1Record;
 const getAllBanksAndCode = async () => {
     try {
         const response = await axios_1.default.get("https://api.flutterwave.com/v3/banks/NG", {
@@ -616,3 +630,38 @@ const getUserTransactionByType = async (user, type) => {
     }
 };
 exports.getUserTransactionByType = getUserTransactionByType;
+const joinSavings = async (user, circleId) => {
+    try {
+        const savingsGroup = await Savings_group_1.default.findOne({
+            savingsCircleId: circleId,
+        });
+        let currentCircle = await Savings_circle_1.default.findById(circleId);
+        if (!savingsGroup) {
+            throw { message: "No SavingsGroup found with this CircleID" };
+        }
+        savingsGroup.users.push(user._id);
+        await savingsGroup.save();
+        // create user savings record
+        const userSavingsRecord = await User_savings_record_1.default.create({
+            user: user._id,
+            savingsId: savingsGroup.savingsId,
+            savingsCircleId: savingsGroup.savingsCircleId,
+            maturityAmount: currentCircle?.maturityAmount,
+        });
+        return userSavingsRecord;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.joinSavings = joinSavings;
+const userGetAllSubRegion = async () => {
+    try {
+        const allSubRegion = await (0, RegionalAdmin_1.getAllSubRegion)();
+        return allSubRegion;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.userGetAllSubRegion = userGetAllSubRegion;

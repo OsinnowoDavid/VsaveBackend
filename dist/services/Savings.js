@@ -8,7 +8,8 @@ const Savings_1 = __importDefault(require("../model/Savings"));
 const Savings_group_1 = __importDefault(require("../model/Savings_group"));
 const Admin_config_1 = __importDefault(require("../model/Admin_config"));
 const Savings_circle_1 = __importDefault(require("../model/Savings_circle"));
-const initSavingsPlan = async (user, subRegion, frequency, savingsAmount, startDate, endDate, status, autoRestartEnabled) => {
+const tools_1 = require("../config/tools");
+const initSavingsPlan = async (user, subRegion, frequency, savingsAmount, startDate, endDate, status, autoRestartEnabled, deductionPeriod) => {
     try {
         const { firstTimeAdminFee, defaultPenaltyFee } = await Admin_config_1.default.getSettings();
         const newSavingsPlan = await Savings_1.default.create({
@@ -23,6 +24,8 @@ const initSavingsPlan = async (user, subRegion, frequency, savingsAmount, startD
         if (!newSavingsPlan) {
             throw { message: "something went wrong" };
         }
+        // calculate maturity amount
+        const maturityAmount = (0, tools_1.calculateSavingsTotalAmount)(startDate, endDate, savingsAmount, frequency);
         const newSavingsCircle = await Savings_circle_1.default.create({
             savingsPlanId: newSavingsPlan._id,
             frequency,
@@ -30,6 +33,8 @@ const initSavingsPlan = async (user, subRegion, frequency, savingsAmount, startD
             startDate,
             endDate,
             status,
+            deductionPeriod,
+            maturityAmount,
         });
         if (!newSavingsCircle) {
             throw { message: "something went wrong, savingplan is created" };

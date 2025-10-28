@@ -30,6 +30,7 @@ import {
     getUserSingleTransaction,
     getUserTransactionByStatus,
     getUserTransactionByType,
+    userGetAllSubRegion
 } from "../services/User";
 import { IUser, IVerificationToken, IKYC1 } from "../types";
 import { signUserToken } from "../config/JWT";
@@ -224,7 +225,7 @@ export const loginUser = async (req: Request, res: Response) => {
                 status: "Failed",
                 message: "User not found",
             });
-        }
+        } 
         // check is user verify Email
         if (!user.isEmailVerified) {
             const tokenNumber = Math.floor(100000 + Math.random() * 900000);
@@ -302,12 +303,12 @@ export const registerKYC1 = async (req: Request, res: Response) => {
             profession,
             accountNumber,
             bank,
-            bankCode,
             accountDetails,
             country,
             state,
             bvn,
             address,
+            subRegion
         } = req.body;
         const user = req.user as IUser;
         // save KYC1
@@ -321,6 +322,7 @@ export const registerKYC1 = async (req: Request, res: Response) => {
             state,
             bvn,
             address,
+            subRegion
         );
         if (!newKYC1) {
             return res.json({
@@ -672,3 +674,19 @@ export const getUserTransactionByTypeController = async (
         });
     }
 };
+
+export const userGetAllSubRegionController = async (req:Request, res:Response) =>{
+    try{
+        const subRegions = await userGetAllSubRegion() 
+        return res.json({
+            status:"Success",
+            message:"found all subregion",
+            data :subRegions
+        })
+    }catch(err:any){
+        return res.json({
+            status:"Failed",
+            message: err.message
+        })
+    }
+}

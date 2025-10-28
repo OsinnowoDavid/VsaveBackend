@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createSavingPlanController = exports.createAgentController = exports.login = void 0;
+exports.createAgentController = exports.login = void 0;
 const argon2_1 = __importDefault(require("argon2"));
 const JWT_1 = require("../config/JWT");
 const RegionalAdmin_1 = require("../services/RegionalAdmin");
@@ -65,22 +65,3 @@ const createAgentController = async (req, res) => {
     }
 };
 exports.createAgentController = createAgentController;
-const createSavingPlanController = async (req, res) => {
-    try {
-        const { subRegion, frequency, savingAmount, startDate, endDate, status, autoRestartEnabled, } = req.body;
-        const user = req.user;
-        const newSavings = await (0, subRegionalAdmin_1.initSavingsPlan)(user._id.toString(), subRegion, frequency, savingAmount, startDate, endDate, status, autoRestartEnabled);
-        return res.json({
-            status: "success",
-            message: "plan created",
-            data: newSavings,
-        });
-    }
-    catch (err) {
-        return res.json({
-            status: "Failed",
-            message: err.message,
-        });
-    }
-};
-exports.createSavingPlanController = createSavingPlanController;

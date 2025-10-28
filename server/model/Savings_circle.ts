@@ -16,6 +16,9 @@ const savingsCircleSchema = new mongoose.Schema(
             type: Number,
             default: 1,
         },
+        deductionPeriod: {
+            type: String,
+        },
         savingsAmount: { type: Number, required: true },
         startDate: { type: Date, default: Date.now },
         endDate: { type: Date },
@@ -25,6 +28,7 @@ const savingsCircleSchema = new mongoose.Schema(
             enum: ["ACTIVE", "PAUSED", "ENDED"],
             default: "ACTIVE",
         },
+        maturityAmount: { type: Number },
     },
     { timestamps: true },
 );

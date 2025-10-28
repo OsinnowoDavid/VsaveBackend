@@ -14,6 +14,7 @@ export const createSavingPlanController = async (
             endDate,
             status,
             autoRestartEnabled,
+            deductionPeriod,
         } = req.body;
         const user = req.user as any;
         const newSavings = await initSavingsPlan(
@@ -25,6 +26,7 @@ export const createSavingPlanController = async (
             endDate,
             status,
             autoRestartEnabled,
+            deductionPeriod,
         );
         return res.json({
             status: "success",

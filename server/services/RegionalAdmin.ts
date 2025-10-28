@@ -57,6 +57,14 @@ export const getSubRegionByName = async (name: string) => {
         throw err;
     }
 };
+export const getAllSubRegion = async () => {
+    try {
+        const allSubRegion = await SubRegion.find();
+        return allSubRegion;
+    } catch (err: any) {
+        throw err;
+    }
+};
 
 export const createSubRegionalAdmin = async (
     firstName: string,
@@ -116,14 +124,6 @@ export const assignSubRegionAdmin = async (
     }
 };
 
-export const getAllSubRegion = async () => {
-    try {
-        const allSubRegion = await SubRegion.find();
-        return allSubRegion;
-    } catch (err: any) {
-        throw err;
-    }
-};
 export const assignSubRegionToRegion = async (
     region: string,
     subRegion: ISubRegion,

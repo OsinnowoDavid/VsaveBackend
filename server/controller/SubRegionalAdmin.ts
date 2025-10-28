@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import argon from "argon2";
 import { signUserToken } from "../config/JWT";
 import { getSubRegionalAdminByEmail } from "../services/RegionalAdmin";
-import { createAgent, initSavingsPlan } from "../services/subRegionalAdmin";
+import { createAgent } from "../services/subRegionalAdmin";
 
 export const login = async (req: Request, res: Response) => {
     try {
@@ -67,44 +67,6 @@ export const createAgentController = async (req: Request, res: Response) => {
             status: "Success",
             message: "Agent account created successfuly",
             data: newAgent,
-        });
-    } catch (err: any) {
-        return res.json({
-            status: "Failed",
-            message: err.message,
-        });
-    }
-};
-
-export const createSavingPlanController = async (
-    req: Request,
-    res: Response,
-) => {
-    try {
-        const {
-            subRegion,
-            frequency,
-            savingAmount,
-            startDate,
-            endDate,
-            status,
-            autoRestartEnabled,
-        } = req.body;
-        const user = req.user as any;
-        const newSavings = await initSavingsPlan(
-            user._id.toString(),
-            subRegion,
-            frequency,
-            savingAmount,
-            startDate,
-            endDate,
-            status,
-            autoRestartEnabled,
-        );
-        return res.json({
-            status: "success",
-            message: "plan created",
-            data: newSavings,
         });
     } catch (err: any) {
         return res.json({
