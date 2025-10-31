@@ -7,6 +7,7 @@ const nodemailer_1 = __importDefault(require("nodemailer"));
 const dotenv_1 = __importDefault(require("dotenv"));
 // Load environment variables from .env file
 dotenv_1.default.config();
+console.log("pass and user:", process.env.User, process.env.Pass);
 const transporter = nodemailer_1.default.createTransport({
     service: "gmail",
     host: "smtp.gmail.com", // Replace with the correct SMTP host

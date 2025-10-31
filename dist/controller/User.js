@@ -50,6 +50,7 @@ const registerUser = async (req, res) => {
             });
         }
         //config mail option
+        console.log(" controller pass and user:", process.env.User, process.env.Pass);
         const mailOptions = {
             from: `<${process.env.User}>`, // sender
             to: email, // recipient
@@ -63,6 +64,7 @@ const registerUser = async (req, res) => {
         };
         // Send email
         let sentMale = await nodemailer_1.default.sendMail(mailOptions);
+        console.log("transporter response:", process.env.User, process.env.Pass);
         // assign referralCode
         await (0, Agent_1.assignAgentReferral)(referralCode, newUser);
         return res.json({
