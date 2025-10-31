@@ -52,7 +52,7 @@ const userSchema = new Schema({
     },
     isEmailVerified: {
         type: Boolean,
-        default: false,
+        default: true,
     },
     status: {
         type: String,
