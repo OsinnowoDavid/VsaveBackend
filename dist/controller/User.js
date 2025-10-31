@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getUserSavingsRecordsController = exports.getUserActiveSavingsController = exports.getAvaliableSavingsController = exports.joinSavingsController = exports.userGetAllSubRegionController = exports.getUserTransactionByTypeController = exports.getUserTransactionByStatusController = exports.getUserSingleTransactionController = exports.getUserTransactionsController = exports.payOutController = exports.accountLookUpController = exports.getBankCodeController = exports.buyDataController = exports.buyAirtimeController = exports.getDataPlanController = exports.getUserKyc1RecordController = exports.registerKYC1 = exports.userProfile = exports.loginUser = exports.resendUserVerificationEmail = exports.verifyEmail = exports.registerUser = void 0;
 const argon2_1 = __importDefault(require("argon2"));
+const Agent_1 = require("../services/Agent");
 const User_1 = require("../services/User");
 const JWT_1 = require("../config/JWT");
 const nodemailer_1 = __importDefault(require("../config/nodemailer"));
@@ -14,25 +15,14 @@ const registerUser = async (req, res) => {
     try {
         const { firstName, lastName, email, password, gender, dateOfBirth, phoneNumber, referralCode, } = req.body;
         let hashPassword = await argon2_1.default.hash(password);
-        // check if user is already in the database
-        const user = (await (0, User_1.getUserByEmail)(email));
-        // first check if it is a user that is in the database but didn't verify email
-        if (user) {
-            return res.json({
-                status: "Failed",
-                message: "User already exists Login Instead !",
-                isEmailVerified: user.isEmailVerified,
-            });
-        }
-        // create new user
-        const newUser = (await (0, User_1.createNewUser)(firstName, lastName, email, hashPassword, gender, dateOfBirth, phoneNumber));
+        const newUser = await (0, User_1.createNewUser)(firstName, lastName, email, hashPassword, gender, dateOfBirth, phoneNumber);
         if (!newUser) {
-            return res.json({
+            return res.status(500).json({
                 status: "Failed",
-                message: "something went wrong, try again later",
+                message: "Failed to create user, please try again later",
             });
         }
-        // send verification code to user email
+        //send verification code to user email
         const tokenNumber = Math.floor(100000 + Math.random() * 900000);
         // generate exp time (expires in 5 min)
         const getNextFiveMinutes = () => {
@@ -41,49 +31,59 @@ const registerUser = async (req, res) => {
             return next;
         };
         const expTime = getNextFiveMinutes();
-        const token = await (0, User_1.assignUserEmailVerificationToken)(email, tokenNumber, expTime);
+        let token;
+        token = await (0, User_1.assignUserEmailVerificationToken)(email, tokenNumber, expTime);
         if (!token) {
-            return res.json({
+            return res.status(500).json({
                 status: "Failed",
-                message: "something went wrong, try again later",
+                message: "Failed to generate verification token",
             });
         }
         //config mail option
-        // console.log(
-        //     " controller pass and user:",
-        //     process.env.User,
-        //     process.env.Pass,
-        // );
-        // const mailOptions = {
-        //     from: `<${process.env.User}>`, // sender
-        //     to: email, // recipient
-        //     subject: "Welcome to VSAVE 🎉",
-        //     text: `Hello ${newUser.firstName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans. To get started, please verify your email using the code below:
-        //   CODE : ${tokenNumber}
-        //   This code will expire in 5 minutes, so be sure to use it right away.
-        //   We’re excited to have you on board!
-        //   — The VSave Team.`,
-        // };
-        // console.log("got to the  mail option :", mailOptions);
-        // // Send email
-        // let sentMale = await Transporter.sendMail(mailOptions);
-        // console.log(
-        //     "transporter response:",
-        //     process.env.User,
-        //     process.env.Pass,
-        // );
-        // // assign referralCode
-        // await assignAgentReferral(referralCode, newUser);
+        console.log(" controller pass and user:", process.env.User, process.env.Pass);
+        const mailOptions = {
+            from: `<${process.env.User}>`, // sender
+            to: email, // recipient
+            subject: "Welcome to VSAVE 🎉",
+            text: `Hello ${newUser.firstName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans. To get started, please verify your email using the code below:
+          CODE : ${tokenNumber}
+          This code will expire in 5 minutes, so be sure to use it right away.
+          We’re excited to have you on board!
+
+          — The VSave Team.`,
+        };
+        console.log("got to the  mail option :", mailOptions);
+        // Send email
+        try {
+            console.log("transporter:", nodemailer_1.default);
+            let sentMale = await nodemailer_1.default.sendMail(mailOptions);
+            console.log("sentMale:", sentMale);
+        }
+        catch (err) {
+            return res.json({
+                status: "Failed",
+                message: err.message,
+                err,
+            });
+        }
+        console.log("transporter response:", process.env.User, process.env.Pass);
+        // assign referralCode
+        await (0, Agent_1.assignAgentReferral)(referralCode, newUser);
         return res.json({
             status: "Success",
-            message: `User created successfuly verify your email ,verification code has been sent to ${newUser.email}`,
+            message: `User created successfully. Verify your email - verification code has been sent to ${newUser.email}`,
             data: newUser,
         });
     }
     catch (err) {
-        res.json({
+        console.error("Unexpected error in registerUser:", err);
+        // Don't expose internal error details in production
+        const errorMessage = process.env.NODE_ENV === "production"
+            ? "An unexpected error occurred. Please try again later."
+            : err.message;
+        return res.status(500).json({
             status: "Failed",
-            message: err.message,
+            message: errorMessage,
         });
     }
 };
