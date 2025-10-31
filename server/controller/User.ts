@@ -204,7 +204,7 @@ export const resendUserVerificationEmail = async (
             expTime,
         );
         return res.json({
-            status: "success",
+            status: "Success",
             message: "Verification code has been sent to your email again !",
             isEmailVerified: user.isEmailVerified,
         });
@@ -267,7 +267,7 @@ export const loginUser = async (req: Request, res: Response) => {
         }
         // Return success with JWT token
         return res.json({
-            status: "success",
+            status: "Success",
             message: "login successfuly",
             token: signUserToken(user),
         });
@@ -294,7 +294,7 @@ export const userProfile = async (req: Request, res: Response) => {
             kyc: kycRecord,
         };
         return res.json({
-            Status: "success",
+            Status: "Success",
             message: "welcome back",
             data,
         });
@@ -358,7 +358,7 @@ export const registerKYC1 = async (req: Request, res: Response) => {
             virtualAccount.data.virtual_account_number,
         );
         return res.json({
-            status: "success",
+            status: "Success",
             message: "KYC1 record created successfuly",
             data: newKYC1,
         });
