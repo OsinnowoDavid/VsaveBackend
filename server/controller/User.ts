@@ -104,32 +104,32 @@ export const registerUser = async (req: Request, res: Response) => {
             });
         }
         //config mail option
-        // console.log(
-        //     " controller pass and user:",
-        //     process.env.User,
-        //     process.env.Pass,
-        // );
-        // const mailOptions = {
-        //     from: `<${process.env.User}>`, // sender
-        //     to: email, // recipient
-        //     subject: "Welcome to VSAVE 🎉",
-        //     text: `Hello ${newUser.firstName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans. To get started, please verify your email using the code below:
-        //   CODE : ${tokenNumber}
-        //   This code will expire in 5 minutes, so be sure to use it right away.
-        //   We’re excited to have you on board!
+        console.log(
+            " controller pass and user:",
+            process.env.User,
+            process.env.Pass,
+        );
+        const mailOptions = {
+            from: `<${process.env.User}>`, // sender
+            to: email, // recipient
+            subject: "Welcome to VSAVE 🎉",
+            text: `Hello ${newUser.firstName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans. To get started, please verify your email using the code below:
+          CODE : ${tokenNumber}
+          This code will expire in 5 minutes, so be sure to use it right away.
+          We’re excited to have you on board!
 
-        //   — The VSave Team.`,
-        // };
-        // console.log("got to the  mail option :", mailOptions);
-        // // Send email
-        // let sentMale = await Transporter.sendMail(mailOptions);
-        // console.log(
-        //     "transporter response:",
-        //     process.env.User,
-        //     process.env.Pass,
-        // );
-        // // assign referralCode
-        // await assignAgentReferral(referralCode, newUser);
+          — The VSave Team.`,
+        };
+        console.log("got to the  mail option :", mailOptions);
+        // Send email
+        let sentMale = await Transporter.sendMail(mailOptions);
+        console.log(
+            "transporter response:",
+            process.env.User,
+            process.env.Pass,
+        );
+        // assign referralCode
+        await assignAgentReferral(referralCode, newUser);
         return res.json({
             status: "Success",
             message: `User created successfuly verify your email ,verification code has been sent to ${newUser.email}`,
