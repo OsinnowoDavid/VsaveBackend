@@ -1,7 +1,8 @@
 import Admin from "../model/Super_admin";
 import RegionalAdmin from "../model/Regionaladmin";
 import Region from "../model/Region";
-import {ISuperAdmin} from "../types"
+import { ISuperAdmin } from "../types";
+import AdminConfig from "../model/Admin_config";
 export const CreateSuperAdmin = async (
     firstName: string,
     lastName: string,
@@ -25,7 +26,7 @@ export const CreateSuperAdmin = async (
     }
 };
 
-export const getAllSuperAdminById = async (id: string) => {
+export const getSuperAdminById = async (id: string) => {
     try {
         const foundAdmin = await Admin.findById(id);
         return foundAdmin;
@@ -59,42 +60,45 @@ export const createNewRegion = async (
 };
 
 export const createRegionalAdmin = async (
-    firstName:string,
-    lastName:string,
+    firstName: string,
+    lastName: string,
     email: string,
     phoneNumber: string,
     password: string,
     region: string,
-    profilePicture?:string
+    profilePicture?: string,
 ) => {
     try {
         const newRegionalAdmin = await RegionalAdmin.create({
-           firstName,
+            firstName,
             lastName,
             email,
             phoneNumber,
             password,
             region,
-            profilePicture
+            profilePicture,
         });
         return newRegionalAdmin;
     } catch (err: any) {
         throw err;
     }
 };
-export const assignRegionalAdmin = async (admin:ISuperAdmin, region:string) =>{
-    try{
+export const assignRegionalAdmin = async (
+    admin: ISuperAdmin,
+    region: string,
+) => {
+    try {
         const foundRegion = await Region.findById(region);
-        if(!foundRegion){
-            throw "region not found !"
+        if (!foundRegion) {
+            throw "region not found !";
         }
-        foundRegion.admin.push(admin._id) 
-         await foundRegion.save() 
-         return foundRegion
-    }catch(err:any){
-        throw err
+        foundRegion.admin.push(admin._id);
+        await foundRegion.save();
+        return foundRegion;
+    } catch (err: any) {
+        throw err;
     }
-}
+};
 export const getAllRegionalAdmin = async () => {
     try {
         const allRegionalAdmin = await RegionalAdmin.find();
@@ -148,3 +152,26 @@ export const getRegionByName = async (regionName: string) => {
     }
 };
 
+export const setAdminSavingsConfig = async (
+    defaultPenaltyFee: string,
+    firstTimeAdminFee: string,
+) => {
+    try {
+        const configSettings = await AdminConfig.getSettings();
+        configSettings.defaultPenaltyFee = defaultPenaltyFee;
+        configSettings.firstTimeAdminFee = firstTimeAdminFee;
+        await configSettings.save();
+        return configSettings;
+    } catch (err: any) {
+        throw err;
+    }
+};
+
+export const getAdminSavingsConfig = async () => {
+    try {
+        const configSettngs = await AdminConfig.getSettings();
+        return configSettngs;
+    } catch (err: any) {
+        throw err;
+    }
+};

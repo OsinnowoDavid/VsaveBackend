@@ -16,4 +16,6 @@ router.post("/create-regional-admin", JWT_1.verifySuperAdminToken, Admin_1.creat
 router.get("/get-all-regional-admin", JWT_1.verifySuperAdminToken, Admin_1.getAllRegionalAdminController);
 router.post("/get-all-region", JWT_1.verifySuperAdminToken, Admin_1.getAllRegionController);
 router.get("/get-regional-admin", JWT_1.verifySuperAdminToken, Admin_1.getRegionalAdminByEmailController);
+router.post("/set-saving-config", JWT_1.verifySuperAdminToken, Admin_1.setAdminConfigController);
+router.get("/get-savings-config", JWT_1.verifySuperAdminToken, Admin_1.getAdminSavingsConfigController);
 exports.default = router;

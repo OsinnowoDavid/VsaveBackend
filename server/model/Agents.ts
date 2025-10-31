@@ -4,7 +4,11 @@ const Schema = mongoose.Schema;
 
 const AgentSchema = new Schema(
     {
-        fullName: {
+        firstName: {
+            type: String,
+            required: true,
+        },
+        lastName: {
             type: String,
             required: true,
         },
@@ -16,7 +20,7 @@ const AgentSchema = new Schema(
             type: String,
             required: true,
         },
-        region: {
+        subRegion: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Region",
             required: true,
@@ -33,16 +37,10 @@ const AgentSchema = new Schema(
             type: String,
             required: true,
         },
-        referres: [
-            {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "User",
-            },
-        ],
     },
     { timestamps: true },
 );
 
-const Admin = mongoose.model("Agent", AgentSchema);
+const Agent = mongoose.model("Agent", AgentSchema);
 
-export default Admin;
+export default Agent;

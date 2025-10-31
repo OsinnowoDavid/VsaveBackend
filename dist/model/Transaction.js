@@ -20,25 +20,21 @@ const transactionSchema = new mongoose_1.default.Schema({
         required: true,
         min: 0,
     },
-    settledAmount: {
-        type: Number,
-        required: true,
-    },
     feeCharged: {
         type: Number,
-        required: true,
+        required: false,
     },
     status: {
         type: String,
         enum: ["pending", "success", "failed", "reversed"],
         default: "pending",
     },
-    reference: {
+    transactionReference: {
         type: String,
         unique: true, // useful for payment gateways like Paystack, Flutterwave
         required: true,
     },
-    description: {
+    remark: {
         type: String,
         trim: true,
     },
@@ -49,6 +45,22 @@ const transactionSchema = new mongoose_1.default.Schema({
     balanceAfter: {
         type: Number,
         required: false, // track balance after transaction
+    },
+    sender: {
+        type: String,
+    },
+    reciever: {
+        type: String,
+    },
+    network: {
+        type: String,
+    },
+    date: {
+        type: Date,
+    },
+    bundle: {
+        type: Object,
+        required: false,
     },
 }, { timestamps: true });
 exports.default = mongoose_1.default.model("Transaction", transactionSchema);

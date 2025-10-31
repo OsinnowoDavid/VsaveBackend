@@ -1,5 +1,12 @@
 import { Request, Response } from "express";
 import { squadWebhook } from "../services/Webhook";
+import {
+    checkTransferByRefrence,
+    deposit,
+    getUserById,
+    createUserTransaction,
+} from "../services/User";
+import { IUser } from "../types";
 import crypto from "crypto";
 const generateHmacSHA512 = (input: any, key: any) => {
     const hmac = crypto.createHmac("sha512", key);
@@ -16,42 +23,10 @@ export const squadWebhookController = async (req: Request, res: Response) => {
                 .status(400)
                 .json({ message: "Missing signature header" });
         }
-
         const payload = req.body;
-        const {
-            transaction_reference,
-            virtual_account_number,
-            currency,
-            principal_amount,
-            settled_amount,
-            customer_identifier,
-        } = payload;
-        await squadWebhook(payload, "signing");
-        // const dataToSign = [
-        //     String(transaction_reference ?? "").trim(),
-        //     String(virtual_account_number ?? "").trim(),
-        //     String(currency ?? "").trim(),
-        //     String(principal_amount ?? "").trim(),
-        //     String(settled_amount ?? "").trim(),
-        //     String(customer_identifier ?? "").trim(),
-        // ].join("|");
-        console.log("data:", req.body);
-        let dataToHash = `${transaction_reference}|${virtual_account_number}|${currency}|${principal_amount}|${settled_amount}|${customer_identifier}`;
-        console.log("String to sign:", dataToHash);
-
-        const secret = process.env.SQUAD_SECRET_KEY;
-        if (!secret) {
-            throw new Error(
-                "SQUAD_SECRET_KEY missing in environment variables",
-            );
-        }
-        // const generatedHash = generateHmacSHA512(
-        //     dataToHash,
-        //     process.env.SQUAD_SECRET_KEY,
-        // );
         const hash = crypto
-            .createHmac("sha512", secret)
-            .update(JSON.stringify(req.body))
+            .createHmac("sha512", process.env.SQUAD_SECRET_KEY!)
+            .update(JSON.stringify(payload))
             .digest("hex");
         if (hash !== signatureFromHeader) {
             console.error("Signature mismatch", {
@@ -61,20 +36,53 @@ export const squadWebhookController = async (req: Request, res: Response) => {
             });
             return res.status(400).json({
                 response_code: 400,
-                transaction_reference,
                 response_description: "Validation failure",
             });
         }
 
         // process the valid payload
+        // check if transaction_ref exist
+        const foundTransferRefrence = await checkTransferByRefrence(
+            payload.transaction_reference,
+        );
+        if (foundTransferRefrence) {
+            console.log("transaction already exist");
+            return res.status(200).json({
+                response_code: 200,
+                response_description: "Success transaction already exist",
+            });
+        }
+        // deposit money to users account
+        const foundUser = (await getUserById(
+            payload.customer_identifier,
+        )) as IUser;
+        let beforeBalance = foundUser.availableBalance;
+        let afterBalance = foundUser.availableBalance + payload.settled_amount;
+        await deposit(foundUser, payload.settled_amount);
+        // save webhook
+        await squadWebhook(payload, signatureFromHeader);
+        // save transaction record
+        await createUserTransaction(
+            foundUser._id.toString(),
+            "deposit",
+            payload.transaction_reference,
+            payload.settled_amount,
+            beforeBalance,
+            afterBalance,
+            payload.remark,
+            "success",
+            payload.transaction_date,
+            payload.sender_name,
+            "",
+            payload.fee_charged,
+        );
 
         return res.status(200).json({
             response_code: 200,
-            transaction_reference,
             response_description: "Success",
         });
     } catch (err: any) {
-        console.error("❌ Webhook Error:", err);
+        console.error("Webhook Error:", err);
         return res.status(500).json({
             response_code: 500,
             message: err.message,

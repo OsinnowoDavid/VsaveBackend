@@ -9,20 +9,25 @@ const loanSchema = new Schema(
             ref: "User",
         },
         InitialAmount: { type: Number, required: true },
-        currentAmount: { type: Number, required: true },
+        interest: { type: String },
         status: {
             type: String,
             enum: ["pending", "approved", "rejected", "active", "completed"],
             default: "pending",
         },
-        issueDate: { type: Date },
+        startDate: { type: Date },
+        duration: { type: String },
         dueDate: { type: Date },
+        repaymentAmount: { type: Number },
         repayments: [
             {
                 amount: { type: Number, required: true },
                 date: { type: Date, default: Date.now },
             },
         ],
+        remark: {
+            type: String,
+        },
     },
     { timestamps: true },
 );

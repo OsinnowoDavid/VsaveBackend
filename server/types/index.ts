@@ -9,20 +9,21 @@ export interface IUser extends Document {
     password: string;
     profilePicture: string;
     vsavePoint: number;
-    KYC: object;
+    subRegion: Types.ObjectId | string;
+    KYC: Types.ObjectId | null;
     availableBalance: number;
     pendingBalance: number;
     isEmailVerified: boolean;
     status: string;
     address: string;
-    bvn: string;
-    gender: string;
+    bvn?: string;
+    gender: "Male" | "Female" | string;
     dateOfBirth: Date | string;
     virtualAccountNumber: string;
 }
 
 export interface IVerificationToken extends Document {
-    user: object;
+    user?: Types.ObjectId;
     email: string;
     token: string;
     expiresAt: Date;
@@ -33,7 +34,7 @@ export interface ISuperAdmin extends Document {
     firstName: string;
     lastName: string;
     email: string;
-    phoneNumber: string;
+    phoneNumber?: string;
     password: string;
     profilePicture?: string | null | undefined;
 }
@@ -75,14 +76,14 @@ export interface ISubRegion extends Document {
 
 export interface IAgent extends Document {
     _id: Types.ObjectId;
-    fullName: string;
+    firstName: string;
+    lastName: string;
     email: string;
     phoneNumber: string;
-    region: Types.ObjectId;
+    subRegion: Types.ObjectId; // ref: Region in code (field name is subRegion)
     password: string;
     profilePicture?: string;
     referralCode: string;
-    referres: Types.ObjectId[];
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -142,6 +143,15 @@ export interface INotification extends Document {
     message: string;
 }
 
+export interface IWebhook extends Document {
+    _id: Types.ObjectId;
+    user?: Types.ObjectId;
+    payload: object;
+    signature?: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
 export interface ISubRegionalAdmin extends Document {
     _id: Types.ObjectId;
     firstName: string;
@@ -160,13 +170,102 @@ export interface ITransaction extends Document {
     userId: Types.ObjectId;
     type: "deposit" | "withdrawal" | "transfer" | "airtime" | "data";
     amount: number;
-    settledAmount: number;
-    feeCharged: number;
+    feeCharged?: number;
     status: "pending" | "success" | "failed" | "reversed";
-    reference: string;
-    description?: string;
+    transactionReference: string;
+    remark?: string;
     balanceBefore?: number;
     balanceAfter?: number;
+    sender?: string;
+    reciever?: string;
+    network?: string;
+    date?: Date;
+    bundle?: object;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+export interface IAdminConfig extends Document {
+    _id: Types.ObjectId;
+    defaultPenaltyFee?: string;
+    firstTimeAdminFee?: string;
+}
+
+export interface IAgentReferral extends Document {
+    _id: Types.ObjectId;
+    agent: Types.ObjectId;
+    referralCode: string;
+    referres?: Types.ObjectId[];
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+export interface IBankCode extends Document {
+    _id: Types.ObjectId;
+    bankCode?: string;
+    bank?: string;
+}
+
+export interface ISavingsCircle extends Document {
+    _id: Types.ObjectId;
+    savingsPlanId: Types.ObjectId;
+    savingsTitle: string;
+    frequency: "DAILY" | "WEEKLY" | "MONTHLY";
+    subRegion: Types.ObjectId;
+    duration: number;
+    deductionPeriod: string;
+    savingsAmount: number;
+    startDate?: Date;
+    endDate?: Date;
+    circleIndex?: number;
+    status?: "ACTIVE" | "PAUSED" | "ENDED";
+    maturityAmount: number;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+export interface ISavingsGroup extends Document {
+    _id: Types.ObjectId;
+    savingsId: Types.ObjectId;
+    savingsCircleId: Types.ObjectId;
+    users: Types.ObjectId[];
+    subRegion: Types.ObjectId;
+    status: string;
+    periods: number;
+    duration: number;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+export interface IUserSavingsRecord extends Document {
+    _id: Types.ObjectId;
+    user: Types.ObjectId;
+    savingId: Types.ObjectId;
+    savingsCircleId: Types.ObjectId;
+    records: {
+        period?: string;
+        periodIndex?: string;
+        amount?: number;
+        status?: "pending" | "paid";
+    }[];
+    status?: "ACTIVE" | "PAUSED" | "ENDED";
+    maturityAmount?: number;
+    payOut?: number;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+export interface ISavingsPlan extends Document {
+    _id: Types.ObjectId;
+    savingsTitle: string;
+    subRegion: Types.ObjectId;
+    frequency: "DAILY" | "WEEKLY" | "MONTHLY";
+    savingsAmount: number;
+    noOfcircleIndex?: number;
+    firstTimeAdminFee?: string;
+    autoRestartEnabled?: boolean;
+    status?: "ACTIVE" | "PAUSED" | "ENDED";
+    adminId?: string;
     createdAt?: Date;
     updatedAt?: Date;
 }

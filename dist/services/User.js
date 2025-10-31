@@ -3,13 +3,40 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.buyData = exports.getUserKyc1Record = exports.getDataPlan = exports.buyAirtime = exports.createVirtualAccountIndex = exports.createVirtualAccountForPayment = exports.verifyBankaccount = exports.getAllBanksAndCode = exports.createKYC1Record = exports.kycStatusChange = exports.createKYCRecord = exports.getUserVerificationToken = exports.assignUserEmailVerificationToken = exports.getUserByEmail = exports.getUserById = exports.createNewUser = void 0;
+exports.updateUserSavingsRecords = exports.userWithdraw = exports.userSavingsRecords = exports.userActiveSavingsRecord = exports.avaliableSavings = exports.createFixedSaving = exports.createLoanRecord = exports.userGetAllSubRegion = exports.joinSavings = exports.getUserTransactionByType = exports.getUserTransactionByStatus = exports.getUserSingleTransaction = exports.getUserTransactions = exports.payOut = exports.accountLookUp = exports.getBankCode = exports.createUserAirtimeTransaction = exports.createUserDataTransaction = exports.checkTransferByRefrence = exports.createUserTransaction = exports.deposit = exports.withdraw = exports.buyData = exports.getUserKyc1Record = exports.getDataPlan = exports.buyAirtime = exports.createVirtualAccountIndex = exports.createVirtualAccountForPayment = exports.verifyBankaccount = exports.getAllBanksAndCode = exports.updateKYC1Record = exports.createKYC1Record = exports.kycStatusChange = exports.createKYCRecord = exports.getUserVerificationToken = exports.assignUserEmailVerificationToken = exports.getUserByEmail = exports.getUserById = exports.createNewUser = void 0;
 const User_1 = __importDefault(require("../model/User"));
 const VerificationToken_1 = __importDefault(require("../model/VerificationToken"));
 const KYC1_1 = __importDefault(require("../model/KYC1"));
 const KYC_1 = __importDefault(require("../model/KYC"));
+const Transaction_1 = __importDefault(require("../model/Transaction"));
 const axios_1 = __importDefault(require("axios"));
+const Bank_code_1 = __importDefault(require("../model/Bank_code"));
+const Savings_group_1 = __importDefault(require("../model/Savings_group"));
+const User_savings_record_1 = __importDefault(require("../model/User_savings_record"));
+const Savings_circle_1 = __importDefault(require("../model/Savings_circle"));
+const RegionalAdmin_1 = require("./RegionalAdmin");
+const Loan_1 = __importDefault(require("../model/Loan"));
+const FixedSavings_1 = __importDefault(require("../model/FixedSavings"));
 const FLW_SECRET_KEY = process.env.FLW_SECRET_KEY;
+const generateRefrenceCode = () => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let code = "";
+    let marchantId = process.env.MARCHANT_ID;
+    for (let i = 0; i < 15; i++) {
+        const randomIndex = Math.floor(Math.random() * chars.length);
+        code += chars[randomIndex];
+    }
+    return `${marchantId}_${code}`;
+};
+const generateSavingsRefrenceCode = () => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let code = "";
+    for (let i = 0; i < 15; i++) {
+        const randomIndex = Math.floor(Math.random() * chars.length);
+        code += chars[randomIndex];
+    }
+    return `Savings_${code}`;
+};
 const createNewUser = async (firstName, lastName, email, password, gender, dateOfBirth, phoneNumber) => {
     try {
         const newUser = await User_1.default.create({
@@ -104,7 +131,7 @@ const kycStatusChange = async (user, status, stage) => {
     }
 };
 exports.kycStatusChange = kycStatusChange;
-const createKYC1Record = async (user, profession, accountNumber, bank, accountDetails, country, state, bvn, address) => {
+const createKYC1Record = async (user, profession, accountNumber, bank, accountDetails, country, state, bvn, address, subRegion) => {
     try {
         const newKYC1 = await KYC1_1.default.create({
             user,
@@ -117,8 +144,9 @@ const createKYC1Record = async (user, profession, accountNumber, bank, accountDe
             bvn,
             address,
         });
-        const foundUser = await User_1.default.findById(user._id);
-        foundUser;
+        const foundUser = (await User_1.default.findById(user._id));
+        foundUser.subRegion = subRegion;
+        await foundUser.save();
         return newKYC1;
     }
     catch (err) {
@@ -126,6 +154,15 @@ const createKYC1Record = async (user, profession, accountNumber, bank, accountDe
     }
 };
 exports.createKYC1Record = createKYC1Record;
+const updateKYC1Record = async (user, bank) => {
+    try {
+        const foundUser = await KYC1_1.default.findOneAndUpdate({ user: user._id }, {});
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.updateKYC1Record = updateKYC1Record;
 const getAllBanksAndCode = async () => {
     try {
         const response = await axios_1.default.get("https://api.flutterwave.com/v3/banks/NG", {
@@ -159,30 +196,30 @@ const verifyBankaccount = async (accountNumber, bankCode) => {
     }
 };
 exports.verifyBankaccount = verifyBankaccount;
+let getGenderCode = (gender) => {
+    if (typeof gender !== "string") {
+        throw new Error("Invalid input: expected a string");
+    }
+    const formatted = gender.trim().toLowerCase();
+    if (formatted === "male") {
+        return "1";
+    }
+    else if (formatted === "female") {
+        return "2";
+    }
+    else {
+        throw new Error("Invalid gender: must be 'Male' or 'Female'");
+    }
+};
+let formatDate = (date) => {
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${month}/${day}/${year}`;
+};
 const createVirtualAccountForPayment = async (user, bvn, address) => {
     try {
-        let getGenderCode = (gender) => {
-            if (typeof gender !== "string") {
-                throw new Error("Invalid input: expected a string");
-            }
-            const formatted = gender.trim().toLowerCase();
-            if (formatted === "male") {
-                return "1";
-            }
-            else if (formatted === "female") {
-                return "2";
-            }
-            else {
-                throw new Error("Invalid gender: must be 'Male' or 'Female'");
-            }
-        };
         let gender = getGenderCode(user.gender);
-        let formatDate = (date) => {
-            const day = String(date.getDate()).padStart(2, "0");
-            const month = String(date.getMonth() + 1).padStart(2, "0");
-            const year = date.getFullYear();
-            return `${month}/${day}/${year}`;
-        };
         let dob = formatDate(new Date(user.dateOfBirth));
         let data = JSON.stringify({
             customer_identifier: user._id.toString(),
@@ -245,7 +282,7 @@ const buyAirtime = async (phoneNumber, amount) => {
     try {
         const data = {
             phone_number: phoneNumber,
-            amount: 5000,
+            amount,
         };
         let config = {
             method: "post",
@@ -261,7 +298,20 @@ const buyAirtime = async (phoneNumber, amount) => {
         return response.data;
     }
     catch (err) {
-        throw err;
+        // If the request fails, we log the response from the provider
+        if (err.response) {
+            console.error("Error Response Status:", err.response.status);
+            console.error("Error Response Data:", err.response.data);
+            throw err.response.data; // Return the exact response data from the provider
+        }
+        else if (err.request) {
+            console.error("No Response:", err.request);
+            throw { error: "No response from the server" };
+        }
+        else {
+            console.error("Error:", err.message);
+            throw { error: "Unexpected error occurred" };
+        }
     }
 };
 exports.buyAirtime = buyAirtime;
@@ -280,7 +330,20 @@ const getDataPlan = async (network) => {
         return response.data;
     }
     catch (err) {
-        throw err;
+        // If the request fails, we log the response from the provider
+        if (err.response) {
+            console.error("Error Response Status:", err.response.status);
+            console.error("Error Response Data:", err.response.data);
+            throw err.response.data; // Return the exact response data from the provider
+        }
+        else if (err.request) {
+            console.error("No Response:", err.request);
+            throw { error: "No response from the server" };
+        }
+        else {
+            console.error("Error:", err.message);
+            throw { error: "Unexpected error occurred" };
+        }
     }
 };
 exports.getDataPlan = getDataPlan;
@@ -312,10 +375,425 @@ const buyData = async (phoneNumber, amount, planCode) => {
             data: data,
         };
         const response = await axios_1.default.request(config);
+        console.log("squadres", response.data);
         return response.data;
+    }
+    catch (err) {
+        // If the request fails, we log the response from the provider
+        if (err.response) {
+            console.error("Error Response Status:", err.response.status);
+            console.error("Error Response Data:", err.response.data);
+            throw err.response.data; // Return the exact response data from the provider
+        }
+        else if (err.request) {
+            console.error("No Response:", err.request);
+            throw { error: "No response from the server" };
+        }
+        else {
+            console.error("Error:", err.message);
+            throw { error: "Unexpected error occurred" };
+        }
+    }
+};
+exports.buyData = buyData;
+const withdraw = async (user, amount) => {
+    try {
+        const foundUser = (await User_1.default.findById(user._id));
+        let sum = Number(foundUser.availableBalance) - Number(amount);
+        foundUser.availableBalance = sum;
+        await foundUser.save();
+        return foundUser;
     }
     catch (err) {
         throw err;
     }
 };
-exports.buyData = buyData;
+exports.withdraw = withdraw;
+const deposit = async (user, amount) => {
+    try {
+        const foundUser = (await User_1.default.findById(user._id));
+        let sum = Number(foundUser.availableBalance) + Number(amount);
+        foundUser.availableBalance = sum;
+        await foundUser.save();
+        return foundUser;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.deposit = deposit;
+const createUserTransaction = async (user, type, transactionReference, amount, balanceBefore, balanceAfter, remark, status, date, sender, reciever, feeCharged) => {
+    try {
+        const foundUser = (await User_1.default.findById(user));
+        const newTransaction = await Transaction_1.default.create({
+            userId: foundUser._id,
+            type,
+            transactionReference,
+            amount,
+            balanceBefore,
+            balanceAfter,
+            status,
+            remark,
+            sender,
+            reciever,
+            date,
+            feeCharged,
+        });
+        return newTransaction;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.createUserTransaction = createUserTransaction;
+const checkTransferByRefrence = async (refrence) => {
+    try {
+        const foundTransaction = await Transaction_1.default.findOne({
+            transactionReference: refrence,
+        });
+        return foundTransaction;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.checkTransferByRefrence = checkTransferByRefrence;
+const createUserDataTransaction = async (user, transactionReference, amount, balanceBefore, balanceAfter, reciever, network, bundle, feeCharged) => {
+    try {
+        const foundUser = (await User_1.default.findById(user));
+        const newTransaction = await Transaction_1.default.create({
+            userId: foundUser._id,
+            type: "data",
+            transactionReference,
+            amount,
+            balanceBefore,
+            balanceAfter,
+            status: "success",
+            reciever,
+            date: new Date(),
+            network,
+            feeCharged,
+            bundle,
+        });
+        return newTransaction;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.createUserDataTransaction = createUserDataTransaction;
+const createUserAirtimeTransaction = async (user, transactionReference, amount, balanceBefore, balanceAfter, reciever, network, feeCharged) => {
+    try {
+        const foundUser = (await User_1.default.findById(user));
+        const newTransaction = await Transaction_1.default.create({
+            userId: foundUser._id,
+            type: "airtime",
+            transactionReference,
+            amount,
+            balanceBefore,
+            balanceAfter,
+            status: "success",
+            reciever,
+            date: new Date(),
+            network,
+            feeCharged,
+        });
+        return newTransaction;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.createUserAirtimeTransaction = createUserAirtimeTransaction;
+const getBankCode = async () => {
+    try {
+        const allBankCode = await Bank_code_1.default.find();
+        return allBankCode;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.getBankCode = getBankCode;
+const accountLookUp = async (account_number, bank_code) => {
+    try {
+        let data = {
+            bank_code,
+            account_number,
+        };
+        let config = {
+            method: "post",
+            maxBodyLength: Infinity,
+            url: "https://sandbox-api-d.squadco.com/payout/account/lookup",
+            headers: {
+                Authorization: `Bearer ${process.env.SQUAD_SECRET_KEY}`,
+                "Content-Type": "application/json",
+            },
+            data: data,
+        };
+        const response = await axios_1.default.request(config);
+        console.log("squadres", response.data);
+        return response.data;
+    }
+    catch (err) {
+        // If the request fails, we log the response from the provider
+        if (err.response) {
+            console.error("Error Response Status:", err.response.status);
+            console.error("Error Response Data:", err.response.data);
+            throw err.response.data; // Return the exact response data from the provider
+        }
+        else if (err.request) {
+            console.error("No Response:", err.request);
+            throw { error: "No response from the server" };
+        }
+        else {
+            console.error("Error:", err.message);
+            throw { error: "Unexpected error occurred" };
+        }
+    }
+};
+exports.accountLookUp = accountLookUp;
+const payOut = async (user, bank_code, amount, account_number, account_name) => {
+    try {
+        console.log("ref", generateRefrenceCode());
+        let data = {
+            bank_code,
+            amount,
+            account_number,
+            account_name,
+            transaction_reference: generateRefrenceCode(),
+            currency_id: "NGN",
+            remark: `${user.firstName} ${user.lastName} payout to ${account_name}`,
+        };
+        let config = {
+            method: "post",
+            maxBodyLength: Infinity,
+            url: "https://sandbox-api-d.squadco.com/payout/transfer",
+            headers: {
+                Authorization: `Bearer ${process.env.SQUAD_SECRET_KEY}`,
+                "Content-Type": "application/json",
+            },
+            data: data,
+        };
+        const response = await axios_1.default.request(config);
+        console.log("squadres", response.data);
+        return response.data;
+    }
+    catch (err) {
+        // If the request fails, we log the response from the provider
+        if (err.response) {
+            console.error("Error Response Status:", err.response.status);
+            console.error("Error Response Data:", err.response.data);
+            throw err.response.data; // Return the exact response data from the provider
+        }
+        else if (err.request) {
+            console.error("No Response:", err.request);
+            throw { error: "No response from the server" };
+        }
+        else {
+            console.error("Error:", err.message);
+            throw { error: "Unexpected error occurred" };
+        }
+    }
+};
+exports.payOut = payOut;
+const getUserTransactions = async (user) => {
+    try {
+        const userTransaction = await Transaction_1.default.find({ userId: user });
+        return userTransaction;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.getUserTransactions = getUserTransactions;
+const getUserSingleTransaction = async (user, transactionId) => {
+    try {
+        const userSingleTransaction = await Transaction_1.default.findOne({
+            userId: user,
+            _id: transactionId,
+        });
+        return userSingleTransaction;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.getUserSingleTransaction = getUserSingleTransaction;
+const getUserTransactionByStatus = async (user, status) => {
+    try {
+        const userTransaction = await Transaction_1.default.find({
+            userId: user,
+            status,
+        });
+        return userTransaction;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.getUserTransactionByStatus = getUserTransactionByStatus;
+const getUserTransactionByType = async (user, type) => {
+    try {
+        const userTransaction = await Transaction_1.default.find({ userId: user, type });
+        return userTransaction;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.getUserTransactionByType = getUserTransactionByType;
+const joinSavings = async (user, circleId) => {
+    try {
+        const savingsGroup = await Savings_group_1.default.findOne({
+            savingsCircleId: circleId,
+        });
+        let currentCircle = await Savings_circle_1.default.findById(circleId);
+        if (!savingsGroup) {
+            throw { message: "No SavingsGroup found with this CircleID" };
+        }
+        savingsGroup.users.push(user._id);
+        await savingsGroup.save();
+        // create user savings record
+        const userSavingsRecord = await User_savings_record_1.default.create({
+            user: user._id,
+            savingsId: savingsGroup.savingsId,
+            savingsCircleId: savingsGroup.savingsCircleId,
+            maturityAmount: currentCircle?.maturityAmount,
+        });
+        return userSavingsRecord;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.joinSavings = joinSavings;
+const userGetAllSubRegion = async () => {
+    try {
+        const allSubRegion = await (0, RegionalAdmin_1.getAllSubRegion)();
+        return allSubRegion;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.userGetAllSubRegion = userGetAllSubRegion;
+const createLoanRecord = async (user, amount, interest, status, startDate, dueDate, duration, repaymentAmount, remark) => {
+    try {
+        const newLoan = await Loan_1.default.create({
+            user,
+            InitialAmount: amount,
+            interest,
+            status,
+            startDate,
+            dueDate,
+            repaymentAmount,
+            remark,
+        });
+        return newLoan;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.createLoanRecord = createLoanRecord;
+const createFixedSaving = async (user, amount, interestRate, paymentAmount, duration, startDate, endDate, status) => {
+    try {
+        const newFixedSavings = await FixedSavings_1.default.create({
+            user,
+            amount,
+            currency: "NG",
+            interestRate,
+            paymentAmount,
+            durationIndex: duration,
+            duration: `${duration} Days`,
+            startDate,
+            endDate,
+            status,
+        });
+        return newFixedSavings;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.createFixedSaving = createFixedSaving;
+const avaliableSavings = async (user) => {
+    try {
+        const avaliableSavings = await Savings_group_1.default.find({
+            subRegion: user.subRegion,
+            status: "ACTIVE",
+        });
+        return avaliableSavings;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.avaliableSavings = avaliableSavings;
+const userActiveSavingsRecord = async (user) => {
+    try {
+        const activeSavings = await User_savings_record_1.default.find({
+            user: user._id,
+            status: "ACTIVE",
+        });
+        return activeSavings;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.userActiveSavingsRecord = userActiveSavingsRecord;
+const userSavingsRecords = async (user) => {
+    try {
+        const userSavings = await User_savings_record_1.default.find({ user: user._id });
+        return userSavings;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.userSavingsRecords = userSavingsRecords;
+const userWithdraw = async (user, amount, remark) => {
+    try {
+        const foundUser = (await User_1.default.findById(user));
+        if (amount > foundUser.availableBalance) {
+            return "Insufficient Funds";
+        }
+        let balanceBefore = Number(foundUser.availableBalance);
+        let balanceAfter = Number(foundUser.availableBalance) - Number(amount);
+        // withdraw money
+        let sum = Number(foundUser.availableBalance) - Number(amount);
+        foundUser.availableBalance = sum;
+        await foundUser.save();
+        //create transaction record
+        const transaction = await (0, exports.createUserTransaction)(user, "withdrwal", generateSavingsRefrenceCode(), amount, balanceBefore, balanceAfter, remark, "success", new Date());
+        return transaction;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.userWithdraw = userWithdraw;
+const updateUserSavingsRecords = async (user, circleId, amount, period, status) => {
+    try {
+        const foundUser = (await User_savings_record_1.default.findOne({
+            user,
+            savingsCircleId: circleId,
+            status: "ACTIVE",
+        }));
+        let record = {
+            period,
+            periodIndex: Number(period),
+            amount,
+            status,
+        };
+        foundUser.records.push(record);
+        await foundUser.save();
+        return foundUser;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.updateUserSavingsRecords = updateUserSavingsRecords;

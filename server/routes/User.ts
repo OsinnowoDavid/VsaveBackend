@@ -9,7 +9,20 @@ import {
     // verifyBankAccountController,
     getDataPlanController,
     buyAirtimeController,
-    buyDataController
+    buyDataController,
+    getBankCodeController,
+    accountLookUpController,
+    payOutController,
+    getUserKyc1RecordController,
+    getUserTransactionsController,
+    getUserSingleTransactionController,
+    getUserTransactionByStatusController,
+    getUserTransactionByTypeController,
+    userGetAllSubRegionController,
+    joinSavingsController,
+    getAvaliableSavingsController,
+    getUserActiveSavingsController,
+    getUserSavingsRecordsController,
 } from "../controller/User";
 import {
     validateUserRegitrationInput,
@@ -29,11 +42,58 @@ router.get("/profile", verifyUserToken, userProfile);
 //   verifyUserToken,
 //   verifyBankAccountController
 // );
-router.get("/register-kyc1", verifyUserToken, registerKYC1); 
+router.get("/register-kyc1", verifyUserToken, registerKYC1);
 
-router.get("/get-data-plan/:network", verifyUserToken, getDataPlanController) 
+router.get("/kyc1", verifyUserToken, getUserKyc1RecordController);
 
-router.post("/buy-airtime", verifyUserToken, buyAirtimeController) ; 
+router.get("/get-data-plan/:network", verifyUserToken, getDataPlanController);
 
-router.post("/buy-data", verifyUserToken , buyDataController ) ;
+router.post("/buy-airtime", verifyUserToken, buyAirtimeController);
+
+router.post("/buy-data", verifyUserToken, buyDataController);
+
+router.get("/get-bank-code", verifyUserToken, getBankCodeController);
+
+router.post("/account-lookup", verifyUserToken, accountLookUpController);
+
+router.post("/payout", verifyUserToken, payOutController);
+
+router.get("/transactions", verifyUserToken, getUserTransactionsController);
+
+router.get(
+    "/single-transaction/:id",
+    verifyUserToken,
+    getUserSingleTransactionController,
+);
+
+router.get(
+    "/transaction-by-status/:status",
+    verifyUserToken,
+    getUserTransactionByStatusController,
+);
+
+router.get(
+    "/transaction-by-type/:type",
+    verifyUserToken,
+    getUserTransactionByTypeController,
+);
+
+router.get("/subregions", verifyUserToken, userGetAllSubRegionController);
+
+router.post("/join-savings", verifyUserToken, joinSavingsController);
+
+router.get(
+    "/avaliable-savings",
+    verifyUserToken,
+    getAvaliableSavingsController,
+);
+
+router.get("/active-savings", verifyUserToken, getUserActiveSavingsController);
+
+router.get(
+    "/all-savings-record",
+    verifyUserToken,
+    getUserSavingsRecordsController,
+);
+
 export default router;

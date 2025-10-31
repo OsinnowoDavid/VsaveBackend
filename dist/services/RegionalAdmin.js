@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.assignSubRegionToRegion = exports.getAllSubRegion = exports.assignSubRegionAdmin = exports.getSubRegionalAdminByEmail = exports.getSubRegionalAdminById = exports.createSubRegionalAdmin = exports.getSubRegionByName = exports.getSubRegionById = exports.createSubRegion = exports.getRegionalAdminByEmail = exports.getRegionalAdminById = void 0;
+exports.assignSubRegionToRegion = exports.assignSubRegionAdmin = exports.getSubRegionalAdminByEmail = exports.getSubRegionalAdminById = exports.createSubRegionalAdmin = exports.getAllSubRegion = exports.getSubRegionByName = exports.getSubRegionById = exports.createSubRegion = exports.getRegionalAdminByEmail = exports.getRegionalAdminById = void 0;
 const Regionaladmin_1 = __importDefault(require("../model/Regionaladmin"));
 const SubRegion_1 = __importDefault(require("../model/SubRegion"));
 const Region_1 = __importDefault(require("../model/Region"));
@@ -62,6 +62,16 @@ const getSubRegionByName = async (name) => {
     }
 };
 exports.getSubRegionByName = getSubRegionByName;
+const getAllSubRegion = async () => {
+    try {
+        const allSubRegion = await SubRegion_1.default.find();
+        return allSubRegion;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.getAllSubRegion = getAllSubRegion;
 const createSubRegionalAdmin = async (firstName, lastName, email, password, phoneNumber, subRegion) => {
     try {
         const newSubRegionalAdmin = await SubRegionalAdmin_1.default.create({
@@ -114,16 +124,6 @@ const assignSubRegionAdmin = async (subRegionalAdmin, subRegion) => {
     }
 };
 exports.assignSubRegionAdmin = assignSubRegionAdmin;
-const getAllSubRegion = async () => {
-    try {
-        const allSubRegion = await SubRegion_1.default.find();
-        return allSubRegion;
-    }
-    catch (err) {
-        throw err;
-    }
-};
-exports.getAllSubRegion = getAllSubRegion;
 const assignSubRegionToRegion = async (region, subRegion) => {
     try {
         const foundRegion = await Region_1.default.findById(region);

@@ -29,9 +29,6 @@ const userSchema = new Schema({
     profilePicture: {
         type: String,
     },
-    referral: {
-        type: String,
-    },
     vsavePoint: {
         type: Number,
         default: 0,
@@ -48,9 +45,14 @@ const userSchema = new Schema({
         type: Number,
         default: 0,
     },
+    subRegion: {
+        type: mongoose_1.default.Schema.Types.ObjectId,
+        ref: "SubRegion",
+        required: false,
+    },
     isEmailVerified: {
         type: Boolean,
-        default: false,
+        default: true,
     },
     status: {
         type: String,
@@ -70,6 +72,7 @@ const userSchema = new Schema({
     },
     virtualAccountNumber: {
         type: String,
+        unique: true,
     },
 });
 const User = mongoose_1.default.model("User", userSchema);

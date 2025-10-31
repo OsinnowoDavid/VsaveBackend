@@ -3,17 +3,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.buyDataController = exports.buyAirtimeController = exports.getDataPlanController = exports.getUserKyc1RecordController = exports.registerKYC1 = exports.userProfile = exports.loginUser = exports.resendUserVerificationEmail = exports.verifyEmail = exports.registerUser = void 0;
+exports.getUserSavingsRecordsController = exports.getUserActiveSavingsController = exports.getAvaliableSavingsController = exports.joinSavingsController = exports.userGetAllSubRegionController = exports.getUserTransactionByTypeController = exports.getUserTransactionByStatusController = exports.getUserSingleTransactionController = exports.getUserTransactionsController = exports.payOutController = exports.accountLookUpController = exports.getBankCodeController = exports.buyDataController = exports.buyAirtimeController = exports.getDataPlanController = exports.getUserKyc1RecordController = exports.registerKYC1 = exports.userProfile = exports.loginUser = exports.resendUserVerificationEmail = exports.verifyEmail = exports.registerUser = void 0;
 const argon2_1 = __importDefault(require("argon2"));
 const User_1 = require("../services/User");
 const JWT_1 = require("../config/JWT");
 const nodemailer_1 = __importDefault(require("../config/nodemailer"));
 const QOREID_API_KEY = process.env.QOREID_SECRET_KEY;
 const QOREID_BASE_URL = process.env.QOREID_BASE_URL;
-console.log("Q:", QOREID_BASE_URL);
 const registerUser = async (req, res) => {
     try {
-        const { firstName, lastName, email, password, gender, dateOfBirth, phoneNumber, } = req.body;
+        const { firstName, lastName, email, password, gender, dateOfBirth, phoneNumber, referralCode, } = req.body;
         let hashPassword = await argon2_1.default.hash(password);
         // check if user is already in the database
         const user = (await (0, User_1.getUserByEmail)(email));
@@ -26,14 +25,14 @@ const registerUser = async (req, res) => {
             });
         }
         // create new user
-        const newUser = await (0, User_1.createNewUser)(firstName, lastName, email, hashPassword, gender, dateOfBirth, phoneNumber);
+        const newUser = (await (0, User_1.createNewUser)(firstName, lastName, email, hashPassword, gender, dateOfBirth, phoneNumber));
         if (!newUser) {
             return res.json({
                 status: "Failed",
                 message: "something went wrong, try again later",
             });
         }
-        //send verification code to user email
+        // send verification code to user email
         const tokenNumber = Math.floor(100000 + Math.random() * 900000);
         // generate exp time (expires in 5 min)
         const getNextFiveMinutes = () => {
@@ -50,19 +49,31 @@ const registerUser = async (req, res) => {
             });
         }
         //config mail option
-        const mailOptions = {
-            from: `<${process.env.User}>`, // sender
-            to: email, // recipient
-            subject: "Welcome to VSAVE 🎉",
-            text: `Hello ${newUser.firstName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans. To get started, please verify your email using the code below:
-      CODE : ${tokenNumber}
-      This code will expire in 5 minutes, so be sure to use it right away.
-      We’re excited to have you on board!
-
-      — The VSave Team.`,
-        };
-        // Send email
-        await nodemailer_1.default.sendMail(mailOptions);
+        // console.log(
+        //     " controller pass and user:",
+        //     process.env.User,
+        //     process.env.Pass,
+        // );
+        // const mailOptions = {
+        //     from: `<${process.env.User}>`, // sender
+        //     to: email, // recipient
+        //     subject: "Welcome to VSAVE 🎉",
+        //     text: `Hello ${newUser.firstName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans. To get started, please verify your email using the code below:
+        //   CODE : ${tokenNumber}
+        //   This code will expire in 5 minutes, so be sure to use it right away.
+        //   We’re excited to have you on board!
+        //   — The VSave Team.`,
+        // };
+        // console.log("got to the  mail option :", mailOptions);
+        // // Send email
+        // let sentMale = await Transporter.sendMail(mailOptions);
+        // console.log(
+        //     "transporter response:",
+        //     process.env.User,
+        //     process.env.Pass,
+        // );
+        // // assign referralCode
+        // await assignAgentReferral(referralCode, newUser);
         return res.json({
             status: "Success",
             message: `User created successfuly verify your email ,verification code has been sent to ${newUser.email}`,
@@ -141,7 +152,7 @@ const resendUserVerificationEmail = async (req, res) => {
         const expTime = getNextFiveMinutes();
         await (0, User_1.assignUserEmailVerificationToken)(user.email, tokenNumber, expTime);
         return res.json({
-            status: "success",
+            status: "Success",
             message: "Verification code has been sent to your email again !",
             isEmailVerified: user.isEmailVerified,
         });
@@ -154,6 +165,11 @@ const resendUserVerificationEmail = async (req, res) => {
     }
 };
 exports.resendUserVerificationEmail = resendUserVerificationEmail;
+const getNextFiveMinutes = () => {
+    const now = new Date();
+    const next = new Date(now.getTime() + 5 * 60 * 1000); // add 5 minutes
+    return next;
+};
 const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -178,11 +194,6 @@ const loginUser = async (req, res) => {
             };
             // Send email
             await nodemailer_1.default.sendMail(mailOptions);
-            const getNextFiveMinutes = () => {
-                const now = new Date();
-                const next = new Date(now.getTime() + 5 * 60 * 1000); // add 5 minutes
-                return next;
-            };
             const expTime = getNextFiveMinutes();
             await (0, User_1.assignUserEmailVerificationToken)(user.email, tokenNumber, expTime);
             return res.json({
@@ -200,7 +211,7 @@ const loginUser = async (req, res) => {
         }
         // Return success with JWT token
         return res.json({
-            status: "success",
+            status: "Success",
             message: "login successfuly",
             token: (0, JWT_1.signUserToken)(user),
         });
@@ -216,16 +227,21 @@ exports.loginUser = loginUser;
 const userProfile = async (req, res) => {
     try {
         let user = req.user;
+        let kycRecord = await (0, User_1.getUserKyc1Record)(user._id.toString());
         if (!user) {
             return res.json({
                 status: "Failed",
                 message: "user not found",
             });
         }
+        let data = {
+            profile: user,
+            kyc: kycRecord,
+        };
         return res.json({
-            Status: "success",
+            Status: "Success",
             message: "welcome back",
-            data: user,
+            data,
         });
     }
     catch (err) {
@@ -238,10 +254,10 @@ const userProfile = async (req, res) => {
 exports.userProfile = userProfile;
 const registerKYC1 = async (req, res) => {
     try {
-        const { profession, accountNumber, bank, bankCode, accountDetails, country, state, bvn, address, } = req.body;
+        const { profession, accountNumber, bank, accountDetails, country, state, bvn, address, subRegion, } = req.body;
         const user = req.user;
         // save KYC1
-        const newKYC1 = await (0, User_1.createKYC1Record)(user, profession, accountNumber, bank, accountDetails, country, state, bvn, address);
+        const newKYC1 = await (0, User_1.createKYC1Record)(user, profession, accountNumber, bank, accountDetails, country, state, bvn, address, subRegion);
         if (!newKYC1) {
             return res.json({
                 status: "Failed",
@@ -260,7 +276,7 @@ const registerKYC1 = async (req, res) => {
         }
         await (0, User_1.createVirtualAccountIndex)(user._id.toString(), virtualAccount.data.virtual_account_number);
         return res.json({
-            status: "success",
+            status: "Success",
             message: "KYC1 record created successfuly",
             data: newKYC1,
         });
@@ -325,6 +341,14 @@ exports.getDataPlanController = getDataPlanController;
 const buyAirtimeController = async (req, res) => {
     try {
         const { phoneNumber, amount } = req.body;
+        const user = req.user;
+        // check if avaliablebalance is greater than the purchased amount
+        if (amount > user.availableBalance) {
+            return res.json({
+                status: "Failed",
+                message: "Insufficient Fund Topup your account and try again",
+            });
+        }
         const airtime = await (0, User_1.buyAirtime)(phoneNumber, amount);
         if (!airtime) {
             return res.json({
@@ -332,10 +356,17 @@ const buyAirtimeController = async (req, res) => {
                 message: "something went wrong",
             });
         }
+        const { data } = airtime;
+        let balanceBefore = user.availableBalance;
+        let balanceAfter = user.availableBalance - Number(amount);
+        // withdraw money from account
+        await (0, User_1.withdraw)(user, amount);
+        // save transaction
+        const transaction = await (0, User_1.createUserAirtimeTransaction)(user._id.toString(), data.reference, data.amount, balanceBefore, balanceAfter, data.phone_number, data.network);
         return res.json({
             status: "Success",
             message: "airtime purchase successful",
-            data: airtime,
+            data: transaction,
         });
     }
     catch (err) {
@@ -349,6 +380,15 @@ exports.buyAirtimeController = buyAirtimeController;
 const buyDataController = async (req, res) => {
     try {
         const { phoneNumber, amount, planCode } = req.body;
+        const user = req.user;
+        // check if avaliablebalance is greater than the purchased amount
+        if (amount > user.availableBalance) {
+            return res.json({
+                status: "Failed",
+                message: "Insufficient Fund Topup your account and try again",
+            });
+        }
+        console.log("got here");
         const dataPurchase = await (0, User_1.buyData)(phoneNumber, amount, planCode);
         if (!dataPurchase) {
             return res.json({
@@ -356,10 +396,18 @@ const buyDataController = async (req, res) => {
                 message: "something went wrong",
             });
         }
+        console.log("user:", user);
+        const { data } = dataPurchase;
+        let balanceBefore = user.availableBalance;
+        let balanceAfter = user.availableBalance - Number(amount);
+        // withdraw money from account
+        await (0, User_1.withdraw)(user, amount);
+        // save transaction record
+        const transaction = await (0, User_1.createUserDataTransaction)(user._id.toString(), data.reference, data.amount, balanceBefore, balanceAfter, data.phone_number, data.network, data.meta_json.bundle);
         return res.json({
             status: "Success",
             message: "data purchased",
-            data: dataPurchase,
+            data: transaction,
         });
     }
     catch (err) {
@@ -370,3 +418,236 @@ const buyDataController = async (req, res) => {
     }
 };
 exports.buyDataController = buyDataController;
+const getBankCodeController = async (req, res) => {
+    try {
+        const allBankCode = await (0, User_1.getBankCode)();
+        return res.json({
+            status: "Success",
+            message: "found bankcode",
+            data: allBankCode,
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.getBankCodeController = getBankCodeController;
+const accountLookUpController = async (req, res) => {
+    try {
+        const { accountNumber, bankCode } = req.body;
+        const foundAccount = await (0, User_1.accountLookUp)(accountNumber, bankCode);
+        return res.json({
+            status: "Success",
+            message: "found account",
+            data: foundAccount.data,
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.accountLookUpController = accountLookUpController;
+const payOutController = async (req, res) => {
+    try {
+        const { bankCode, accountNumber, accountName, amount } = req.body;
+        const user = req.user;
+        //check if user avaliableBalance is greater than the amount
+        if (amount > user.availableBalance) {
+            return res.json({
+                status: "Failed",
+                message: "insufficient fund",
+            });
+        }
+        const payment = await (0, User_1.payOut)(user, bankCode, amount, accountNumber, accountName);
+        let balanceBefore = user.availableBalance;
+        let balanceAfter = user.availableBalance - Number(amount);
+        let remark = `${user.firstName} ${user.lastName} payout to ${accountName}`;
+        //withdraw money fro  user availiable
+        await (0, User_1.withdraw)(user, amount);
+        //save transaction record
+        const transaction = await (0, User_1.createUserTransaction)(user._id.toString(), "withdrawal", payment.data.transaction_reference, amount, balanceBefore, balanceAfter, remark, "success", new Date(), `${user.firstName} ${user.lastName}`, accountName);
+        return res.json({
+            status: "Success",
+            message: "transaction completed",
+            data: transaction,
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.payOutController = payOutController;
+const getUserTransactionsController = async (req, res) => {
+    try {
+        const user = req.user;
+        const foundTransaction = await (0, User_1.getUserTransactions)(user._id.toString());
+        return res.json({
+            status: "Success",
+            message: "Found Transaction",
+            data: foundTransaction,
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.getUserTransactionsController = getUserTransactionsController;
+const getUserSingleTransactionController = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const user = req.user;
+        const foundTransaction = await (0, User_1.getUserSingleTransaction)(user._id.toString(), id);
+        return res.json({
+            status: "Success",
+            message: "Found Transaction",
+            data: foundTransaction,
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.getUserSingleTransactionController = getUserSingleTransactionController;
+const getUserTransactionByStatusController = async (req, res) => {
+    try {
+        const { status } = req.params;
+        const user = req.user;
+        const foundTransaction = await (0, User_1.getUserTransactionByStatus)(user._id.toString(), status);
+        return res.json({
+            status: "Success",
+            message: "Found Transaction",
+            data: foundTransaction,
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.getUserTransactionByStatusController = getUserTransactionByStatusController;
+const getUserTransactionByTypeController = async (req, res) => {
+    try {
+        const { type } = req.params;
+        const user = req.user;
+        const foundTransaction = await (0, User_1.getUserTransactionByType)(user._id.toString(), type);
+        return res.json({
+            status: "Success",
+            message: "Found Transaction",
+            data: foundTransaction,
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.getUserTransactionByTypeController = getUserTransactionByTypeController;
+const userGetAllSubRegionController = async (req, res) => {
+    try {
+        const subRegions = await (0, User_1.userGetAllSubRegion)();
+        return res.json({
+            status: "Success",
+            message: "found all subregion",
+            data: subRegions,
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.userGetAllSubRegionController = userGetAllSubRegionController;
+const joinSavingsController = async (req, res) => {
+    try {
+        const user = req.user;
+        const { circleId } = req.body;
+        const jointSavings = await (0, User_1.joinSavings)(user, circleId);
+        return res.json({
+            status: "Success",
+            message: "joined savings group successfuly",
+            data: jointSavings,
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.joinSavingsController = joinSavingsController;
+const getAvaliableSavingsController = async (req, res) => {
+    try {
+        const user = req.user;
+        const allAvaliableSavings = await (0, User_1.avaliableSavings)(user);
+        return res.json({
+            status: "Success",
+            message: "found savings",
+            data: allAvaliableSavings,
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.getAvaliableSavingsController = getAvaliableSavingsController;
+const getUserActiveSavingsController = async (req, res) => {
+    try {
+        const user = req.user;
+        const activeSavings = await (0, User_1.userActiveSavingsRecord)(user);
+        return res.json({
+            status: "Success",
+            message: "found savings",
+            data: activeSavings,
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.getUserActiveSavingsController = getUserActiveSavingsController;
+const getUserSavingsRecordsController = async (req, res) => {
+    try {
+        const user = req.user;
+        const foundRecords = await (0, User_1.userSavingsRecords)(user);
+        return res.json({
+            status: "Success",
+            message: "found savings",
+            data: foundRecords,
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.getUserSavingsRecordsController = getUserSavingsRecordsController;

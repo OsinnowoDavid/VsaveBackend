@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import argon from "argon2";
+import { assignAgentReferral } from "../services/Agent";
 import {
     createNewUser,
     getUserByEmail,
@@ -17,6 +18,23 @@ import {
     getDataPlan,
     buyData,
     createVirtualAccountIndex,
+    deposit,
+    withdraw,
+    createUserTransaction,
+    createUserAirtimeTransaction,
+    createUserDataTransaction,
+    getBankCode,
+    accountLookUp,
+    payOut,
+    getUserTransactions,
+    getUserSingleTransaction,
+    getUserTransactionByStatus,
+    getUserTransactionByType,
+    userGetAllSubRegion,
+    joinSavings,
+    avaliableSavings,
+    userActiveSavingsRecord,
+    userSavingsRecords,
 } from "../services/User";
 import { IUser, IVerificationToken, IKYC1 } from "../types";
 import { signUserToken } from "../config/JWT";
@@ -25,7 +43,6 @@ import axios from "axios";
 import { format } from "path";
 const QOREID_API_KEY = process.env.QOREID_SECRET_KEY as string;
 const QOREID_BASE_URL = process.env.QOREID_BASE_URL as string;
-console.log("Q:", QOREID_BASE_URL);
 
 export const registerUser = async (req: Request, res: Response) => {
     try {
@@ -37,6 +54,7 @@ export const registerUser = async (req: Request, res: Response) => {
             gender,
             dateOfBirth,
             phoneNumber,
+            referralCode,
         } = req.body;
 
         // Validate required fields
@@ -269,7 +287,7 @@ export const resendUserVerificationEmail = async (
             expTime,
         );
         return res.json({
-            status: "success",
+            status: "Success",
             message: "Verification code has been sent to your email again !",
             isEmailVerified: user.isEmailVerified,
         });
@@ -279,6 +297,11 @@ export const resendUserVerificationEmail = async (
             message: err.message,
         });
     }
+};
+const getNextFiveMinutes = () => {
+    const now = new Date();
+    const next = new Date(now.getTime() + 5 * 60 * 1000); // add 5 minutes
+    return next;
 };
 export const loginUser = async (req: Request, res: Response) => {
     try {
@@ -304,11 +327,7 @@ export const loginUser = async (req: Request, res: Response) => {
             };
             // Send email
             await Transporter.sendMail(mailOptions);
-            const getNextFiveMinutes = () => {
-                const now = new Date();
-                const next = new Date(now.getTime() + 5 * 60 * 1000); // add 5 minutes
-                return next;
-            };
+
             const expTime = getNextFiveMinutes();
             await assignUserEmailVerificationToken(
                 user.email,
@@ -331,7 +350,7 @@ export const loginUser = async (req: Request, res: Response) => {
         }
         // Return success with JWT token
         return res.json({
-            status: "success",
+            status: "Success",
             message: "login successfuly",
             token: signUserToken(user),
         });
@@ -345,17 +364,22 @@ export const loginUser = async (req: Request, res: Response) => {
 
 export const userProfile = async (req: Request, res: Response) => {
     try {
-        let user = req.user;
+        let user = req.user as IUser;
+        let kycRecord = await getUserKyc1Record(user._id.toString());
         if (!user) {
             return res.json({
                 status: "Failed",
                 message: "user not found",
             });
         }
+        let data = {
+            profile: user,
+            kyc: kycRecord,
+        };
         return res.json({
-            Status: "success",
+            Status: "Success",
             message: "welcome back",
-            data: user,
+            data,
         });
     } catch (err: any) {
         res.json({
@@ -371,12 +395,12 @@ export const registerKYC1 = async (req: Request, res: Response) => {
             profession,
             accountNumber,
             bank,
-            bankCode,
             accountDetails,
             country,
             state,
             bvn,
             address,
+            subRegion,
         } = req.body;
         const user = req.user as IUser;
         // save KYC1
@@ -390,6 +414,7 @@ export const registerKYC1 = async (req: Request, res: Response) => {
             state,
             bvn,
             address,
+            subRegion,
         );
         if (!newKYC1) {
             return res.json({
@@ -416,7 +441,7 @@ export const registerKYC1 = async (req: Request, res: Response) => {
             virtualAccount.data.virtual_account_number,
         );
         return res.json({
-            status: "success",
+            status: "Success",
             message: "KYC1 record created successfuly",
             data: newKYC1,
         });
@@ -481,6 +506,14 @@ export const getDataPlanController = async (req: Request, res: Response) => {
 export const buyAirtimeController = async (req: Request, res: Response) => {
     try {
         const { phoneNumber, amount } = req.body;
+        const user = req.user as IUser;
+        // check if avaliablebalance is greater than the purchased amount
+        if (amount > user.availableBalance) {
+            return res.json({
+                status: "Failed",
+                message: "Insufficient Fund Topup your account and try again",
+            });
+        }
         const airtime = await buyAirtime(phoneNumber, amount);
         if (!airtime) {
             return res.json({
@@ -488,10 +521,25 @@ export const buyAirtimeController = async (req: Request, res: Response) => {
                 message: "something went wrong",
             });
         }
+        const { data } = airtime;
+        let balanceBefore = user.availableBalance;
+        let balanceAfter = user.availableBalance - Number(amount);
+        // withdraw money from account
+        await withdraw(user, amount);
+        // save transaction
+        const transaction = await createUserAirtimeTransaction(
+            user._id.toString(),
+            data.reference,
+            data.amount,
+            balanceBefore,
+            balanceAfter,
+            data.phone_number,
+            data.network,
+        );
         return res.json({
             status: "Success",
             message: "airtime purchase successful",
-            data: airtime,
+            data: transaction,
         });
     } catch (err: any) {
         return res.json({
@@ -504,6 +552,15 @@ export const buyAirtimeController = async (req: Request, res: Response) => {
 export const buyDataController = async (req: Request, res: Response) => {
     try {
         const { phoneNumber, amount, planCode } = req.body;
+        const user = req.user as IUser;
+        // check if avaliablebalance is greater than the purchased amount
+        if (amount > user.availableBalance) {
+            return res.json({
+                status: "Failed",
+                message: "Insufficient Fund Topup your account and try again",
+            });
+        }
+        console.log("got here");
         const dataPurchase = await buyData(phoneNumber, amount, planCode);
         if (!dataPurchase) {
             return res.json({
@@ -511,10 +568,292 @@ export const buyDataController = async (req: Request, res: Response) => {
                 message: "something went wrong",
             });
         }
+        console.log("user:", user);
+        const { data } = dataPurchase;
+        let balanceBefore = user.availableBalance;
+        let balanceAfter = user.availableBalance - Number(amount);
+        // withdraw money from account
+        await withdraw(user, amount);
+        // save transaction record
+        const transaction = await createUserDataTransaction(
+            user._id.toString(),
+            data.reference,
+            data.amount,
+            balanceBefore,
+            balanceAfter,
+            data.phone_number,
+            data.network,
+            data.meta_json.bundle,
+        );
         return res.json({
             status: "Success",
             message: "data purchased",
-            data: dataPurchase,
+            data: transaction,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+export const getBankCodeController = async (req: Request, res: Response) => {
+    try {
+        const allBankCode = await getBankCode();
+        return res.json({
+            status: "Success",
+            message: "found bankcode",
+            data: allBankCode,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+export const accountLookUpController = async (req: Request, res: Response) => {
+    try {
+        const { accountNumber, bankCode } = req.body;
+        const foundAccount = await accountLookUp(accountNumber, bankCode);
+        return res.json({
+            status: "Success",
+            message: "found account",
+            data: foundAccount.data,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+export const payOutController = async (req: Request, res: Response) => {
+    try {
+        const { bankCode, accountNumber, accountName, amount } = req.body;
+        const user = req.user as IUser;
+        //check if user avaliableBalance is greater than the amount
+        if (amount > user.availableBalance) {
+            return res.json({
+                status: "Failed",
+                message: "insufficient fund",
+            });
+        }
+        const payment = await payOut(
+            user,
+            bankCode,
+            amount,
+            accountNumber,
+            accountName,
+        );
+        let balanceBefore = user.availableBalance;
+        let balanceAfter = user.availableBalance - Number(amount);
+        let remark = `${user.firstName} ${user.lastName} payout to ${accountName}`;
+        //withdraw money fro  user availiable
+        await withdraw(user, amount);
+        //save transaction record
+        const transaction = await createUserTransaction(
+            user._id.toString(),
+            "withdrawal",
+            payment.data.transaction_reference,
+            amount,
+            balanceBefore,
+            balanceAfter,
+            remark,
+            "success",
+            new Date(),
+            `${user.firstName} ${user.lastName}`,
+            accountName,
+        );
+        return res.json({
+            status: "Success",
+            message: "transaction completed",
+            data: transaction,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+export const getUserTransactionsController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const user = req.user as IUser;
+        const foundTransaction = await getUserTransactions(user._id.toString());
+        return res.json({
+            status: "Success",
+            message: "Found Transaction",
+            data: foundTransaction,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+export const getUserSingleTransactionController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const { id } = req.params;
+        const user = req.user as IUser;
+        const foundTransaction = await getUserSingleTransaction(
+            user._id.toString(),
+            id,
+        );
+        return res.json({
+            status: "Success",
+            message: "Found Transaction",
+            data: foundTransaction,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+
+export const getUserTransactionByStatusController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const { status } = req.params;
+        const user = req.user as IUser;
+        const foundTransaction = await getUserTransactionByStatus(
+            user._id.toString(),
+            status,
+        );
+        return res.json({
+            status: "Success",
+            message: "Found Transaction",
+            data: foundTransaction,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+export const getUserTransactionByTypeController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const { type } = req.params;
+        const user = req.user as IUser;
+        const foundTransaction = await getUserTransactionByType(
+            user._id.toString(),
+            type,
+        );
+        return res.json({
+            status: "Success",
+            message: "Found Transaction",
+            data: foundTransaction,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+
+export const userGetAllSubRegionController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const subRegions = await userGetAllSubRegion();
+        return res.json({
+            status: "Success",
+            message: "found all subregion",
+            data: subRegions,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+
+export const joinSavingsController = async (req: Request, res: Response) => {
+    try {
+        const user = req.user as IUser;
+        const { circleId } = req.body;
+        const jointSavings = await joinSavings(user, circleId);
+        return res.json({
+            status: "Success",
+            message: "joined savings group successfuly",
+            data: jointSavings,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+export const getAvaliableSavingsController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const user = req.user as IUser;
+        const allAvaliableSavings = await avaliableSavings(user);
+        return res.json({
+            status: "Success",
+            message: "found savings",
+            data: allAvaliableSavings,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+
+export const getUserActiveSavingsController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const user = req.user as IUser;
+        const activeSavings = await userActiveSavingsRecord(user);
+        return res.json({
+            status: "Success",
+            message: "found savings",
+            data: activeSavings,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+
+export const getUserSavingsRecordsController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const user = req.user as IUser;
+        const foundRecords = await userSavingsRecords(user);
+        return res.json({
+            status: "Success",
+            message: "found savings",
+            data: foundRecords,
         });
     } catch (err: any) {
         return res.json({
