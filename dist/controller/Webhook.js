@@ -41,6 +41,7 @@ const squadWebhookController = async (req, res) => {
         // check if transaction_ref exist
         const foundTransferRefrence = await (0, User_1.checkTransferByRefrence)(payload.transaction_reference);
         if (foundTransferRefrence) {
+            console.log("transaction already exist");
             return res.status(200).json({
                 response_code: 200,
                 response_description: "Success transaction already exist",

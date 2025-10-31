@@ -104,22 +104,22 @@ export const registerUser = async (req: Request, res: Response) => {
             });
         }
         //config mail option
-        //     const mailOptions = {
-        //         from: `<${process.env.User}>`, // sender
-        //         to: email, // recipient
-        //         subject: "Welcome to VSAVE 🎉",
-        //         text: `Hello ${newUser.firstName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans. To get started, please verify your email using the code below:
-        //   CODE : ${tokenNumber}
-        //   This code will expire in 5 minutes, so be sure to use it right away.
-        //   We’re excited to have you on board!
+        const mailOptions = {
+            from: `<${process.env.User}>`, // sender
+            to: email, // recipient
+            subject: "Welcome to VSAVE 🎉",
+            text: `Hello ${newUser.firstName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans. To get started, please verify your email using the code below:
+          CODE : ${tokenNumber}
+          This code will expire in 5 minutes, so be sure to use it right away.
+          We’re excited to have you on board!
 
-        //   — The VSave Team.`,
-        //     };
+          — The VSave Team.`,
+        };
 
-        //     // Send email
-        //     let sentMale = await Transporter.sendMail(mailOptions);
-        //     // assign referralCode
-        //     await assignAgentReferral(referralCode, newUser);
+        // Send email
+        let sentMale = await Transporter.sendMail(mailOptions);
+        // assign referralCode
+        await assignAgentReferral(referralCode, newUser);
         return res.json({
             status: "Success",
             message: `User created successfuly verify your email ,verification code has been sent to ${newUser.email}`,

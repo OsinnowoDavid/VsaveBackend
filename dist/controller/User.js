@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getUserSavingsRecordsController = exports.getUserActiveSavingsController = exports.getAvaliableSavingsController = exports.joinSavingsController = exports.userGetAllSubRegionController = exports.getUserTransactionByTypeController = exports.getUserTransactionByStatusController = exports.getUserSingleTransactionController = exports.getUserTransactionsController = exports.payOutController = exports.accountLookUpController = exports.getBankCodeController = exports.buyDataController = exports.buyAirtimeController = exports.getDataPlanController = exports.getUserKyc1RecordController = exports.registerKYC1 = exports.userProfile = exports.loginUser = exports.resendUserVerificationEmail = exports.verifyEmail = exports.registerUser = void 0;
 const argon2_1 = __importDefault(require("argon2"));
+const Agent_1 = require("../services/Agent");
 const User_1 = require("../services/User");
 const JWT_1 = require("../config/JWT");
 const nodemailer_1 = __importDefault(require("../config/nodemailer"));
@@ -49,20 +50,21 @@ const registerUser = async (req, res) => {
             });
         }
         //config mail option
-        //     const mailOptions = {
-        //         from: `<${process.env.User}>`, // sender
-        //         to: email, // recipient
-        //         subject: "Welcome to VSAVE 🎉",
-        //         text: `Hello ${newUser.firstName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans. To get started, please verify your email using the code below:
-        //   CODE : ${tokenNumber}
-        //   This code will expire in 5 minutes, so be sure to use it right away.
-        //   We’re excited to have you on board!
-        //   — The VSave Team.`,
-        //     };
-        //     // Send email
-        //     let sentMale = await Transporter.sendMail(mailOptions);
-        //     // assign referralCode
-        //     await assignAgentReferral(referralCode, newUser);
+        const mailOptions = {
+            from: `<${process.env.User}>`, // sender
+            to: email, // recipient
+            subject: "Welcome to VSAVE 🎉",
+            text: `Hello ${newUser.firstName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans. To get started, please verify your email using the code below:
+          CODE : ${tokenNumber}
+          This code will expire in 5 minutes, so be sure to use it right away.
+          We’re excited to have you on board!
+
+          — The VSave Team.`,
+        };
+        // Send email
+        let sentMale = await nodemailer_1.default.sendMail(mailOptions);
+        // assign referralCode
+        await (0, Agent_1.assignAgentReferral)(referralCode, newUser);
         return res.json({
             status: "Success",
             message: `User created successfuly verify your email ,verification code has been sent to ${newUser.email}`,

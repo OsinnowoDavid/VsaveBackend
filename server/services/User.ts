@@ -3,7 +3,7 @@ import VerificationToken from "../model/VerificationToken";
 import KYC1 from "../model/KYC1";
 import KYC from "../model/KYC";
 import Transaction from "../model/Transaction";
-import { IUser } from "../types";
+import { IUser, IUserSavingsRecord } from "../types";
 import axios from "axios";
 import BankCode from "../model/Bank_code";
 import SavingsGroup from "../model/Savings_group";
@@ -427,7 +427,8 @@ export const buyData = async (
 export const withdraw = async (user: IUser, amount: number) => {
     try {
         const foundUser = (await User.findById(user._id)) as IUser;
-        foundUser.availableBalance -= amount;
+        let sum = Number(foundUser.availableBalance) - Number(amount);
+        foundUser.availableBalance = sum;
         await foundUser.save();
         return foundUser;
     } catch (err: any) {
@@ -438,7 +439,8 @@ export const withdraw = async (user: IUser, amount: number) => {
 export const deposit = async (user: IUser, amount: number) => {
     try {
         const foundUser = (await User.findById(user._id)) as IUser;
-        foundUser.availableBalance += amount;
+        let sum = Number(foundUser.availableBalance) + Number(amount);
+        foundUser.availableBalance = sum;
         await foundUser.save();
         return foundUser;
     } catch (err: any) {
@@ -826,10 +828,11 @@ export const userWithdraw = async (
         if (amount > foundUser.availableBalance) {
             return "Insufficient Funds";
         }
-        let balanceBefore = foundUser.availableBalance;
-        let balanceAfter = foundUser.availableBalance - amount;
+        let balanceBefore = Number(foundUser.availableBalance);
+        let balanceAfter = Number(foundUser.availableBalance) - Number(amount);
         // withdraw money
-        foundUser.availableBalance -= amount;
+        let sum = Number(foundUser.availableBalance) - Number(amount);
+        foundUser.availableBalance = sum;
         await foundUser.save();
         //create transaction record
         const transaction = await createUserTransaction(
@@ -856,7 +859,20 @@ export const updateUserSavingsRecords = async (
     status: string,
 ) => {
     try {
-        const foundUser = await UserSavingsRecord.findOne({});
+        const foundUser = (await UserSavingsRecord.findOne({
+            user,
+            savingsCircleId: circleId,
+            status: "ACTIVE",
+        })) as IUserSavingsRecord;
+        let record: any = {
+            period,
+            periodIndex: Number(period),
+            amount,
+            status,
+        };
+        foundUser.records.push(record);
+        await foundUser.save();
+        return foundUser;
     } catch (err: any) {
         throw err;
     }

@@ -8,9 +8,10 @@ const dotenv_1 = __importDefault(require("dotenv"));
 // Load environment variables from .env file
 dotenv_1.default.config();
 const transporter = nodemailer_1.default.createTransport({
-    host: "box.eedu.tech",
-    port: 465,
-    secure: true, // true for 465, false for other ports
+    service: "gmail",
+    host: "smtp.gmail.com", // Replace with the correct SMTP host
+    port: 465, // Correct port for secure SMTP
+    secure: true,
     auth: {
         user: process.env.User,
         pass: process.env.Pass,

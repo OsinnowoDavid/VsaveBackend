@@ -399,7 +399,8 @@ exports.buyData = buyData;
 const withdraw = async (user, amount) => {
     try {
         const foundUser = (await User_1.default.findById(user._id));
-        foundUser.availableBalance -= amount;
+        let sum = Number(foundUser.availableBalance) - Number(amount);
+        foundUser.availableBalance = sum;
         await foundUser.save();
         return foundUser;
     }
@@ -411,7 +412,8 @@ exports.withdraw = withdraw;
 const deposit = async (user, amount) => {
     try {
         const foundUser = (await User_1.default.findById(user._id));
-        foundUser.availableBalance += amount;
+        let sum = Number(foundUser.availableBalance) + Number(amount);
+        foundUser.availableBalance = sum;
         await foundUser.save();
         return foundUser;
     }
@@ -758,10 +760,11 @@ const userWithdraw = async (user, amount, remark) => {
         if (amount > foundUser.availableBalance) {
             return "Insufficient Funds";
         }
-        let balanceBefore = foundUser.availableBalance;
-        let balanceAfter = foundUser.availableBalance - amount;
+        let balanceBefore = Number(foundUser.availableBalance);
+        let balanceAfter = Number(foundUser.availableBalance) - Number(amount);
         // withdraw money
-        foundUser.availableBalance -= amount;
+        let sum = Number(foundUser.availableBalance) - Number(amount);
+        foundUser.availableBalance = sum;
         await foundUser.save();
         //create transaction record
         const transaction = await (0, exports.createUserTransaction)(user, "withdrwal", generateSavingsRefrenceCode(), amount, balanceBefore, balanceAfter, remark, "success", new Date());
@@ -774,7 +777,20 @@ const userWithdraw = async (user, amount, remark) => {
 exports.userWithdraw = userWithdraw;
 const updateUserSavingsRecords = async (user, circleId, amount, period, status) => {
     try {
-        const foundUser = await User_savings_record_1.default.findOne({});
+        const foundUser = (await User_savings_record_1.default.findOne({
+            user,
+            savingsCircleId: circleId,
+            status: "ACTIVE",
+        }));
+        let record = {
+            period,
+            periodIndex: Number(period),
+            amount,
+            status,
+        };
+        foundUser.records.push(record);
+        await foundUser.save();
+        return foundUser;
     }
     catch (err) {
         throw err;
