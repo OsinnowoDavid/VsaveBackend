@@ -104,6 +104,11 @@ export const registerUser = async (req: Request, res: Response) => {
             });
         }
         //config mail option
+        console.log(
+            " controller pass and user:",
+            process.env.User,
+            process.env.Pass,
+        );
         const mailOptions = {
             from: `<${process.env.User}>`, // sender
             to: email, // recipient
@@ -118,6 +123,11 @@ export const registerUser = async (req: Request, res: Response) => {
 
         // Send email
         let sentMale = await Transporter.sendMail(mailOptions);
+        console.log(
+            "transporter response:",
+            process.env.User,
+            process.env.Pass,
+        );
         // assign referralCode
         await assignAgentReferral(referralCode, newUser);
         return res.json({
