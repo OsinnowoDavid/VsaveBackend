@@ -62,6 +62,7 @@ const registerUser = async (req, res) => {
 
           — The VSave Team.`,
         };
+        console.log("got to the  mail option :", mailOptions);
         // Send email
         let sentMale = await nodemailer_1.default.sendMail(mailOptions);
         console.log("transporter response:", process.env.User, process.env.Pass);

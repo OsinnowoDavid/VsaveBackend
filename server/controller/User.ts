@@ -120,7 +120,7 @@ export const registerUser = async (req: Request, res: Response) => {
 
           — The VSave Team.`,
         };
-
+        console.log("got to the  mail option :", mailOptions);
         // Send email
         let sentMale = await Transporter.sendMail(mailOptions);
         console.log(
