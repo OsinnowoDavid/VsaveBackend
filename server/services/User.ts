@@ -9,7 +9,9 @@ import BankCode from "../model/Bank_code";
 import SavingsGroup from "../model/Savings_group";
 import UserSavingsRecord from "../model/User_savings_record";
 import SavingsCircle from "../model/Savings_circle";
-import {getAllSubRegion} from "./RegionalAdmin"
+import { getAllSubRegion } from "./RegionalAdmin";
+import Loan from "../model/Loan";
+import FixedSavings from "../model/FixedSavings";
 const FLW_SECRET_KEY = process.env.FLW_SECRET_KEY;
 const generateRefrenceCode = () => {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -21,6 +23,16 @@ const generateRefrenceCode = () => {
     }
 
     return `${marchantId}_${code}`;
+};
+const generateSavingsRefrenceCode = () => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let code = "";
+    for (let i = 0; i < 15; i++) {
+        const randomIndex = Math.floor(Math.random() * chars.length);
+        code += chars[randomIndex];
+    }
+
+    return `Savings_${code}`;
 };
 export const createNewUser = async (
     firstName: string,
@@ -705,11 +717,147 @@ export const joinSavings = async (user: IUser, circleId: string) => {
     }
 };
 
-export const userGetAllSubRegion = async () =>{
-    try{
-        const allSubRegion = await getAllSubRegion() 
-        return allSubRegion 
-    }catch(err:any){
-        throw err
+export const userGetAllSubRegion = async () => {
+    try {
+        const allSubRegion = await getAllSubRegion();
+        return allSubRegion;
+    } catch (err: any) {
+        throw err;
     }
-}
+};
+
+export const createLoanRecord = async (
+    user: string,
+    amount: number,
+    interest: string,
+    status: string,
+    startDate: Date,
+    dueDate: Date,
+    duration: string,
+    repaymentAmount: number,
+    remark?: string,
+) => {
+    try {
+        const newLoan = await Loan.create({
+            user,
+            InitialAmount: amount,
+            interest,
+            status,
+            startDate,
+            dueDate,
+            repaymentAmount,
+            remark,
+        });
+        return newLoan;
+    } catch (err: any) {
+        throw err;
+    }
+};
+
+export const createFixedSaving = async (
+    user: string,
+    amount: number,
+    interestRate: string,
+    paymentAmount: string,
+    duration: number,
+    startDate: Date,
+    endDate: Date,
+    status: string,
+) => {
+    try {
+        const newFixedSavings = await FixedSavings.create({
+            user,
+            amount,
+            currency: "NG",
+            interestRate,
+            paymentAmount,
+            durationIndex: duration,
+            duration: `${duration} Days`,
+            startDate,
+            endDate,
+            status,
+        });
+        return newFixedSavings;
+    } catch (err: any) {
+        throw err;
+    }
+};
+
+export const avaliableSavings = async (user: IUser) => {
+    try {
+        const avaliableSavings = await SavingsGroup.find({
+            subRegion: user.subRegion,
+            status: "ACTIVE",
+        });
+        return avaliableSavings;
+    } catch (err: any) {
+        throw err;
+    }
+};
+
+export const userActiveSavingsRecord = async (user: IUser) => {
+    try {
+        const activeSavings = await UserSavingsRecord.find({
+            user: user._id,
+            status: "ACTIVE",
+        });
+        return activeSavings;
+    } catch (err: any) {
+        throw err;
+    }
+};
+
+export const userSavingsRecords = async (user: IUser) => {
+    try {
+        const userSavings = await UserSavingsRecord.find({ user: user._id });
+        return userSavings;
+    } catch (err: any) {
+        throw err;
+    }
+};
+
+export const userWithdraw = async (
+    user: string,
+    amount: number,
+    remark: string,
+) => {
+    try {
+        const foundUser = (await User.findById(user)) as IUser;
+        if (amount > foundUser.availableBalance) {
+            return "Insufficient Funds";
+        }
+        let balanceBefore = foundUser.availableBalance;
+        let balanceAfter = foundUser.availableBalance - amount;
+        // withdraw money
+        foundUser.availableBalance -= amount;
+        await foundUser.save();
+        //create transaction record
+        const transaction = await createUserTransaction(
+            user,
+            "withdrwal",
+            generateSavingsRefrenceCode(),
+            amount,
+            balanceBefore,
+            balanceAfter,
+            remark,
+            "success",
+            new Date(),
+        );
+        return transaction;
+    } catch (err: any) {
+        throw err;
+    }
+};
+export const updateUserSavingsRecords = async (
+    user: string,
+    circleId: string,
+    amount: number,
+    period: number,
+    status: string,
+) => {
+    try {
+        const foundUser = await UserSavingsRecord.findOne({});
+    } catch (err: any) {
+        throw err;
+    }
+};

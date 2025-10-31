@@ -18,7 +18,11 @@ import {
     getUserSingleTransactionController,
     getUserTransactionByStatusController,
     getUserTransactionByTypeController,
-    userGetAllSubRegionController
+    userGetAllSubRegionController,
+    joinSavingsController,
+    getAvaliableSavingsController,
+    getUserActiveSavingsController,
+    getUserSavingsRecordsController,
 } from "../controller/User";
 import {
     validateUserRegitrationInput,
@@ -74,6 +78,22 @@ router.get(
     getUserTransactionByTypeController,
 );
 
-router.get("/subregions", verifyUserToken, userGetAllSubRegionController)
+router.get("/subregions", verifyUserToken, userGetAllSubRegionController);
+
+router.post("/join-savings", verifyUserToken, joinSavingsController);
+
+router.get(
+    "/avaliable-savings",
+    verifyUserToken,
+    getAvaliableSavingsController,
+);
+
+router.get("/active-savings", verifyUserToken, getUserActiveSavingsController);
+
+router.get(
+    "/all-savings-record",
+    verifyUserToken,
+    getUserSavingsRecordsController,
+);
 
 export default router;

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.userGetAllSubRegion = exports.joinSavings = exports.getUserTransactionByType = exports.getUserTransactionByStatus = exports.getUserSingleTransaction = exports.getUserTransactions = exports.payOut = exports.accountLookUp = exports.getBankCode = exports.createUserAirtimeTransaction = exports.createUserDataTransaction = exports.checkTransferByRefrence = exports.createUserTransaction = exports.deposit = exports.withdraw = exports.buyData = exports.getUserKyc1Record = exports.getDataPlan = exports.buyAirtime = exports.createVirtualAccountIndex = exports.createVirtualAccountForPayment = exports.verifyBankaccount = exports.getAllBanksAndCode = exports.updateKYC1Record = exports.createKYC1Record = exports.kycStatusChange = exports.createKYCRecord = exports.getUserVerificationToken = exports.assignUserEmailVerificationToken = exports.getUserByEmail = exports.getUserById = exports.createNewUser = void 0;
+exports.updateUserSavingsRecords = exports.userWithdraw = exports.userSavingsRecords = exports.userActiveSavingsRecord = exports.avaliableSavings = exports.createFixedSaving = exports.createLoanRecord = exports.userGetAllSubRegion = exports.joinSavings = exports.getUserTransactionByType = exports.getUserTransactionByStatus = exports.getUserSingleTransaction = exports.getUserTransactions = exports.payOut = exports.accountLookUp = exports.getBankCode = exports.createUserAirtimeTransaction = exports.createUserDataTransaction = exports.checkTransferByRefrence = exports.createUserTransaction = exports.deposit = exports.withdraw = exports.buyData = exports.getUserKyc1Record = exports.getDataPlan = exports.buyAirtime = exports.createVirtualAccountIndex = exports.createVirtualAccountForPayment = exports.verifyBankaccount = exports.getAllBanksAndCode = exports.updateKYC1Record = exports.createKYC1Record = exports.kycStatusChange = exports.createKYCRecord = exports.getUserVerificationToken = exports.assignUserEmailVerificationToken = exports.getUserByEmail = exports.getUserById = exports.createNewUser = void 0;
 const User_1 = __importDefault(require("../model/User"));
 const VerificationToken_1 = __importDefault(require("../model/VerificationToken"));
 const KYC1_1 = __importDefault(require("../model/KYC1"));
@@ -15,6 +15,8 @@ const Savings_group_1 = __importDefault(require("../model/Savings_group"));
 const User_savings_record_1 = __importDefault(require("../model/User_savings_record"));
 const Savings_circle_1 = __importDefault(require("../model/Savings_circle"));
 const RegionalAdmin_1 = require("./RegionalAdmin");
+const Loan_1 = __importDefault(require("../model/Loan"));
+const FixedSavings_1 = __importDefault(require("../model/FixedSavings"));
 const FLW_SECRET_KEY = process.env.FLW_SECRET_KEY;
 const generateRefrenceCode = () => {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -25,6 +27,15 @@ const generateRefrenceCode = () => {
         code += chars[randomIndex];
     }
     return `${marchantId}_${code}`;
+};
+const generateSavingsRefrenceCode = () => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let code = "";
+    for (let i = 0; i < 15; i++) {
+        const randomIndex = Math.floor(Math.random() * chars.length);
+        code += chars[randomIndex];
+    }
+    return `Savings_${code}`;
 };
 const createNewUser = async (firstName, lastName, email, password, gender, dateOfBirth, phoneNumber) => {
     try {
@@ -665,3 +676,108 @@ const userGetAllSubRegion = async () => {
     }
 };
 exports.userGetAllSubRegion = userGetAllSubRegion;
+const createLoanRecord = async (user, amount, interest, status, startDate, dueDate, duration, repaymentAmount, remark) => {
+    try {
+        const newLoan = await Loan_1.default.create({
+            user,
+            InitialAmount: amount,
+            interest,
+            status,
+            startDate,
+            dueDate,
+            repaymentAmount,
+            remark,
+        });
+        return newLoan;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.createLoanRecord = createLoanRecord;
+const createFixedSaving = async (user, amount, interestRate, paymentAmount, duration, startDate, endDate, status) => {
+    try {
+        const newFixedSavings = await FixedSavings_1.default.create({
+            user,
+            amount,
+            currency: "NG",
+            interestRate,
+            paymentAmount,
+            durationIndex: duration,
+            duration: `${duration} Days`,
+            startDate,
+            endDate,
+            status,
+        });
+        return newFixedSavings;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.createFixedSaving = createFixedSaving;
+const avaliableSavings = async (user) => {
+    try {
+        const avaliableSavings = await Savings_group_1.default.find({
+            subRegion: user.subRegion,
+            status: "ACTIVE",
+        });
+        return avaliableSavings;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.avaliableSavings = avaliableSavings;
+const userActiveSavingsRecord = async (user) => {
+    try {
+        const activeSavings = await User_savings_record_1.default.find({
+            user: user._id,
+            status: "ACTIVE",
+        });
+        return activeSavings;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.userActiveSavingsRecord = userActiveSavingsRecord;
+const userSavingsRecords = async (user) => {
+    try {
+        const userSavings = await User_savings_record_1.default.find({ user: user._id });
+        return userSavings;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.userSavingsRecords = userSavingsRecords;
+const userWithdraw = async (user, amount, remark) => {
+    try {
+        const foundUser = (await User_1.default.findById(user));
+        if (amount > foundUser.availableBalance) {
+            return "Insufficient Funds";
+        }
+        let balanceBefore = foundUser.availableBalance;
+        let balanceAfter = foundUser.availableBalance - amount;
+        // withdraw money
+        foundUser.availableBalance -= amount;
+        await foundUser.save();
+        //create transaction record
+        const transaction = await (0, exports.createUserTransaction)(user, "withdrwal", generateSavingsRefrenceCode(), amount, balanceBefore, balanceAfter, remark, "success", new Date());
+        return transaction;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.userWithdraw = userWithdraw;
+const updateUserSavingsRecords = async (user, circleId, amount, period, status) => {
+    try {
+        const foundUser = await User_savings_record_1.default.findOne({});
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.updateUserSavingsRecords = updateUserSavingsRecords;

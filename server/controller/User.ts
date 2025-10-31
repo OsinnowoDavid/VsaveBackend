@@ -31,6 +31,10 @@ import {
     getUserTransactionByStatus,
     getUserTransactionByType,
     userGetAllSubRegion,
+    joinSavings,
+    avaliableSavings,
+    userActiveSavingsRecord,
+    userSavingsRecords,
 } from "../services/User";
 import { IUser, IVerificationToken, IKYC1 } from "../types";
 import { signUserToken } from "../config/JWT";
@@ -690,6 +694,83 @@ export const userGetAllSubRegionController = async (
             status: "Success",
             message: "found all subregion",
             data: subRegions,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+
+export const joinSavingsController = async (req: Request, res: Response) => {
+    try {
+        const user = req.user as IUser;
+        const { circleId } = req.body;
+        const jointSavings = await joinSavings(user, circleId);
+        return res.json({
+            status: "Success",
+            message: "joined savings group successfuly",
+            data: jointSavings,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+export const getAvaliableSavingsController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const user = req.user as IUser;
+        const allAvaliableSavings = await avaliableSavings(user);
+        return res.json({
+            status: "Success",
+            message: "found savings",
+            data: allAvaliableSavings,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+
+export const getUserActiveSavingsController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const user = req.user as IUser;
+        const activeSavings = await userActiveSavingsRecord(user);
+        return res.json({
+            status: "Success",
+            message: "found savings",
+            data: activeSavings,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+
+export const getUserSavingsRecordsController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const user = req.user as IUser;
+        const foundRecords = await userSavingsRecords(user);
+        return res.json({
+            status: "Success",
+            message: "found savings",
+            data: foundRecords,
         });
     } catch (err: any) {
         return res.json({

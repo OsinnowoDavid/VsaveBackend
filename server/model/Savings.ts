@@ -6,6 +6,10 @@ const savingsSchema = new mongoose.Schema({
         ref: "Region",
         required: true,
     },
+    savingsTitle: {
+        type: String,
+        required: true,
+    },
     frequency: {
         type: String,
         enum: ["DAILY", "WEEKLY", "MONTHLY"],

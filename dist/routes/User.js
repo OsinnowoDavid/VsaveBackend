@@ -31,4 +31,8 @@ router.get("/single-transaction/:id", JWT_1.verifyUserToken, User_1.getUserSingl
 router.get("/transaction-by-status/:status", JWT_1.verifyUserToken, User_1.getUserTransactionByStatusController);
 router.get("/transaction-by-type/:type", JWT_1.verifyUserToken, User_1.getUserTransactionByTypeController);
 router.get("/subregions", JWT_1.verifyUserToken, User_1.userGetAllSubRegionController);
+router.post("/join-savings", JWT_1.verifyUserToken, User_1.joinSavingsController);
+router.get("/avaliable-savings", JWT_1.verifyUserToken, User_1.getAvaliableSavingsController);
+router.get("/active-savings", JWT_1.verifyUserToken, User_1.getUserActiveSavingsController);
+router.get("/all-savings-record", JWT_1.verifyUserToken, User_1.getUserSavingsRecordsController);
 exports.default = router;

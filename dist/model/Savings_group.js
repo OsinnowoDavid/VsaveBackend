@@ -15,6 +15,23 @@ const savingsGroupSchema = new mongoose_1.default.Schema({
         ref: "Savings_circle", // Reference to your User model
         required: true,
     },
+    subRegion: {
+        type: mongoose_1.default.Schema.Types.ObjectId,
+        ref: "Region",
+        required: true,
+    },
+    status: {
+        type: String,
+        enum: ["ACTIVE", "PAUSED", "ENDED"],
+        default: "ACTIVE",
+    },
+    periods: {
+        type: Number,
+        default: 1,
+    },
+    duration: {
+        type: Number,
+    },
     users: [
         {
             type: mongoose_1.default.Schema.Types.ObjectId,

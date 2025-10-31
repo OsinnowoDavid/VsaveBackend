@@ -7,14 +7,20 @@ const savingsCircleSchema = new mongoose.Schema(
             ref: "Savings",
             required: true,
         },
+        savingsTitle: { type: String },
+        subRegion: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Region",
+            required: true,
+        },
         frequency: {
             type: String,
             enum: ["DAILY", "WEEKLY", "MONTHLY"],
             required: true,
         },
-        numberOfPeriod: {
+        duration: {
             type: Number,
-            default: 1,
+            required: true,
         },
         deductionPeriod: {
             type: String,

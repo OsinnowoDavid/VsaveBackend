@@ -20,6 +20,7 @@ const userSavingsRecordSchema = new mongoose_1.default.Schema({
         ref: "Savings_circle", // Reference to your User model
         required: true,
     },
+    period: { type: Number },
     records: [
         {
             period: String,

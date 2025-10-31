@@ -1,42 +1,97 @@
-export function calculateSavingsTotalAmount(
-    startDate: Date,
-    endDate: Date,
-    amountPerInterval: number,
+export function calculateEndDate(
     frequency: string,
-): { totalIntervals: number; totalAmount: number } {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-
-    if (isNaN(start.getTime()) || isNaN(end.getTime()) || start > end) {
-        throw new Error("Invalid start or end date");
+    startDate: Date | string,
+    duration: number,
+): Date {
+    if (
+        typeof duration !== "number" ||
+        !Number.isFinite(duration) ||
+        duration < 1
+    ) {
+        throw new Error("duration must be a positive integer (>= 1).");
     }
 
-    let totalIntervals = 0;
+    // Normalize start date and validate
+    const start =
+        startDate instanceof Date ? new Date(startDate) : new Date(startDate);
+    if (isNaN(start.getTime())) {
+        throw new Error("startDate is invalid.");
+    }
+
+    // Work on a copy so we don't mutate input
+    const end = new Date(start.getTime());
 
     switch (frequency) {
-        case "daily":
-            totalIntervals =
-                Math.ceil(
-                    (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24),
-                ) + 1;
+        case "DAILY":
+            // inclusive: duration=1 => same day
+            end.setDate(end.getDate() + (duration - 1));
             break;
 
-        case "weekly":
-            totalIntervals =
-                Math.ceil(
-                    (end.getTime() - start.getTime()) /
-                        (1000 * 60 * 60 * 24 * 7),
-                ) + 1;
+        case "WEEKLY":
+            // each period = 7 days; inclusive
+            end.setDate(end.getDate() + (duration * 7 - 1));
             break;
 
-        case "monthly":
-            totalIntervals =
-                (end.getFullYear() - start.getFullYear()) * 12 +
-                (end.getMonth() - start.getMonth()) +
-                1;
+        case "MONTHLY":
+            // adding months while keeping day where possible;
+            // inclusive: duration=1 => same month/day
+            // Use setMonth which handles month overflow (and end-of-month behavior)
+            end.setMonth(end.getMonth() + (duration - 1));
             break;
+
+        default:
+            // compile-time safety but also runtime guard
+            throw new Error(
+                "frequency must be 'DAILY', 'WEEKLY', or 'MONTHLY'.",
+            );
     }
 
-    const totalAmount = totalIntervals * amountPerInterval;
-    return { totalIntervals, totalAmount };
+    return end;
+}
+
+export function calculateMaturityAmount(
+    frequency: string,
+    duration: number,
+    amount: number,
+    startDate?: Date,
+) {
+    let totalPeriods;
+
+    switch (frequency) {
+        case "DAILY":
+            totalPeriods = duration; // duration in days
+            break;
+        case "WEEKLY":
+            totalPeriods = duration; // duration in days, divide by 7
+            break;
+        case "MONTHLY":
+            totalPeriods = duration; // duration in days, divide by 30
+            break;
+        default:
+            throw new Error(
+                "Invalid frequency. Must be daily, weekly, or monthly.",
+            );
+    }
+
+    totalPeriods = Math.floor(totalPeriods); // optional rounding
+    return amount * totalPeriods;
+}
+
+export function getDayName(dateString: Date | string) {
+    // Convert the string to a Date object
+    const date = new Date(dateString);
+
+    // List of days
+    const days = [
+        "sunday",
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday",
+    ];
+
+    // Get the day name
+    return days[date.getDay()];
 }

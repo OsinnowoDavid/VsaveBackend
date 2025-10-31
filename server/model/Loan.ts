@@ -9,8 +9,7 @@ const loanSchema = new Schema(
             ref: "User",
         },
         InitialAmount: { type: Number, required: true },
-        dailyInterest: { type: String },
-        currentAmount: { type: Number, required: true },
+        interest: { type: String },
         status: {
             type: String,
             enum: ["pending", "approved", "rejected", "active", "completed"],

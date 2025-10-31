@@ -209,13 +209,17 @@ export interface IBankCode extends Document {
 export interface ISavingsCircle extends Document {
     _id: Types.ObjectId;
     savingsPlanId: Types.ObjectId;
+    savingsTitle: string;
     frequency: "DAILY" | "WEEKLY" | "MONTHLY";
-    numberOfPeriod?: number;
+    subRegion: Types.ObjectId;
+    duration: number;
+    deductionPeriod: string;
     savingsAmount: number;
     startDate?: Date;
     endDate?: Date;
     circleIndex?: number;
     status?: "ACTIVE" | "PAUSED" | "ENDED";
+    maturityAmount: number;
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -225,6 +229,10 @@ export interface ISavingsGroup extends Document {
     savingsId: Types.ObjectId;
     savingsCircleId: Types.ObjectId;
     users: Types.ObjectId[];
+    subRegion: Types.ObjectId;
+    status: string;
+    periods: number;
+    duration: number;
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -234,7 +242,7 @@ export interface IUserSavingsRecord extends Document {
     user: Types.ObjectId;
     savingId: Types.ObjectId;
     savingsCircleId: Types.ObjectId;
-    records?: {
+    records: {
         period?: string;
         periodIndex?: string;
         amount?: number;
@@ -249,6 +257,7 @@ export interface IUserSavingsRecord extends Document {
 
 export interface ISavingsPlan extends Document {
     _id: Types.ObjectId;
+    savingsTitle: string;
     subRegion: Types.ObjectId;
     frequency: "DAILY" | "WEEKLY" | "MONTHLY";
     savingsAmount: number;

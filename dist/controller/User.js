@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.userGetAllSubRegionController = exports.getUserTransactionByTypeController = exports.getUserTransactionByStatusController = exports.getUserSingleTransactionController = exports.getUserTransactionsController = exports.payOutController = exports.accountLookUpController = exports.getBankCodeController = exports.buyDataController = exports.buyAirtimeController = exports.getDataPlanController = exports.getUserKyc1RecordController = exports.registerKYC1 = exports.userProfile = exports.loginUser = exports.resendUserVerificationEmail = exports.verifyEmail = exports.registerUser = void 0;
+exports.getUserSavingsRecordsController = exports.getUserActiveSavingsController = exports.getAvaliableSavingsController = exports.joinSavingsController = exports.userGetAllSubRegionController = exports.getUserTransactionByTypeController = exports.getUserTransactionByStatusController = exports.getUserSingleTransactionController = exports.getUserTransactionsController = exports.payOutController = exports.accountLookUpController = exports.getBankCodeController = exports.buyDataController = exports.buyAirtimeController = exports.getDataPlanController = exports.getUserKyc1RecordController = exports.registerKYC1 = exports.userProfile = exports.loginUser = exports.resendUserVerificationEmail = exports.verifyEmail = exports.registerUser = void 0;
 const argon2_1 = __importDefault(require("argon2"));
 const Agent_1 = require("../services/Agent");
 const User_1 = require("../services/User");
@@ -569,3 +569,76 @@ const userGetAllSubRegionController = async (req, res) => {
     }
 };
 exports.userGetAllSubRegionController = userGetAllSubRegionController;
+const joinSavingsController = async (req, res) => {
+    try {
+        const user = req.user;
+        const { circleId } = req.body;
+        const jointSavings = await (0, User_1.joinSavings)(user, circleId);
+        return res.json({
+            status: "Success",
+            message: "joined savings group successfuly",
+            data: jointSavings,
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.joinSavingsController = joinSavingsController;
+const getAvaliableSavingsController = async (req, res) => {
+    try {
+        const user = req.user;
+        const allAvaliableSavings = await (0, User_1.avaliableSavings)(user);
+        return res.json({
+            status: "Success",
+            message: "found savings",
+            data: allAvaliableSavings,
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.getAvaliableSavingsController = getAvaliableSavingsController;
+const getUserActiveSavingsController = async (req, res) => {
+    try {
+        const user = req.user;
+        const activeSavings = await (0, User_1.userActiveSavingsRecord)(user);
+        return res.json({
+            status: "Success",
+            message: "found savings",
+            data: activeSavings,
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.getUserActiveSavingsController = getUserActiveSavingsController;
+const getUserSavingsRecordsController = async (req, res) => {
+    try {
+        const user = req.user;
+        const foundRecords = await (0, User_1.userSavingsRecords)(user);
+        return res.json({
+            status: "Success",
+            message: "found savings",
+            data: foundRecords,
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.getUserSavingsRecordsController = getUserSavingsRecordsController;
