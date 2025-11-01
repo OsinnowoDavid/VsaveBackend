@@ -13,26 +13,71 @@ const QOREID_BASE_URL = process.env.QOREID_BASE_URL;
 const registerUser = async (req, res) => {
     try {
         const { firstName, lastName, email, password, gender, dateOfBirth, phoneNumber, referralCode, } = req.body;
-        let hashPassword = await argon2_1.default.hash(password);
+        // Validate required fields
+        if (!firstName || !lastName || !email || !password || !gender || !dateOfBirth || !phoneNumber) {
+            return res.status(400).json({
+                status: "Failed",
+                message: "All fields are required",
+            });
+        }
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({
+                status: "Failed",
+                message: "Invalid email format",
+            });
+        }
+        let hashPassword;
+        try {
+            hashPassword = await argon2_1.default.hash(password);
+        }
+        catch (hashError) {
+            return res.status(500).json({
+                status: "Failed",
+                message: "Error processing password",
+                error: hashError.message,
+            });
+        }
         // check if user is already in the database
-        const user = (await (0, User_1.getUserByEmail)(email));
+        let user;
+        try {
+            user = await (0, User_1.getUserByEmail)(email);
+        }
+        catch (dbError) {
+            return res.status(500).json({
+                status: "Failed",
+                message: "Database error while checking existing user",
+                error: dbError.message,
+            });
+        }
         // first check if it is a user that is in the database but didn't verify email
         if (user) {
-            return res.json({
+            return res.status(409).json({
                 status: "Failed",
-                message: "User already exists Login Instead !",
+                message: "User already exists Login Instead!",
                 isEmailVerified: user.isEmailVerified,
             });
         }
         // create new user
-        const newUser = (await (0, User_1.createNewUser)(firstName, lastName, email, hashPassword, gender, dateOfBirth, phoneNumber));
-        if (!newUser) {
-            return res.json({
+        let newUser;
+        try {
+            newUser = await (0, User_1.createNewUser)(firstName, lastName, email, hashPassword, gender, dateOfBirth, phoneNumber);
+        }
+        catch (createUserError) {
+            return res.status(500).json({
                 status: "Failed",
-                message: "something went wrong, try again later",
+                message: "Error creating user",
+                error: createUserError.message,
             });
         }
-        // send verification code to user email
+        if (!newUser) {
+            return res.status(500).json({
+                status: "Failed",
+                message: "Failed to create user, please try again later",
+            });
+        }
+        //send verification code to user email
         const tokenNumber = Math.floor(100000 + Math.random() * 900000);
         // generate exp time (expires in 5 min)
         const getNextFiveMinutes = () => {
@@ -41,49 +86,64 @@ const registerUser = async (req, res) => {
             return next;
         };
         const expTime = getNextFiveMinutes();
-        const token = await (0, User_1.assignUserEmailVerificationToken)(email, tokenNumber, expTime);
-        if (!token) {
-            return res.json({
+        let token;
+        try {
+            token = await (0, User_1.assignUserEmailVerificationToken)(email, tokenNumber, expTime);
+        }
+        catch (tokenError) {
+            return res.status(500).json({
                 status: "Failed",
-                message: "something went wrong, try again later",
+                message: "Error generating verification token",
+                error: tokenError.message,
+            });
+        }
+        if (!token) {
+            return res.status(500).json({
+                status: "Failed",
+                message: "Failed to generate verification token",
             });
         }
         //config mail option
-        // console.log(
-        //     " controller pass and user:",
-        //     process.env.User,
-        //     process.env.Pass,
-        // );
-        // const mailOptions = {
-        //     from: `<${process.env.User}>`, // sender
-        //     to: email, // recipient
-        //     subject: "Welcome to VSAVE 🎉",
-        //     text: `Hello ${newUser.firstName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans. To get started, please verify your email using the code below:
-        //   CODE : ${tokenNumber}
-        //   This code will expire in 5 minutes, so be sure to use it right away.
-        //   We’re excited to have you on board!
-        //   — The VSave Team.`,
-        // };
-        // console.log("got to the  mail option :", mailOptions);
-        // // Send email
-        // let sentMale = await Transporter.sendMail(mailOptions);
-        // console.log(
-        //     "transporter response:",
-        //     process.env.User,
-        //     process.env.Pass,
-        // );
-        // // assign referralCode
-        // await assignAgentReferral(referralCode, newUser);
-        return res.json({
+        const mailOptions = {
+            from: `<${process.env.User}>`, // sender
+            to: email, // recipient
+            subject: "Welcome to VSAVE 🎉",
+            text: `Hello ${newUser.firstName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans. To get started, please verify your email using the code below:
+      CODE : ${tokenNumber}
+      This code will expire in 5 minutes, so be sure to use it right away.
+      We're excited to have you on board!
+
+      — The VSave Team.`,
+        };
+        // Send email with error handling
+        try {
+            await nodemailer_1.default.sendMail(mailOptions);
+        }
+        catch (emailError) {
+            // Even if email fails, user is created, so we should still respond with success
+            // but inform the user about the email issue
+            console.error("Failed to send verification email:", emailError);
+            return res.json({
+                status: "Partial Success",
+                message: `User created successfully but failed to send verification email to ${newUser.email}. Please contact support.`,
+                data: newUser,
+            });
+        }
+        return res.status(201).json({
             status: "Success",
-            message: `User created successfuly verify your email ,verification code has been sent to ${newUser.email}`,
+            message: `User created successfully. Verify your email - verification code has been sent to ${newUser.email}`,
             data: newUser,
         });
     }
     catch (err) {
-        res.json({
+        console.error("Unexpected error in registerUser:", err);
+        // Don't expose internal error details in production
+        const errorMessage = process.env.NODE_ENV === 'production'
+            ? "An unexpected error occurred. Please try again later."
+            : err.message;
+        return res.status(500).json({
             status: "Failed",
-            message: err.message,
+            message: errorMessage,
         });
     }
 };
