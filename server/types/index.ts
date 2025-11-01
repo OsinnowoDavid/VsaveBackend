@@ -5,23 +5,27 @@ export interface IUser extends Document {
     firstName: string;
     lastName: string;
     email: string;
-    phoneNumber: string;
     password: string;
-    profilePicture: string;
+
+    phoneNumber?: string | null;
+    profilePicture?: string | null;
     vsavePoint: number;
-    subRegion: Types.ObjectId | string;
-    KYC: Types.ObjectId | null;
+
+    subRegion?: Types.ObjectId | string | null;
+    KYC?: Types.ObjectId | null;
+
     availableBalance: number;
     pendingBalance: number;
-    isEmailVerified: boolean;
-    status: string;
-    address: string;
-    bvn?: string;
-    gender: "Male" | "Female" | string;
-    dateOfBirth: Date | string;
-    virtualAccountNumber: string;
-}
 
+    isEmailVerified: boolean;
+    status?: string | null;
+    address?: string | null;
+    bvn?: string | null;
+
+    gender?: "Male" | "Female" | string | null | undefined;
+    dateOfBirth?: Date | string | null | undefined;
+    virtualAccountNumber?: string | null;
+}
 export interface IVerificationToken extends Document {
     user?: Types.ObjectId;
     email: string;

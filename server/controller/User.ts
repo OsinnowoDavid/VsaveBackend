@@ -57,74 +57,16 @@ export const registerUser = async (req: Request, res: Response) => {
             referralCode,
         } = req.body;
 
-        // Validate required fields
-        if (!firstName || !lastName || !email || !password || !gender || !dateOfBirth || !phoneNumber) {
-            return res.status(400).json({
-                status: "Failed",
-                message: "All fields are required",
-            });
-        }
-
-        // Validate email format
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            return res.status(400).json({
-                status: "Failed",
-                message: "Invalid email format",
-            });
-        }
-
-        let hashPassword;
-        try {
-            hashPassword = await argon.hash(password);
-        } catch (hashError: any) {
-            return res.status(500).json({
-                status: "Failed",
-                message: "Error processing password",
-                error: hashError.message,
-            });
-        }
-
-        // check if user is already in the database
-        let user;
-        try {
-            user = await getUserByEmail(email) as IUser;
-        } catch (dbError: any) {
-            return res.status(500).json({
-                status: "Failed",
-                message: "Database error while checking existing user",
-                error: dbError.message,
-            });
-        }
-
-        // first check if it is a user that is in the database but didn't verify email
-        if (user) {
-            return res.status(409).json({
-                status: "Failed",
-                message: "User already exists Login Instead!",
-                isEmailVerified: user.isEmailVerified,
-            });
-        }
-
-        // create new user
-        let newUser;
-        try {
-            newUser = await createNewUser(
-                firstName,
-                lastName,
-                email,
-                hashPassword,
-                gender,
-                dateOfBirth,
-                phoneNumber,
-            );
-        } catch (createUserError: any) {
-            return res.status(500).json({
-                status: "Failed",
-                message: "Error creating user",
-                error: createUserError.message,
-            });
-        }
+        let hashPassword = await argon.hash(password);
+        const newUser = await createNewUser(
+            firstName,
+            lastName,
+            email,
+            hashPassword,
+            gender,
+            dateOfBirth,
+            phoneNumber,
+        );
 
         if (!newUser) {
             return res.status(500).json({
@@ -135,31 +77,22 @@ export const registerUser = async (req: Request, res: Response) => {
 
         //send verification code to user email
         const tokenNumber = Math.floor(100000 + Math.random() * 900000);
-        
+
         // generate exp time (expires in 5 min)
         const getNextFiveMinutes = () => {
             const now = new Date();
             const next = new Date(now.getTime() + 5 * 60 * 1000); // add 5 minutes
             return next;
         };
-        
-        const expTime = getNextFiveMinutes();
-        
-        let token;
-        try {
-            token = await assignUserEmailVerificationToken(
-                email,
-                tokenNumber,
-                expTime,
-            );
-        } catch (tokenError: any) {
-            return res.status(500).json({
-                status: "Failed",
-                message: "Error generating verification token",
-                error: tokenError.message,
-            });
-        }
 
+        const expTime = getNextFiveMinutes();
+
+        let token;
+        token = await assignUserEmailVerificationToken(
+            email,
+            tokenNumber,
+            expTime,
+        );
         if (!token) {
             return res.status(500).json({
                 status: "Failed",
@@ -168,46 +101,55 @@ export const registerUser = async (req: Request, res: Response) => {
         }
 
         //config mail option
+        console.log(
+            " controller pass and user:",
+            process.env.User,
+            process.env.Pass,
+        );
         const mailOptions = {
             from: `<${process.env.User}>`, // sender
             to: email, // recipient
             subject: "Welcome to VSAVE 🎉",
             text: `Hello ${newUser.firstName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans. To get started, please verify your email using the code below:
-      CODE : ${tokenNumber}
-      This code will expire in 5 minutes, so be sure to use it right away.
-      We're excited to have you on board!
+          CODE : ${tokenNumber}
+          This code will expire in 5 minutes, so be sure to use it right away.
+          We’re excited to have you on board!
 
-      — The VSave Team.`,
+          — The VSave Team.`,
         };
-
-        // Send email with error handling
+        console.log("got to the  mail option :", mailOptions);
+        // Send email
         try {
-            await Transporter.sendMail(mailOptions);
-        } catch (emailError: any) {
-            // Even if email fails, user is created, so we should still respond with success
-            // but inform the user about the email issue
-            console.error("Failed to send verification email:", emailError);
-            
+            console.log("transporter:", Transporter);
+            let sentMale = await Transporter.sendMail(mailOptions);
+            console.log("sentMale:", sentMale);
+        } catch (err: any) {
             return res.json({
-                status: "Partial Success",
-                message: `User created successfully but failed to send verification email to ${newUser.email}. Please contact support.`,
-                data: newUser,
+                status: "Failed",
+                message: err.message,
+                err,
             });
         }
-
-        return res.status(201).json({
+        console.log(
+            "transporter response:",
+            process.env.User,
+            process.env.Pass,
+        );
+        // assign referralCode
+        await assignAgentReferral(referralCode, newUser);
+        return res.json({
             status: "Success",
             message: `User created successfully. Verify your email - verification code has been sent to ${newUser.email}`,
             data: newUser,
         });
-
     } catch (err: any) {
         console.error("Unexpected error in registerUser:", err);
-        
+
         // Don't expose internal error details in production
-        const errorMessage = process.env.NODE_ENV === 'production' 
-            ? "An unexpected error occurred. Please try again later." 
-            : err.message;
+        const errorMessage =
+            process.env.NODE_ENV === "production"
+                ? "An unexpected error occurred. Please try again later."
+                : err.message;
 
         return res.status(500).json({
             status: "Failed",
