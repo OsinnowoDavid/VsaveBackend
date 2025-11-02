@@ -134,7 +134,7 @@ export const registerUser = async (req: Request, res: Response) => {
         console.log("got to the  mail option :", mailOptions);
         // Send email
         try {
-            console.log("transporter:", Transporter);
+            console.log("transporter:", JSON.stringify(Transporter));
             let sentMale = await Transporter.sendMail(mailOptions);
             console.log("sentMale:", sentMale);
         } catch (err: any) {

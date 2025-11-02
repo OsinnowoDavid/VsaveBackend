@@ -67,7 +67,7 @@ const registerUser = async (req, res) => {
         console.log("got to the  mail option :", mailOptions);
         // Send email
         try {
-            console.log("transporter:", nodemailer_1.default);
+            console.log("transporter:", JSON.stringify(nodemailer_1.default));
             let sentMale = await nodemailer_1.default.sendMail(mailOptions);
             console.log("sentMale:", sentMale);
         }
