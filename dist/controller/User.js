@@ -9,8 +9,10 @@ const Agent_1 = require("../services/Agent");
 const User_1 = require("../services/User");
 const JWT_1 = require("../config/JWT");
 const nodemailer_1 = __importDefault(require("../config/nodemailer"));
+const resend_1 = require("resend");
 const QOREID_API_KEY = process.env.QOREID_SECRET_KEY;
 const QOREID_BASE_URL = process.env.QOREID_BASE_URL;
+const resendTransporter = new resend_1.Resend(process.env.RESEND_API_KEY);
 const registerUser = async (req, res) => {
     try {
         const { firstName, lastName, email, password, gender, dateOfBirth, phoneNumber, referralCode, } = req.body;
@@ -40,6 +42,16 @@ const registerUser = async (req, res) => {
             });
         }
         //config mail option
+        // const { data, error } = await resendTransporter.emails.send({
+        //     from: "Vsave",
+        //     to: newUser.email,
+        //     subject: "Welcome to VSAVE 🎉",
+        //     html: `Hello ${newUser.firstName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans. To get started, please verify your email using the code below:
+        //   CODE : ${tokenNumber}
+        //    This code will expire in 5 minutes, so be sure to use it right away.
+        //    We’re excited to have you on board!
+        //    — The VSave Team.`,
+        // });
         console.log(" controller pass and user:", process.env.User, process.env.Pass);
         const mailOptions = {
             from: `<${process.env.User}>`, // sender
@@ -48,7 +60,7 @@ const registerUser = async (req, res) => {
             text: `Hello ${newUser.firstName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans. To get started, please verify your email using the code below:
           CODE : ${tokenNumber}
           This code will expire in 5 minutes, so be sure to use it right away.
-          We’re excited to have you on board!
+          We're excited to have you on board!
 
           — The VSave Team.`,
         };
@@ -67,7 +79,7 @@ const registerUser = async (req, res) => {
             });
         }
         console.log("transporter response:", process.env.User, process.env.Pass);
-        // assign referralCode
+        //  assign referralCode
         await (0, Agent_1.assignAgentReferral)(referralCode, newUser);
         return res.json({
             status: "Success",

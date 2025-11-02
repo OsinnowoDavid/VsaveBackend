@@ -51,5 +51,5 @@ app.use("/savings", savingsRouter);
 app.use("/webhook", webhookRouter);
 
 app.listen(port, () => {
-    console.log(`serve is running on ${port}}`);
+    console.log(`serve is running on ${port}`);
 });

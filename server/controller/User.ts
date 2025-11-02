@@ -39,10 +39,13 @@ import {
 import { IUser, IVerificationToken, IKYC1 } from "../types";
 import { signUserToken } from "../config/JWT";
 import Transporter from "../config/nodemailer";
+import { Resend } from "resend";
 import axios from "axios";
 import { format } from "path";
 const QOREID_API_KEY = process.env.QOREID_SECRET_KEY as string;
 const QOREID_BASE_URL = process.env.QOREID_BASE_URL as string;
+
+const resendTransporter = new Resend(process.env.RESEND_API_KEY!);
 
 export const registerUser = async (req: Request, res: Response) => {
     try {
@@ -99,8 +102,19 @@ export const registerUser = async (req: Request, res: Response) => {
                 message: "Failed to generate verification token",
             });
         }
-
         //config mail option
+        // const { data, error } = await resendTransporter.emails.send({
+        //     from: "Vsave",
+        //     to: newUser.email,
+        //     subject: "Welcome to VSAVE 🎉",
+        //     html: `Hello ${newUser.firstName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans. To get started, please verify your email using the code below:
+        //   CODE : ${tokenNumber}
+        //    This code will expire in 5 minutes, so be sure to use it right away.
+        //    We’re excited to have you on board!
+
+        //    — The VSave Team.`,
+        // });
+
         console.log(
             " controller pass and user:",
             process.env.User,
@@ -113,7 +127,7 @@ export const registerUser = async (req: Request, res: Response) => {
             text: `Hello ${newUser.firstName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans. To get started, please verify your email using the code below:
           CODE : ${tokenNumber}
           This code will expire in 5 minutes, so be sure to use it right away.
-          We’re excited to have you on board!
+          We're excited to have you on board!
 
           — The VSave Team.`,
         };
@@ -135,7 +149,7 @@ export const registerUser = async (req: Request, res: Response) => {
             process.env.User,
             process.env.Pass,
         );
-        // assign referralCode
+        //  assign referralCode
         await assignAgentReferral(referralCode, newUser);
         return res.json({
             status: "Success",

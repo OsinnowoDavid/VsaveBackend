@@ -47,5 +47,5 @@ app.use("/regionaladmin", RegionalAdmin_1.default);
 app.use("/savings", Savings_1.default);
 app.use("/webhook", Webhook_1.default);
 app.listen(port, () => {
-    console.log(`serve is running on ${port}}`);
+    console.log(`serve is running on ${port}`);
 });
