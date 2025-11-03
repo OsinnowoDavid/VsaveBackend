@@ -31,6 +31,8 @@ export interface IVerificationToken extends Document {
     email: string;
     token: string;
     expiresAt: Date;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
 export interface ISuperAdmin extends Document {

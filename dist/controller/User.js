@@ -111,25 +111,21 @@ const verifyEmail = async (req, res) => {
         const { email, code } = req.body;
         const user = (await (0, User_1.getUserByEmail)(email));
         const verifyToken = (await (0, User_1.getUserVerificationToken)(email, code));
-        if (!verifyToken) {
-            return res.json({
-                Status: "Failed",
-                message: "incorrect token",
-            });
-        }
-        if (verifyToken.email) {
-            user.isEmailVerified = true;
-            await user.save();
-            // register KYC
-            await (0, User_1.createKYCRecord)(user);
-            res.json({
-                status: "Success",
-                message: "email token verify successfuly",
-            });
+        for (const token of verifyToken) {
+            if (token.token === code.toString()) {
+                user.isEmailVerified = true;
+                await user.save();
+                // register KYC
+                await (0, User_1.createKYCRecord)(user);
+                return res.json({
+                    status: "Success",
+                    message: "email token verify successfuly",
+                });
+            }
         }
         return res.json({
             status: "Failed",
-            message: "something went wrong, try again later",
+            message: "Incorrect code ",
         });
     }
     catch (err) {

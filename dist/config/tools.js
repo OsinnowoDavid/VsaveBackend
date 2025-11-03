@@ -1,8 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.generateSavingsRefrenceCode = exports.generateRefrenceCode = void 0;
 exports.calculateEndDate = calculateEndDate;
 exports.calculateMaturityAmount = calculateMaturityAmount;
 exports.getDayName = getDayName;
+exports.getFiveMinutesAgo = getFiveMinutesAgo;
 function calculateEndDate(frequency, startDate, duration) {
     if (typeof duration !== "number" ||
         !Number.isFinite(duration) ||
@@ -71,3 +73,29 @@ function getDayName(dateString) {
     // Get the day name
     return days[date.getDay()];
 }
+function getFiveMinutesAgo() {
+    const now = new Date();
+    const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
+    return fiveMinutesAgo;
+}
+const generateRefrenceCode = () => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let code = "";
+    let marchantId = process.env.MARCHANT_ID;
+    for (let i = 0; i < 15; i++) {
+        const randomIndex = Math.floor(Math.random() * chars.length);
+        code += chars[randomIndex];
+    }
+    return `${marchantId}_${code}`;
+};
+exports.generateRefrenceCode = generateRefrenceCode;
+const generateSavingsRefrenceCode = () => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let code = "";
+    for (let i = 0; i < 15; i++) {
+        const randomIndex = Math.floor(Math.random() * chars.length);
+        code += chars[randomIndex];
+    }
+    return `Savings_${code}`;
+};
+exports.generateSavingsRefrenceCode = generateSavingsRefrenceCode;

@@ -12,28 +12,13 @@ import SavingsCircle from "../model/Savings_circle";
 import { getAllSubRegion } from "./RegionalAdmin";
 import Loan from "../model/Loan";
 import FixedSavings from "../model/FixedSavings";
+import {
+    getFiveMinutesAgo,
+    generateRefrenceCode,
+    generateSavingsRefrenceCode,
+} from "../config/tools";
 const FLW_SECRET_KEY = process.env.FLW_SECRET_KEY;
-const generateRefrenceCode = () => {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    let code = "";
-    let marchantId = process.env.MARCHANT_ID;
-    for (let i = 0; i < 15; i++) {
-        const randomIndex = Math.floor(Math.random() * chars.length);
-        code += chars[randomIndex];
-    }
 
-    return `${marchantId}_${code}`;
-};
-const generateSavingsRefrenceCode = () => {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    let code = "";
-    for (let i = 0; i < 15; i++) {
-        const randomIndex = Math.floor(Math.random() * chars.length);
-        code += chars[randomIndex];
-    }
-
-    return `Savings_${code}`;
-};
 export const createNewUser = async (
     firstName: string,
     lastName: string,
@@ -101,12 +86,19 @@ export const assignUserEmailVerificationToken = async (
         throw err;
     }
 };
+
 export const getUserVerificationToken = async (
     email: String,
     token: String,
 ) => {
     try {
-        const foundToken = await VerificationToken.findOne({ email, token });
+        const fiveMinsAgo = getFiveMinutesAgo();
+        const foundToken = await VerificationToken.find({
+            email,
+            token,
+            createdAt: { $gte: fiveMinsAgo },
+        });
+
         return foundToken;
     } catch (err: any) {
         throw err;

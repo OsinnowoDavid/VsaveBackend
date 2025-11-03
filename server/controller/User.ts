@@ -177,26 +177,22 @@ export const verifyEmail = async (req: Request, res: Response) => {
         const verifyToken = (await getUserVerificationToken(
             email,
             code,
-        )) as IVerificationToken;
-        if (!verifyToken) {
-            return res.json({
-                Status: "Failed",
-                message: "incorrect token",
-            });
-        }
-        if (verifyToken.email) {
-            user.isEmailVerified = true;
-            await user.save();
-            // register KYC
-            await createKYCRecord(user);
-            res.json({
-                status: "Success",
-                message: "email token verify successfuly",
-            });
+        )) as any;
+        for (const token of verifyToken) {
+            if (token.token === code.toString()) {
+                user.isEmailVerified = true;
+                await user.save();
+                // register KYC
+                await createKYCRecord(user);
+                return res.json({
+                    status: "Success",
+                    message: "email token verify successfuly",
+                });
+            }
         }
         return res.json({
             status: "Failed",
-            message: "something went wrong, try again later",
+            message: "Incorrect code ",
         });
     } catch (err: any) {
         res.json({
