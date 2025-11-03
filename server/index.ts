@@ -30,7 +30,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 connectDB();
 // schedule node-cron job to deductSavings from users account
-nodeCron.schedule("30 10 * * *", deductSavingsFromUser, {
+nodeCron.schedule("0 0 * * *", deductSavingsFromUser, {
     timezone: "Africa/Lagos",
 });
 

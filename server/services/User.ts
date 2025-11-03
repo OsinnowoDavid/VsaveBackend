@@ -17,6 +17,7 @@ import {
     generateRefrenceCode,
     generateSavingsRefrenceCode,
 } from "../config/tools";
+import savingsCircle from "../model/Savings_circle";
 const FLW_SECRET_KEY = process.env.FLW_SECRET_KEY;
 
 export const createNewUser = async (
@@ -866,6 +867,15 @@ export const updateUserSavingsRecords = async (
         foundUser.records.push(record);
         await foundUser.save();
         return foundUser;
+    } catch (err: any) {
+        throw err;
+    }
+};
+
+export const getCircleById = async (circleId: string) => {
+    try {
+        const SavingsCircle = await savingsCircle.findById(circleId);
+        return SavingsCircle;
     } catch (err: any) {
         throw err;
     }
