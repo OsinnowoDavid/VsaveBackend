@@ -707,7 +707,7 @@ const createFixedSaving = async (user, amount, interestRate, paymentAmount, dura
 exports.createFixedSaving = createFixedSaving;
 const avaliableSavings = async (user) => {
     try {
-        const avaliableSavings = await Savings_group_1.default.find({
+        const avaliableSavings = await Savings_circle_1.default.find({
             subRegion: user.subRegion,
             status: "ACTIVE",
         });

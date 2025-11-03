@@ -779,10 +779,11 @@ export const createFixedSaving = async (
 
 export const avaliableSavings = async (user: IUser) => {
     try {
-        const avaliableSavings = await SavingsGroup.find({
+        const avaliableSavings = await SavingsCircle.find({
             subRegion: user.subRegion,
             status: "ACTIVE",
         });
+
         return avaliableSavings;
     } catch (err: any) {
         throw err;
