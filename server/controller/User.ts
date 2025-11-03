@@ -39,13 +39,14 @@ import {
 import { IUser, IVerificationToken, IKYC1 } from "../types";
 import { signUserToken } from "../config/JWT";
 import Transporter from "../config/nodemailer";
-import { Resend } from "resend";
+import SGMail from "@sendgrid/mail";
+import MailTransporter from "../config/mailer";
 import axios from "axios";
 import { format } from "path";
 const QOREID_API_KEY = process.env.QOREID_SECRET_KEY as string;
 const QOREID_BASE_URL = process.env.QOREID_BASE_URL as string;
 
-const resendTransporter = new Resend(process.env.RESEND_API_KEY!);
+SGMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 export const registerUser = async (req: Request, res: Response) => {
     try {
@@ -102,53 +103,56 @@ export const registerUser = async (req: Request, res: Response) => {
                 message: "Failed to generate verification token",
             });
         }
-        //config mail option
-        // const { data, error } = await resendTransporter.emails.send({
-        //     from: "Vsave",
-        //     to: newUser.email,
-        //     subject: "Welcome to VSAVE 🎉",
-        //     html: `Hello ${newUser.firstName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans. To get started, please verify your email using the code below:
-        //   CODE : ${tokenNumber}
-        //    This code will expire in 5 minutes, so be sure to use it right away.
-        //    We’re excited to have you on board!
-
-        //    — The VSave Team.`,
-        // });
-
-        console.log(
-            " controller pass and user:",
-            process.env.User,
-            process.env.Pass,
-        );
-        const mailOptions = {
-            from: `<${process.env.User}>`, // sender
-            to: email, // recipient
+        //  config mail option
+        const msg = {
+            to: newUser.email,
+            from: `David <danyboy99official@gmail.com>`,
             subject: "Welcome to VSAVE 🎉",
-            text: `Hello ${newUser.firstName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans. To get started, please verify your email using the code below:
-          CODE : ${tokenNumber}
-          This code will expire in 5 minutes, so be sure to use it right away.
-          We're excited to have you on board!
+            html: `Hello ${newUser.firstName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans. To get started, please verify your email using the code below:
+           CODE : ${tokenNumber}
+           This code will expire in 5 minutes, so be sure to use it right away.
+           We're excited to have you on board!
 
           — The VSave Team.`,
         };
-        console.log("got to the  mail option :", mailOptions);
-        // Send email
-        try {
-            console.log("transporter:", JSON.stringify(Transporter));
-            let sentMale = await Transporter.sendMail(mailOptions);
-            console.log("sentMale:", sentMale);
-        } catch (err: any) {
-            return res.json({
-                status: "Failed",
-                message: err.message,
-                err,
-            });
-        }
-        console.log(
-            "transporter response:",
-            process.env.User,
-            process.env.Pass,
-        );
+
+        const sentMail = await SGMail.send(msg);
+        console.log("sentMail:", sentMail);
+
+        // console.log(
+        //     " controller pass and user:",
+        //     process.env.User,
+        //     process.env.Pass,
+        // );
+        // const mailOptions = {
+        //     from: `<${process.env.User}>`, // sender
+        //     to: email, // recipient
+        //     subject: "Welcome to VSAVE 🎉",
+        //     text: `Hello ${newUser.firstName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans. To get started, please verify your email using the code below:
+        //   CODE : ${tokenNumber}
+        //   This code will expire in 5 minutes, so be sure to use it right away.
+        //   We're excited to have you on board!
+
+        //   — The VSave Team.`,
+        // };
+        // console.log("got to the  mail option :", mailOptions);
+        // // Send email
+        // try {
+        //     console.log("transporter:", JSON.stringify(Transporter));
+        //     let sentMale = await Transporter.sendMail(mailOptions);
+        //     console.log("sentMale:", sentMale);
+        // } catch (err: any) {
+        //     return res.json({
+        //         status: "Failed",
+        //         message: err.message,
+        //         err,
+        //     });
+        // }
+        // console.log(
+        //     "transporter response:",
+        //     process.env.User,
+        //     process.env.Pass,
+        // );
         //  assign referralCode
         await assignAgentReferral(referralCode, newUser);
         return res.json({

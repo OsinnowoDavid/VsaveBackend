@@ -9,10 +9,10 @@ const Agent_1 = require("../services/Agent");
 const User_1 = require("../services/User");
 const JWT_1 = require("../config/JWT");
 const nodemailer_1 = __importDefault(require("../config/nodemailer"));
-const resend_1 = require("resend");
+const mail_1 = __importDefault(require("@sendgrid/mail"));
 const QOREID_API_KEY = process.env.QOREID_SECRET_KEY;
 const QOREID_BASE_URL = process.env.QOREID_BASE_URL;
-const resendTransporter = new resend_1.Resend(process.env.RESEND_API_KEY);
+mail_1.default.setApiKey(process.env.SENDGRID_API_KEY);
 const registerUser = async (req, res) => {
     try {
         const { firstName, lastName, email, password, gender, dateOfBirth, phoneNumber, referralCode, } = req.body;
@@ -41,44 +41,53 @@ const registerUser = async (req, res) => {
                 message: "Failed to generate verification token",
             });
         }
-        //config mail option
-        // const { data, error } = await resendTransporter.emails.send({
-        //     from: "Vsave",
-        //     to: newUser.email,
-        //     subject: "Welcome to VSAVE 🎉",
-        //     html: `Hello ${newUser.firstName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans. To get started, please verify your email using the code below:
-        //   CODE : ${tokenNumber}
-        //    This code will expire in 5 minutes, so be sure to use it right away.
-        //    We’re excited to have you on board!
-        //    — The VSave Team.`,
-        // });
-        console.log(" controller pass and user:", process.env.User, process.env.Pass);
-        const mailOptions = {
-            from: `<${process.env.User}>`, // sender
-            to: email, // recipient
+        //  config mail option
+        const msg = {
+            to: newUser.email,
+            from: `David <danyboy99official@gmail.com>`,
             subject: "Welcome to VSAVE 🎉",
-            text: `Hello ${newUser.firstName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans. To get started, please verify your email using the code below:
-          CODE : ${tokenNumber}
-          This code will expire in 5 minutes, so be sure to use it right away.
-          We're excited to have you on board!
+            html: `Hello ${newUser.firstName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans. To get started, please verify your email using the code below:
+           CODE : ${tokenNumber}
+           This code will expire in 5 minutes, so be sure to use it right away.
+           We're excited to have you on board!
 
           — The VSave Team.`,
         };
-        console.log("got to the  mail option :", mailOptions);
-        // Send email
-        try {
-            console.log("transporter:", JSON.stringify(nodemailer_1.default));
-            let sentMale = await nodemailer_1.default.sendMail(mailOptions);
-            console.log("sentMale:", sentMale);
-        }
-        catch (err) {
-            return res.json({
-                status: "Failed",
-                message: err.message,
-                err,
-            });
-        }
-        console.log("transporter response:", process.env.User, process.env.Pass);
+        const sentMail = await mail_1.default.send(msg);
+        console.log("sentMail:", sentMail);
+        // console.log(
+        //     " controller pass and user:",
+        //     process.env.User,
+        //     process.env.Pass,
+        // );
+        // const mailOptions = {
+        //     from: `<${process.env.User}>`, // sender
+        //     to: email, // recipient
+        //     subject: "Welcome to VSAVE 🎉",
+        //     text: `Hello ${newUser.firstName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans. To get started, please verify your email using the code below:
+        //   CODE : ${tokenNumber}
+        //   This code will expire in 5 minutes, so be sure to use it right away.
+        //   We're excited to have you on board!
+        //   — The VSave Team.`,
+        // };
+        // console.log("got to the  mail option :", mailOptions);
+        // // Send email
+        // try {
+        //     console.log("transporter:", JSON.stringify(Transporter));
+        //     let sentMale = await Transporter.sendMail(mailOptions);
+        //     console.log("sentMale:", sentMale);
+        // } catch (err: any) {
+        //     return res.json({
+        //         status: "Failed",
+        //         message: err.message,
+        //         err,
+        //     });
+        // }
+        // console.log(
+        //     "transporter response:",
+        //     process.env.User,
+        //     process.env.Pass,
+        // );
         //  assign referralCode
         await (0, Agent_1.assignAgentReferral)(referralCode, newUser);
         return res.json({
