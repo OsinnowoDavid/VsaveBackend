@@ -1,9 +1,10 @@
-import nodemailer from "nodemailer";
-import dotenv from "dotenv";
+// import nodemailer from "nodemailer";
+// import dotenv from "dotenv";
 
-// Load environment variables from .env file
-dotenv.config();
+// // Load environment variables from .env file
+// dotenv.config();
 
+<<<<<<< HEAD
 // Create transporter with proper TypeScript typing
 const transporter = nodemailer.createTransport({
     service: "gmail",
@@ -15,5 +16,31 @@ const transporter = nodemailer.createTransport({
         pass: process.env.EMAIL_PASS,
     },
 } as nodemailer.TransportOptions);
+=======
+// console.log("Email User:", process.env.User ? "Exists" : "Missing");
+// console.log("Email Pass:", process.env.Pass ? "Exists" : "Missing");
 
-export default transporter;
+// /
+
+// const transporter = nodemailer.createTransport({
+//     //service: "gmail",
+//     host: "box.eedu.tech",
+//     port: 465, // Use 587 for TLS (more reliable than 465)
+//     secure: true, // false for TLS
+//     auth: {
+//         user: process.env.User,
+//         pass: process.env.Pass, // Should be an App Password, not regular password
+//     },
+// });
+>>>>>>> 4d31ccc4a9834af044bee067662078b34ce8f9ef
+
+// // Verify transporter configuration on startup
+// transporter.verify(function (error, success) {
+//     if (error) {
+//         console.error("Transporter verification failed:", error);
+//     } else {
+//         console.log("Email transporter is ready to send messages");
+//     }
+// });
+
+// export default transporter;

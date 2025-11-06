@@ -12,28 +12,14 @@ import SavingsCircle from "../model/Savings_circle";
 import { getAllSubRegion } from "./RegionalAdmin";
 import Loan from "../model/Loan";
 import FixedSavings from "../model/FixedSavings";
+import {
+    getFiveMinutesAgo,
+    generateRefrenceCode,
+    generateSavingsRefrenceCode,
+} from "../config/tools";
+import savingsCircle from "../model/Savings_circle";
 const FLW_SECRET_KEY = process.env.FLW_SECRET_KEY;
-const generateRefrenceCode = () => {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    let code = "";
-    let marchantId = process.env.MARCHANT_ID;
-    for (let i = 0; i < 15; i++) {
-        const randomIndex = Math.floor(Math.random() * chars.length);
-        code += chars[randomIndex];
-    }
 
-    return `${marchantId}_${code}`;
-};
-const generateSavingsRefrenceCode = () => {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    let code = "";
-    for (let i = 0; i < 15; i++) {
-        const randomIndex = Math.floor(Math.random() * chars.length);
-        code += chars[randomIndex];
-    }
-
-    return `Savings_${code}`;
-};
 export const createNewUser = async (
     firstName: string,
     lastName: string,
@@ -101,12 +87,19 @@ export const assignUserEmailVerificationToken = async (
         throw err;
     }
 };
+
 export const getUserVerificationToken = async (
     email: String,
     token: String,
 ) => {
     try {
-        const foundToken = await VerificationToken.findOne({ email, token });
+        const fiveMinsAgo = getFiveMinutesAgo();
+        const foundToken = await VerificationToken.find({
+            email,
+            token,
+            createdAt: { $gte: fiveMinsAgo },
+        });
+
         return foundToken;
     } catch (err: any) {
         throw err;
@@ -787,10 +780,11 @@ export const createFixedSaving = async (
 
 export const avaliableSavings = async (user: IUser) => {
     try {
-        const avaliableSavings = await SavingsGroup.find({
+        const avaliableSavings = await SavingsCircle.find({
             subRegion: user.subRegion,
             status: "ACTIVE",
         });
+
         return avaliableSavings;
     } catch (err: any) {
         throw err;
@@ -873,6 +867,15 @@ export const updateUserSavingsRecords = async (
         foundUser.records.push(record);
         await foundUser.save();
         return foundUser;
+    } catch (err: any) {
+        throw err;
+    }
+};
+
+export const getCircleById = async (circleId: string) => {
+    try {
+        const SavingsCircle = await savingsCircle.findById(circleId);
+        return SavingsCircle;
     } catch (err: any) {
         throw err;
     }

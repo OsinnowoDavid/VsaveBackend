@@ -95,3 +95,32 @@ export function getDayName(dateString: Date | string) {
     // Get the day name
     return days[date.getDay()];
 }
+
+export function getFiveMinutesAgo(): Date {
+    const now = new Date();
+    const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
+    return fiveMinutesAgo;
+}
+
+export const generateRefrenceCode = () => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let code = "";
+    let marchantId = process.env.MARCHANT_ID;
+    for (let i = 0; i < 15; i++) {
+        const randomIndex = Math.floor(Math.random() * chars.length);
+        code += chars[randomIndex];
+    }
+
+    return `${marchantId}_${code}`;
+};
+
+export const generateSavingsRefrenceCode = () => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let code = "";
+    for (let i = 0; i < 15; i++) {
+        const randomIndex = Math.floor(Math.random() * chars.length);
+        code += chars[randomIndex];
+    }
+
+    return `Savings_${code}`;
+};

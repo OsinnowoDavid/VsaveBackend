@@ -38,11 +38,19 @@ import {
 } from "../services/User";
 import { IUser, IVerificationToken, IKYC1 } from "../types";
 import { signUserToken } from "../config/JWT";
-import Transporter from "../config/nodemailer";
+import SGMail from "@sendgrid/mail";
+import MailTransporter from "../config/mailer";
 import axios from "axios";
 import { format } from "path";
 const QOREID_API_KEY = process.env.QOREID_SECRET_KEY as string;
 const QOREID_BASE_URL = process.env.QOREID_BASE_URL as string;
+
+SGMail.setApiKey(process.env.SENDGRID_API_KEY);
+const getNextFiveMinutes = () => {
+    const now = new Date();
+    const next = new Date(now.getTime() + 5 * 60 * 1000); // add 5 minutes
+    return next;
+};
 
 export const registerUser = async (req: Request, res: Response) => {
     try {
@@ -78,13 +86,6 @@ export const registerUser = async (req: Request, res: Response) => {
         //send verification code to user email
         const tokenNumber = Math.floor(100000 + Math.random() * 900000);
 
-        // generate exp time (expires in 5 min)
-        const getNextFiveMinutes = () => {
-            const now = new Date();
-            const next = new Date(now.getTime() + 5 * 60 * 1000); // add 5 minutes
-            return next;
-        };
-
         const expTime = getNextFiveMinutes();
 
         let token;
@@ -99,47 +100,59 @@ export const registerUser = async (req: Request, res: Response) => {
                 message: "Failed to generate verification token",
             });
         }
-
-        //config mail option
-        console.log(
-            " controller pass and user:",
-            process.env.User,
-            process.env.Pass,
-        );
-        const mailOptions = {
-            from: `<${process.env.User}>`, // sender
-            to: email, // recipient
+        //  config mail option
+        const msg = {
+            to: newUser.email,
+            from: `David <danyboy99official@gmail.com>`,
             subject: "Welcome to VSAVE 🎉",
-            text: `Hello ${newUser.firstName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans. To get started, please verify your email using the code below:
-          CODE : ${tokenNumber}
-          This code will expire in 5 minutes, so be sure to use it right away.
-          We’re excited to have you on board!
+            html: `Hello ${newUser.firstName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans. To get started, please verify your email using the code below:
+           CODE : ${tokenNumber}
+           This code will expire in 5 minutes, so be sure to use it right away.
+           We're excited to have you on board!
 
           — The VSave Team.`,
         };
-        console.log("got to the  mail option :", mailOptions);
-        // Send email
-        try {
-            console.log("transporter:", Transporter);
-            let sentMale = await Transporter.sendMail(mailOptions);
-            console.log("sentMale:", sentMale);
-        } catch (err: any) {
-            return res.json({
-                status: "Failed",
-                message: err.message,
-                err,
-            });
-        }
-        console.log(
-            "transporter response:",
-            process.env.User,
-            process.env.Pass,
-        );
-        // assign referralCode
+
+        const sentMail = await SGMail.send(msg);
+        // console.log(
+        //     " controller pass and user:",
+        //     process.env.User,
+        //     process.env.Pass,
+        // );
+        // const mailOptions = {
+        //     from: `<${process.env.User}>`, // sender
+        //     to: email, // recipient
+        //     subject: "Welcome to VSAVE 🎉",
+        //     text: `Hello ${newUser.firstName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans. To get started, please verify your email using the code below:
+        //   CODE : ${tokenNumber}
+        //   This code will expire in 5 minutes, so be sure to use it right away.
+        //   We're excited to have you on board!
+
+        //   — The VSave Team.`,
+        // };
+        // console.log("got to the  mail option :", mailOptions);
+        // // Send email
+        // try {
+        //     console.log("transporter:", JSON.stringify(Transporter));
+        //     let sentMale = await Transporter.sendMail(mailOptions);
+        //     console.log("sentMale:", sentMale);
+        // } catch (err: any) {
+        //     return res.json({
+        //         status: "Failed",
+        //         message: err.message,
+        //         err,
+        //     });
+        // }
+        // console.log(
+        //     "transporter response:",
+        //     process.env.User,
+        //     process.env.Pass,
+        // );
+        //  assign referralCode
         await assignAgentReferral(referralCode, newUser);
         return res.json({
             status: "Success",
-            message: `User created successfully. Verify your email - verification code has been sent to ${newUser.email}`,
+            message: `User created successfully. Verify your email - verification code has been sent to ${newUser.email} (also check your spam meesage for the code )`,
             data: newUser,
         });
     } catch (err: any) {
@@ -164,26 +177,22 @@ export const verifyEmail = async (req: Request, res: Response) => {
         const verifyToken = (await getUserVerificationToken(
             email,
             code,
-        )) as IVerificationToken;
-        if (!verifyToken) {
-            return res.json({
-                Status: "Failed",
-                message: "incorrect token",
-            });
-        }
-        if (verifyToken.email) {
-            user.isEmailVerified = true;
-            await user.save();
-            // register KYC
-            await createKYCRecord(user);
-            res.json({
-                status: "Success",
-                message: "email token verify successfuly",
-            });
+        )) as any;
+        for (const token of verifyToken) {
+            if (token.token === code.toString()) {
+                user.isEmailVerified = true;
+                await user.save();
+                // register KYC
+                await createKYCRecord(user);
+                return res.json({
+                    status: "Success",
+                    message: "email token verify successfuly",
+                });
+            }
         }
         return res.json({
             status: "Failed",
-            message: "something went wrong, try again later",
+            message: "Incorrect code ",
         });
     } catch (err: any) {
         res.json({
@@ -206,22 +215,20 @@ export const resendUserVerificationEmail = async (
             });
         }
         const tokenNumber = Math.floor(100000 + Math.random() * 900000);
-        const mailOptions = {
-            from: `<${process.env.User}>`, // sender
-            to: email, // recipient
+        //  config mail option
+        const msg = {
+            to: user.email,
+            from: `David <danyboy99official@gmail.com>`,
             subject: "Welcome to VSAVE 🎉",
-            text: ` Hello ${user.firstName} this is your VSave Verification code 
-          ${tokenNumber} 
-          code expires in 5 mins
-      — The VSave Team.`,
+            html: `Hello ${user.firstName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans. To get started, please verify your email using the code below:
+           CODE : ${tokenNumber}
+           This code will expire in 5 minutes, so be sure to use it right away.
+           We're excited to have you on board!
+
+          — The VSave Team.`,
         };
-        // Send email
-        await Transporter.sendMail(mailOptions);
-        const getNextFiveMinutes = () => {
-            const now = new Date();
-            const next = new Date(now.getTime() + 5 * 60 * 1000); // add 5 minutes
-            return next;
-        };
+
+        const sentMail = await SGMail.send(msg);
         const expTime = getNextFiveMinutes();
         await assignUserEmailVerificationToken(
             user.email,
@@ -230,7 +237,8 @@ export const resendUserVerificationEmail = async (
         );
         return res.json({
             status: "Success",
-            message: "Verification code has been sent to your email again !",
+            message:
+                "Verification code has been sent to your email again (also check your spam meesage for the code ) ! ",
             isEmailVerified: user.isEmailVerified,
         });
     } catch (err: any) {
@@ -239,11 +247,6 @@ export const resendUserVerificationEmail = async (
             message: err.message,
         });
     }
-};
-const getNextFiveMinutes = () => {
-    const now = new Date();
-    const next = new Date(now.getTime() + 5 * 60 * 1000); // add 5 minutes
-    return next;
 };
 export const loginUser = async (req: Request, res: Response) => {
     try {
@@ -258,17 +261,20 @@ export const loginUser = async (req: Request, res: Response) => {
         // check is user verify Email
         if (!user.isEmailVerified) {
             const tokenNumber = Math.floor(100000 + Math.random() * 900000);
-            const mailOptions = {
-                from: `<${process.env.User}>`, // sender
-                to: email, // recipient
+            //  config mail option
+            const msg = {
+                to: user.email,
+                from: `David <danyboy99official@gmail.com>`,
                 subject: "Welcome to VSAVE 🎉",
-                text: ` Hello ${user.firstName} this is your VSave Verification code
-          ${tokenNumber}
-          code expires in 5 mins
-      — The VSave Team.`,
+                html: `Hello ${user.firstName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans. To get started, please verify your email using the code below:
+           CODE : ${tokenNumber}
+           This code will expire in 5 minutes, so be sure to use it right away.
+           We're excited to have you on board!
+
+          — The VSave Team.`,
             };
-            // Send email
-            await Transporter.sendMail(mailOptions);
+
+            const sentMail = await SGMail.send(msg);
 
             const expTime = getNextFiveMinutes();
             await assignUserEmailVerificationToken(
@@ -279,7 +285,7 @@ export const loginUser = async (req: Request, res: Response) => {
             return res.json({
                 status: "Failed",
                 message:
-                    "Account is not Verified you just need to verify with your Email , a token has been sent to this Email check and verify",
+                    "Account is not Verified you just need to verify with your Email , a token has been sent to this Email check and verify (also check your spam meesage for the code )",
                 isEmailVerified: user.isEmailVerified,
             });
         }

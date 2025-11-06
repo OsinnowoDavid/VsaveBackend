@@ -17,26 +17,8 @@ const Savings_circle_1 = __importDefault(require("../model/Savings_circle"));
 const RegionalAdmin_1 = require("./RegionalAdmin");
 const Loan_1 = __importDefault(require("../model/Loan"));
 const FixedSavings_1 = __importDefault(require("../model/FixedSavings"));
+const tools_1 = require("../config/tools");
 const FLW_SECRET_KEY = process.env.FLW_SECRET_KEY;
-const generateRefrenceCode = () => {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    let code = "";
-    let marchantId = process.env.MARCHANT_ID;
-    for (let i = 0; i < 15; i++) {
-        const randomIndex = Math.floor(Math.random() * chars.length);
-        code += chars[randomIndex];
-    }
-    return `${marchantId}_${code}`;
-};
-const generateSavingsRefrenceCode = () => {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    let code = "";
-    for (let i = 0; i < 15; i++) {
-        const randomIndex = Math.floor(Math.random() * chars.length);
-        code += chars[randomIndex];
-    }
-    return `Savings_${code}`;
-};
 const createNewUser = async (firstName, lastName, email, password, gender, dateOfBirth, phoneNumber) => {
     try {
         const newUser = await User_1.default.create({
@@ -99,7 +81,12 @@ const assignUserEmailVerificationToken = async (email, token, expiresAt) => {
 exports.assignUserEmailVerificationToken = assignUserEmailVerificationToken;
 const getUserVerificationToken = async (email, token) => {
     try {
-        const foundToken = await VerificationToken_1.default.findOne({ email, token });
+        const fiveMinsAgo = (0, tools_1.getFiveMinutesAgo)();
+        const foundToken = await VerificationToken_1.default.find({
+            email,
+            token,
+            createdAt: { $gte: fiveMinsAgo },
+        });
         return foundToken;
     }
     catch (err) {
@@ -555,13 +542,13 @@ const accountLookUp = async (account_number, bank_code) => {
 exports.accountLookUp = accountLookUp;
 const payOut = async (user, bank_code, amount, account_number, account_name) => {
     try {
-        console.log("ref", generateRefrenceCode());
+        console.log("ref", (0, tools_1.generateRefrenceCode)());
         let data = {
             bank_code,
             amount,
             account_number,
             account_name,
-            transaction_reference: generateRefrenceCode(),
+            transaction_reference: (0, tools_1.generateRefrenceCode)(),
             currency_id: "NGN",
             remark: `${user.firstName} ${user.lastName} payout to ${account_name}`,
         };
@@ -720,7 +707,7 @@ const createFixedSaving = async (user, amount, interestRate, paymentAmount, dura
 exports.createFixedSaving = createFixedSaving;
 const avaliableSavings = async (user) => {
     try {
-        const avaliableSavings = await Savings_group_1.default.find({
+        const avaliableSavings = await Savings_circle_1.default.find({
             subRegion: user.subRegion,
             status: "ACTIVE",
         });
@@ -767,7 +754,7 @@ const userWithdraw = async (user, amount, remark) => {
         foundUser.availableBalance = sum;
         await foundUser.save();
         //create transaction record
-        const transaction = await (0, exports.createUserTransaction)(user, "withdrwal", generateSavingsRefrenceCode(), amount, balanceBefore, balanceAfter, remark, "success", new Date());
+        const transaction = await (0, exports.createUserTransaction)(user, "withdrwal", (0, tools_1.generateSavingsRefrenceCode)(), amount, balanceBefore, balanceAfter, remark, "success", new Date());
         return transaction;
     }
     catch (err) {

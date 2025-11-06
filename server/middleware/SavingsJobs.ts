@@ -104,8 +104,10 @@ const checkPlanForUserDeduction = async (plan: any) => {
 };
 export const deductSavingsFromUser = async () => {
     try {
+        console.log("got to 12:00 node cron job");
         const activePlan = await getAllActiveSavingsGroup();
         for (const plan of activePlan) {
+            console.log("got to the job loop");
             await checkPlanForUserDeduction(plan);
         }
     } catch (err: any) {
