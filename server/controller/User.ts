@@ -7,9 +7,12 @@ import {
     getUserById,
     assignUserEmailVerificationToken,
     getUserVerificationToken,
+    updateProfile,
+    changePassword,
     createKYC1Record,
     createKYCRecord,
     kycStatusChange,
+    updateKYC1Record,
     getAllBanksAndCode,
     verifyBankaccount,
     createVirtualAccountForPayment,
@@ -18,7 +21,6 @@ import {
     getDataPlan,
     buyData,
     createVirtualAccountIndex,
-    deposit,
     withdraw,
     createUserTransaction,
     createUserAirtimeTransaction,
@@ -35,13 +37,13 @@ import {
     avaliableSavings,
     userActiveSavingsRecord,
     userSavingsRecords,
+    getCircleById,
 } from "../services/User";
-import { IUser, IVerificationToken, IKYC1 } from "../types";
+import { IUser, IVerificationToken, IKYC1 } from "../../types";
 import { signUserToken } from "../config/JWT";
 import SGMail from "@sendgrid/mail";
-import MailTransporter from "../config/mailer";
-import axios from "axios";
-import { format } from "path";
+import { createUserPersonalSavings } from "../services/Savings";
+import { calculateEndDate, calculateMaturityAmount } from "../config/tools";
 const QOREID_API_KEY = process.env.QOREID_SECRET_KEY as string;
 const QOREID_BASE_URL = process.env.QOREID_BASE_URL as string;
 
@@ -337,6 +339,54 @@ export const userProfile = async (req: Request, res: Response) => {
     }
 };
 
+export const updateProfileController = async (req: Request, res: Response) => {
+    try {
+        const { firstName, lastName, phoneNumber } = req.body;
+        const user = req.user as IUser;
+        const updatedProfile = await updateProfile(
+            user,
+            firstName,
+            lastName,
+            phoneNumber,
+        );
+        return res.json({
+            status: "Success",
+            message: "profile updated successfuly",
+            data: updatedProfile,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+export const changePasswordController = async (req: Request, res: Response) => {
+    try {
+        const { oldPassword, newPassword, confirmPassword } = req.body;
+        const user = req.body as IUser;
+        const verifyPassword = await argon.verify(user.password, oldPassword);
+        if (!verifyPassword) {
+            return res.json({
+                status: "Failed",
+                message: "incorrect old Password",
+            });
+        }
+        let hashPassword = await argon.hash(newPassword);
+        const changedPassword = await changePassword(user, hashPassword);
+        return res.json({
+            status: "Success",
+            message: "password changed successfuly",
+            data: changedPassword,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+
 export const registerKYC1 = async (req: Request, res: Response) => {
     try {
         const {
@@ -401,7 +451,43 @@ export const registerKYC1 = async (req: Request, res: Response) => {
         });
     }
 };
-
+export const updateKYC1RecordController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const {
+            profession,
+            bank,
+            accountNumber,
+            accountDetails,
+            country,
+            state,
+            address,
+        } = req.body;
+        const user = req.user as IUser;
+        const updatedKYC1 = await updateKYC1Record(
+            user,
+            profession,
+            bank,
+            accountNumber,
+            accountDetails,
+            country,
+            state,
+            address,
+        );
+        return res.json({
+            status: "Success",
+            message: "KYC updated successfuly",
+            data: updatedKYC1,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
 export const getUserKyc1RecordController = async (
     req: Request,
     res: Response,
@@ -751,6 +837,60 @@ export const joinSavingsController = async (req: Request, res: Response) => {
         });
     }
 };
+export const createPersonalSavingsCircleController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const {
+            savingsTitle,
+            frequency,
+            duration,
+            deductionPeriod,
+            savingsAmount,
+            startDate,
+            autoRestartEnabled,
+        } = req.body;
+        let user = req.user as IUser;
+        let endDate = calculateEndDate(frequency, startDate, duration);
+        let maturityAmount = calculateMaturityAmount(
+            frequency,
+            duration,
+            savingsAmount,
+            startDate,
+        );
+        let status = "";
+        let currentDate = new Date().toLocaleDateString("en-US");
+        if (currentDate == startDate) {
+            status = "ACTIVE";
+        } else {
+            status = "PENDING";
+        }
+        const newSavingsCircle = await createUserPersonalSavings(
+            user,
+            savingsTitle,
+            frequency,
+            duration,
+            deductionPeriod,
+            savingsAmount,
+            startDate,
+            endDate,
+            status,
+            maturityAmount,
+            autoRestartEnabled,
+        );
+        return res.json({
+            status: "Success",
+            message: "savings created successfuly",
+            data: newSavingsCircle,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
 export const getAvaliableSavingsController = async (
     req: Request,
     res: Response,
@@ -802,6 +942,32 @@ export const getUserSavingsRecordsController = async (
             status: "Success",
             message: "found savings",
             data: foundRecords,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+
+export const getSavingsCircleByIdController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const { id } = req.params;
+        const foundCircle = await getCircleById(id);
+        if (!foundCircle) {
+            return res.json({
+                status: "Failed",
+                message: "no savings circle found",
+            });
+        }
+        return res.json({
+            status: "Success",
+            message: "found savings ",
+            data: foundCircle,
         });
     } catch (err: any) {
         return res.json({

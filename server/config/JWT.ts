@@ -3,7 +3,7 @@ const jwt_secret: any = process.env.jwt_secret;
 import { NextFunction, Request, Response } from "express";
 import { getUserById } from "../services/User";
 import { getSuperAdminById } from "../services/Admin";
-import { ISuperAdmin, IRegionalAdmin, ISubRegionalAdmin } from "../types";
+import { ISuperAdmin, IRegionalAdmin, ISubRegionalAdmin } from "../../types";
 import {
     getRegionalAdminById,
     getSubRegionalAdminById,

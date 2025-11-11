@@ -3,12 +3,14 @@ import SavingsGroup from "../model/Savings_group";
 import AdminSavingsConfig from "../model/Admin_config";
 import SavingsCircle from "../model/Savings_circle";
 import UserSavingsRecord from "../model/User_savings_record";
+import UserPersonalSavings from "../model/User_savings_circle";
 import {
     ISavingsPlan,
     ISavingsGroup,
     ISavingsCircle,
     IUserSavingsRecord,
-} from "../types";
+    IUser,
+} from "../../types";
 
 export const initSavingsPlan = async (
     user: string,
@@ -235,6 +237,48 @@ export const renewSavingsCircle = async (savingsId: string) => {
         foundCircle.status = "ENDED";
         await foundCircle.save();
         // also end user
+    } catch (err: any) {
+        throw err;
+    }
+};
+
+export const createUserPersonalSavings = async (
+    user: IUser,
+    savingsTitle: string,
+    frequency: string,
+    duration: string,
+    deductionPeriod: string,
+    savingsAmount: string,
+    startDate: Date,
+    endDate: Date,
+    status: string,
+    maturityAmount: number,
+    autoRestartEnabled: boolean,
+) => {
+    try {
+        const { firstTimeAdminFee } = await AdminSavingsConfig.getSettings();
+        const newSavingsCircle = await UserPersonalSavings.create({
+            user,
+            savingsTitle,
+            frequency,
+            duration,
+            deductionPeriod,
+            firstTimeAdminFee,
+            savingsAmount,
+            startDate,
+            endDate,
+            status,
+            autoRestartEnabled,
+            maturityAmount,
+        });
+
+        const newSavingsRecord = await UserSavingsRecord.create({
+            user,
+            savingsCircleId: newSavingsCircle._id,
+            maturityAmount,
+            status,
+        });
+        return { newSavingsCircle, newSavingsRecord };
     } catch (err: any) {
         throw err;
     }

@@ -10,7 +10,7 @@ const userSavingsRecordSchema = new mongoose.Schema(
         savingsId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Savings", // Reference to your User model
-            required: true,
+            required: false,
         },
         savingsCircleId: {
             type: mongoose.Schema.Types.ObjectId,
@@ -29,6 +29,7 @@ const userSavingsRecordSchema = new mongoose.Schema(
                 },
             },
         ],
+        currentAmountSaved: { type: Number, default: 0 },
         status: {
             type: String,
             enum: ["ACTIVE", "PAUSED", "ENDED"],

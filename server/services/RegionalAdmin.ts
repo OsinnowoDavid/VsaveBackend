@@ -3,7 +3,7 @@ import SubRegion from "../model/SubRegion";
 import Region from "../model/Region";
 import subRegionalAdmin from "../model/SubRegionalAdmin";
 import SubRegionalAdmin from "../model/SubRegionalAdmin";
-import { ISuperAdmin, ISubRegion } from "../types";
+import { ISuperAdmin, ISubRegion } from "../../types";
 
 export const getRegionalAdminById = async (id: string) => {
     try {

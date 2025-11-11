@@ -242,10 +242,17 @@ export const getRegionalAdminByEmailController = async (
 
 export const setAdminConfigController = async (req: Request, res: Response) => {
     try {
-        const { defaultPenaltyFee, firstTimeAdminFee } = req.body;
+        const {
+            defaultPenaltyFee,
+            firstTimeAdminFee,
+            loanInterestFee,
+            loanPenaltyFee,
+        } = req.body;
         const config = await setAdminSavingsConfig(
             defaultPenaltyFee,
             firstTimeAdminFee,
+            loanInterestFee,
+            loanPenaltyFee,
         );
         if (!config) {
             return res.json({

@@ -1,6 +1,6 @@
 import validator from "validator";
 import isEmpty from "../isEmpty";
-import { IUser } from "../../types";
+import { IUser } from "../../../types";
 import User from "../../model/User";
 
 const validateRegistrationInput = (data: any) => {

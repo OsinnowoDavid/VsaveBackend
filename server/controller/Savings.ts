@@ -11,7 +11,7 @@ export const createSavingPlanController = async (
             subRegion,
             savingsTitle,
             frequency,
-            savingAmount,
+            savingsAmount,
             startDate,
             autoRestartEnabled,
             deductionPeriod,
@@ -22,7 +22,7 @@ export const createSavingPlanController = async (
         let maturityAmount = calculateMaturityAmount(
             frequency,
             duration,
-            savingAmount,
+            savingsAmount,
             startDate,
         );
         let status = "";
@@ -31,14 +31,14 @@ export const createSavingPlanController = async (
         if (currentDate == startDate) {
             status = "ACTIVE";
         } else {
-            status = "PENDING";
+            status = "PAUSED";
         }
         const newSavings = await initSavingsPlan(
             user._id.toString(),
             subRegion,
             savingsTitle,
             frequency,
-            savingAmount,
+            savingsAmount,
             startDate,
             endDate,
             status,

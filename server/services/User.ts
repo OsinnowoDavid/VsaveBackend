@@ -3,14 +3,13 @@ import VerificationToken from "../model/VerificationToken";
 import KYC1 from "../model/KYC1";
 import KYC from "../model/KYC";
 import Transaction from "../model/Transaction";
-import { IUser, IUserSavingsRecord } from "../types";
+import { IUser, IUserSavingsRecord } from "../../types";
 import axios from "axios";
 import BankCode from "../model/Bank_code";
 import SavingsGroup from "../model/Savings_group";
 import UserSavingsRecord from "../model/User_savings_record";
 import SavingsCircle from "../model/Savings_circle";
 import { getAllSubRegion } from "./RegionalAdmin";
-import Loan from "../model/Loan";
 import FixedSavings from "../model/FixedSavings";
 import {
     getFiveMinutesAgo,
@@ -106,6 +105,35 @@ export const getUserVerificationToken = async (
     }
 };
 
+export const updateProfile = async (
+    user: IUser,
+    firstName: string,
+    lastName: string,
+    phoneNumber: string,
+) => {
+    try {
+        const updatedUser = await User.findByIdAndUpdate(user._id, {
+            firstName,
+            lastName,
+            phoneNumber,
+        });
+        return updatedUser;
+    } catch (err: any) {
+        throw err;
+    }
+};
+
+export const changePassword = async (user: IUser, newPassword: string) => {
+    try {
+        const updatedPassword = await User.findByIdAndUpdate(user._id, {
+            password: newPassword,
+        });
+        return updatedPassword;
+    } catch (err: any) {
+        throw err;
+    }
+};
+
 export const createKYCRecord = async (user: IUser) => {
     try {
         const newKYC = await KYC.create({
@@ -166,9 +194,30 @@ export const createKYC1Record = async (
         throw err;
     }
 };
-export const updateKYC1Record = async (user: IUser, bank: string) => {
+export const updateKYC1Record = async (
+    user: IUser,
+    profession: string,
+    bank: string,
+    accountNumber: Number,
+    accountDetails: string,
+    country: string,
+    state: string,
+    address: string,
+) => {
     try {
-        const foundUser = await KYC1.findOneAndUpdate({ user: user._id }, {});
+        const foundUser = await KYC1.findOneAndUpdate(
+            { user: user._id },
+            {
+                profession,
+                bank,
+                accountNumber,
+                accountDetails,
+                country,
+                state,
+                address,
+            },
+        );
+        return foundUser;
     } catch (err: any) {
         throw err;
     }
@@ -721,34 +770,6 @@ export const userGetAllSubRegion = async () => {
     }
 };
 
-export const createLoanRecord = async (
-    user: string,
-    amount: number,
-    interest: string,
-    status: string,
-    startDate: Date,
-    dueDate: Date,
-    duration: string,
-    repaymentAmount: number,
-    remark?: string,
-) => {
-    try {
-        const newLoan = await Loan.create({
-            user,
-            InitialAmount: amount,
-            interest,
-            status,
-            startDate,
-            dueDate,
-            repaymentAmount,
-            remark,
-        });
-        return newLoan;
-    } catch (err: any) {
-        throw err;
-    }
-};
-
 export const createFixedSaving = async (
     user: string,
     amount: number,
@@ -825,13 +846,13 @@ export const userWithdraw = async (
         let balanceBefore = Number(foundUser.availableBalance);
         let balanceAfter = Number(foundUser.availableBalance) - Number(amount);
         // withdraw money
-        let sum = Number(foundUser.availableBalance) - Number(amount);
-        foundUser.availableBalance = sum;
+        let balance = Number(foundUser.availableBalance) - Number(amount);
+        foundUser.availableBalance = balance;
         await foundUser.save();
         //create transaction record
         const transaction = await createUserTransaction(
             user,
-            "withdrwal",
+            "withdrawal",
             generateSavingsRefrenceCode(),
             amount,
             balanceBefore,
@@ -839,6 +860,43 @@ export const userWithdraw = async (
             remark,
             "success",
             new Date(),
+        );
+        return transaction;
+    } catch (err: any) {
+        throw err;
+    }
+};
+export const userDeposit = async (
+    user: string,
+    amount: number,
+    transactionRef: string,
+    date: Date,
+    senderName: string,
+    remark: string,
+    fee_charged?: number,
+) => {
+    try {
+        const foundUser = (await User.findById(user)) as IUser;
+        let balanceBefore = Number(foundUser.availableBalance);
+        let balanceAfter = Number(foundUser.availableBalance) - Number(amount);
+        // withdraw money
+        let balance = Number(foundUser.availableBalance) + Number(amount);
+        foundUser.availableBalance = balance;
+        await foundUser.save();
+        //create transaction record
+        const transaction = await createUserTransaction(
+            user,
+            "deposit",
+            transactionRef,
+            amount,
+            balanceBefore,
+            balanceAfter,
+            remark,
+            "success",
+            date,
+            senderName,
+            "",
+            fee_charged,
         );
         return transaction;
     } catch (err: any) {
@@ -864,6 +922,9 @@ export const updateUserSavingsRecords = async (
             amount,
             status,
         };
+        if (status === "paid") {
+            foundUser.currentAmountSaved += amount;
+        }
         foundUser.records.push(record);
         await foundUser.save();
         return foundUser;

@@ -1,7 +1,7 @@
 import Admin from "../model/Super_admin";
 import RegionalAdmin from "../model/Regionaladmin";
 import Region from "../model/Region";
-import { ISuperAdmin } from "../types";
+import { ISuperAdmin } from "../../types";
 import AdminConfig from "../model/Admin_config";
 export const CreateSuperAdmin = async (
     firstName: string,
@@ -155,11 +155,15 @@ export const getRegionByName = async (regionName: string) => {
 export const setAdminSavingsConfig = async (
     defaultPenaltyFee: string,
     firstTimeAdminFee: string,
+    loanInterestFee: string,
+    loanPenaltyFee: string,
 ) => {
     try {
         const configSettings = await AdminConfig.getSettings();
         configSettings.defaultPenaltyFee = defaultPenaltyFee;
         configSettings.firstTimeAdminFee = firstTimeAdminFee;
+        configSettings.loanInterestFee = loanInterestFee;
+        configSettings.loanPenaltyFee = loanPenaltyFee;
         await configSettings.save();
         return configSettings;
     } catch (err: any) {

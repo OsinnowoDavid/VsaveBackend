@@ -19,12 +19,11 @@ export interface IUser extends Document {
 
     isEmailVerified: boolean;
     status?: string | null;
-    address?: string | null;
-    bvn?: string | null;
-
     gender?: "Male" | "Female" | string | null | undefined;
     dateOfBirth?: Date | string | null | undefined;
     virtualAccountNumber?: string | null;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 export interface IVerificationToken extends Document {
     user?: Types.ObjectId;
@@ -130,7 +129,7 @@ export interface IKYC1 extends Document {
 export interface ILoan extends Document {
     _id: Types.ObjectId;
     user: Types.ObjectId;
-    InitialAmount: number;
+    amount: number;
     currentAmount: number;
     status: "pending" | "approved" | "rejected" | "active" | "completed";
     issueDate?: Date;
@@ -248,6 +247,7 @@ export interface IUserSavingsRecord extends Document {
     user: Types.ObjectId;
     savingId: Types.ObjectId;
     savingsCircleId: Types.ObjectId;
+    currentAmountSaved: number;
     records: {
         period?: string;
         periodIndex?: string;

@@ -3,12 +3,15 @@
         "target": "ES2020",
         "module": "commonjs",
         "outDir": "./dist",
-        "rootDir": "./server",
+        "rootDir": ".",
         "esModuleInterop": true,
         "skipLibCheck": true,
-        "strict": true, // disables all strict rules at once
-        "strictNullChecks": false, // disables null/undefined type checks
-        "noImplicitAny": true, // allows variables without explicit types
-        "useUnknownInCatchVariables": false
-    }
+        "strict": true, // enables most strict checks
+        "strictNullChecks": false, // keeps null/undefined type checks off
+        "noImplicitAny": true, // requires explicit types (for safety)
+        "useUnknownInCatchVariables": false,
+        "typeRoots": ["./types", "./node_modules/@types"]
+    },
+    "include": ["server", "types"],
+    "exclude": ["node_modules", "dist"]
 }

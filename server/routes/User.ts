@@ -3,9 +3,12 @@ import {
     registerUser,
     loginUser,
     userProfile,
+    updateProfileController,
+    changePasswordController,
     verifyEmail,
     resendUserVerificationEmail,
     registerKYC1,
+    updateKYC1RecordController,
     // verifyBankAccountController,
     getDataPlanController,
     buyAirtimeController,
@@ -23,6 +26,7 @@ import {
     getAvaliableSavingsController,
     getUserActiveSavingsController,
     getUserSavingsRecordsController,
+    getSavingsCircleByIdController,
 } from "../controller/User";
 import {
     validateUserRegitrationInput,
@@ -37,12 +41,16 @@ router.post("/login", validateUserLoginInput, loginUser);
 router.post("/verify-email", verifyEmail);
 router.post("/resend-verification-token", resendUserVerificationEmail);
 router.get("/profile", verifyUserToken, userProfile);
+router.post("/update-profile", verifyUserToken, updateProfileController);
+router.post("/change-password", verifyUserToken, changePasswordController);
 // router.post(
 //   "/verify-bank-account",
 //   verifyUserToken,
 //   verifyBankAccountController
 // );
 router.get("/register-kyc1", verifyUserToken, registerKYC1);
+
+router.post("/update-kyc1", verifyUserToken, updateKYC1RecordController);
 
 router.get("/kyc1", verifyUserToken, getUserKyc1RecordController);
 
@@ -96,4 +104,9 @@ router.get(
     getUserSavingsRecordsController,
 );
 
+router.get(
+    "/get-savings-circle/:id",
+    verifyUserToken,
+    getSavingsCircleByIdController,
+);
 export default router;

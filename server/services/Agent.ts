@@ -1,6 +1,6 @@
 import Agent from "../model/Agents";
 import AgentsReferral from "../model/Agents_referral";
-import { IUser } from "../types";
+import { IUser } from "../../types";
 
 export const assignAgentReferral = async (
     referralCode: string,

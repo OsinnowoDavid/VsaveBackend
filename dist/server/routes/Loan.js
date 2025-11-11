@@ -1,0 +1,12 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const JWT_1 = require("../config/JWT");
+const Loan_1 = require("../controller/Loan");
+const router = express_1.default.Router();
+router.get("/check-elegibility", JWT_1.verifyUserToken, Loan_1.checkElegibilityController);
+router.post("/get-loan", JWT_1.verifyUserToken, Loan_1.createLoanController);
+exports.default = router;

@@ -124,3 +124,91 @@ export const generateSavingsRefrenceCode = () => {
 
     return `Savings_${code}`;
 };
+export const generateLoanRefrenceCode = () => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let code = "";
+    for (let i = 0; i < 15; i++) {
+        const randomIndex = Math.floor(Math.random() * chars.length);
+        code += chars[randomIndex];
+    }
+
+    return `Loan_${code}`;
+};
+
+export function isOlderThanThreeMonths(createdDate: Date): boolean {
+    const threeMonthsAgo = new Date();
+    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+
+    return createdDate < threeMonthsAgo;
+}
+
+export function getStageAndMaxAmount(totalSavings: number) {
+    const STAGES = [
+        { stage: 1, minSavings: 5000, maxLoan: 10000 },
+        { stage: 2, minSavings: 7500, maxLoan: 15000 },
+        { stage: 3, minSavings: 10000, maxLoan: 20000 },
+        { stage: 4, minSavings: 12500, maxLoan: 25000 },
+        { stage: 5, minSavings: 15000, maxLoan: 30000 },
+        { stage: 6, minSavings: 17500, maxLoan: 35000 },
+        { stage: 7, minSavings: 20000, maxLoan: 40000 },
+        { stage: 8, minSavings: 22500, maxLoan: 45000 },
+        { stage: 9, minSavings: 25000, maxLoan: 50000 },
+        { stage: 10, minSavings: 30000, maxLoan: "50000+" }, // Requires admin approval
+    ];
+
+    // If savings are below ₦5,000, user is not yet eligible for any stage
+    if (totalSavings < 5000) {
+        return {
+            stage: 0,
+            maxLoan: 0,
+            approvalType: "Not Eligible",
+            note: "Minimum ₦5,000 savings required to access Stage 1 loan.",
+        };
+    }
+
+    // Find the highest stage the user qualifies for based on their savings
+    let eligibleStage = STAGES[0];
+    for (const s of STAGES) {
+        if (totalSavings >= s.minSavings) {
+            eligibleStage = s;
+        } else {
+            break;
+        }
+    }
+
+    // Handle special case for Stage 10 (requires admin approval)
+    const approvalType = eligibleStage.stage === 10 ? "Admin" : "Auto";
+
+    return {
+        stage: eligibleStage.stage,
+        maxLoan: eligibleStage.maxLoan,
+        approvalType,
+        note:
+            eligibleStage.stage === 10
+                ? "Stage 10 loans require admin approval."
+                : "Eligible for auto approval.",
+    };
+}
+
+export function getUserRating(loans: any) {
+    // Count how many loans have been fully paid back
+    const paidLoansCount = loans.length;
+    let ratingStatus;
+    let interestRate;
+
+    if (paidLoansCount >= 8) {
+        ratingStatus = "excellent";
+        interestRate = 0.2;
+    } else if (paidLoansCount >= 3) {
+        ratingStatus = "good";
+        interestRate = 1.0;
+    } else if (paidLoansCount >= 1) {
+        ratingStatus = "beginner";
+        interestRate = 1.2;
+    } else {
+        ratingStatus = "no rating";
+        interestRate = 1.2;
+    }
+
+    return { ratingStatus, interestRate };
+}
