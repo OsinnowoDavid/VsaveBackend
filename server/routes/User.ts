@@ -23,10 +23,15 @@ import {
     getUserTransactionByTypeController,
     userGetAllSubRegionController,
     joinSavingsController,
+    createPersonalSavingsCircleController,
     getAvaliableSavingsController,
-    getUserActiveSavingsController,
-    getUserSavingsRecordsController,
+    getUserActiveSavingsRecordController,
+    getAllUserSavingsRecordController,
     getSavingsCircleByIdController,
+    createFixedSavingController,
+    getActiveFixedSavingsController,
+    getCompletedFixedSavingsController,
+    getAllFixedSavingsController,
 } from "../controller/User";
 import {
     validateUserRegitrationInput,
@@ -90,23 +95,53 @@ router.get("/subregions", verifyUserToken, userGetAllSubRegionController);
 
 router.post("/join-savings", verifyUserToken, joinSavingsController);
 
+router.post(
+    "/create-personal-savings",
+    verifyUserToken,
+    createPersonalSavingsCircleController,
+);
+
 router.get(
-    "/avaliable-savings",
+    "/avaliable-savings-plan",
     verifyUserToken,
     getAvaliableSavingsController,
 );
 
-router.get("/active-savings", verifyUserToken, getUserActiveSavingsController);
+router.get(
+    "/active-savings",
+    verifyUserToken,
+    getUserActiveSavingsRecordController,
+);
 
 router.get(
     "/all-savings-record",
     verifyUserToken,
-    getUserSavingsRecordsController,
+    getAllUserSavingsRecordController,
 );
 
 router.get(
     "/get-savings-circle/:id",
     verifyUserToken,
     getSavingsCircleByIdController,
+);
+router.post(
+    "/create-fixed-deposit",
+    verifyUserToken,
+    createFixedSavingController,
+);
+router.get(
+    "/get-all-fixed-savings",
+    verifyUserToken,
+    getAllFixedSavingsController,
+);
+router.get(
+    "/get-completed-fixed-savings",
+    verifyUserToken,
+    getCompletedFixedSavingsController,
+);
+router.get(
+    "/get-active-fixed-savings",
+    verifyUserToken,
+    getActiveFixedSavingsController,
 );
 export default router;

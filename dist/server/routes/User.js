@@ -35,8 +35,13 @@ router.get("/transaction-by-status/:status", JWT_1.verifyUserToken, User_1.getUs
 router.get("/transaction-by-type/:type", JWT_1.verifyUserToken, User_1.getUserTransactionByTypeController);
 router.get("/subregions", JWT_1.verifyUserToken, User_1.userGetAllSubRegionController);
 router.post("/join-savings", JWT_1.verifyUserToken, User_1.joinSavingsController);
-router.get("/avaliable-savings", JWT_1.verifyUserToken, User_1.getAvaliableSavingsController);
-router.get("/active-savings", JWT_1.verifyUserToken, User_1.getUserActiveSavingsController);
-router.get("/all-savings-record", JWT_1.verifyUserToken, User_1.getUserSavingsRecordsController);
+router.post("/create-personal-savings", JWT_1.verifyUserToken, User_1.createPersonalSavingsCircleController);
+router.get("/avaliable-savings-plan", JWT_1.verifyUserToken, User_1.getAvaliableSavingsController);
+router.get("/active-savings", JWT_1.verifyUserToken, User_1.getUserActiveSavingsRecordController);
+router.get("/all-savings-record", JWT_1.verifyUserToken, User_1.getAllUserSavingsRecordController);
 router.get("/get-savings-circle/:id", JWT_1.verifyUserToken, User_1.getSavingsCircleByIdController);
+router.post("/create-fixed-deposit", JWT_1.verifyUserToken, User_1.createFixedSavingController);
+router.get("/get-all-fixed-savings", JWT_1.verifyUserToken, User_1.getAllFixedSavingsController);
+router.get("/get-completed-fixed-savings", JWT_1.verifyUserToken, User_1.getCompletedFixedSavingsController);
+router.get("/get-active-fixed-savings", JWT_1.verifyUserToken, User_1.getActiveFixedSavingsController);
 exports.default = router;

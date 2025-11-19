@@ -3,9 +3,14 @@ import {
     getUserUnsettledLoan,
     getUserSettledLoan,
     createLoanRecord,
+    getUserLoanRecord,
 } from "../services/Loan";
 import { IUser } from "../../types";
-import { userActiveSavingsRecord, userDeposit } from "../services/User";
+import { userDeposit } from "../services/User";
+import {
+    getSavingsContributionById,
+    allUserActiveSavingsRecord,
+} from "../services/Savings";
 import {
     isOlderThanThreeMonths,
     getStageAndMaxAmount,
@@ -26,7 +31,7 @@ export const checkElegibilityController = async (
             return res.json({
                 status: "Failed",
                 message:
-                    "User not elegible , you most have used more than three month with Vsave and Saved more than 10000N",
+                    "User not elegible , you most have used more than three month  and Saved more than 10000N",
             });
         }
         // check if the user have an unsettled loan
@@ -40,9 +45,16 @@ export const checkElegibilityController = async (
         }
         // check if the user have saved up to 5000N in total
         let totalSavings = 0;
-        const foundUserSavings = await userActiveSavingsRecord(user);
+        const foundUserSavings = await allUserActiveSavingsRecord(user);
         for (const record of foundUserSavings) {
-            totalSavings += Number(record.currentAmountSaved);
+            const contributionRecord = await getSavingsContributionById(
+                record.contributionId.toString(),
+            );
+            for (const contrubution of contributionRecord.record) {
+                if (contrubution.status === "paid") {
+                    totalSavings += contrubution.amount;
+                }
+            }
         }
         let stageAndAmount = getStageAndMaxAmount(totalSavings);
         elegibility.stage = stageAndAmount.stage;
@@ -143,6 +155,60 @@ export const createLoanController = async (req: Request, res: Response) => {
             status: "Pending",
             message: "loan is been processed, needs admin approval",
             data: createdLoan,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+
+export const allUserLoanRecord = async (req: Request, res: Response) => {
+    try {
+        const user = req.user as IUser;
+        const allLoanRecord = await getUserLoanRecord(user);
+        return res.json({
+            status: "Success",
+            message: "all record found",
+            data: allLoanRecord,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+
+export const allUserSettledLoanRecord = async (req: Request, res: Response) => {
+    try {
+        const user = req.user as IUser;
+        const allLoanRecord = await getUserSettledLoan(user);
+        return res.json({
+            status: "Success",
+            message: "all record found",
+            data: allLoanRecord,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+
+export const allUserUnsettledLoanRecord = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const user = req.user as IUser;
+        const allLoanRecord = await getUserUnsettledLoan(user);
+        return res.json({
+            status: "Success",
+            message: "all record found",
+            data: allLoanRecord,
         });
     } catch (err: any) {
         return res.json({

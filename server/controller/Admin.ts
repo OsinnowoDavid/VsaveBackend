@@ -245,14 +245,16 @@ export const setAdminConfigController = async (req: Request, res: Response) => {
         const {
             defaultPenaltyFee,
             firstTimeAdminFee,
-            loanInterestFee,
             loanPenaltyFee,
+            fixedSavingsAnualInterest,
+            fixedSavingsPenaltyFee,
         } = req.body;
         const config = await setAdminSavingsConfig(
             defaultPenaltyFee,
             firstTimeAdminFee,
-            loanInterestFee,
             loanPenaltyFee,
+            fixedSavingsAnualInterest,
+            fixedSavingsPenaltyFee,
         );
         if (!config) {
             return res.json({

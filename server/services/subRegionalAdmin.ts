@@ -2,11 +2,6 @@ import SubRegion from "../model/SubRegion";
 import Agent from "../model/Agents";
 import AgentReferral from "../model/Agents_referral";
 import { IAgent } from "../../types";
-import Savings from "../model/Savings";
-import SavingCircle from "../model/Savings_circle";
-import SavingsGroup from "../model/Savings_group";
-import AdminSavingsConfig from "../model/Admin_config";
-import savingsCircle from "../model/Savings_circle";
 const checkReferralCode = async (code: string) => {
     try {
         const foundCode = (await Agent.findOne({

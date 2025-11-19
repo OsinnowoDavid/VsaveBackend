@@ -1,10 +1,12 @@
 import mongoose, { Document, Model } from "mongoose";
+import fixedSavings from "./FixedSavings";
 
 interface AdminConfigDocument extends Document {
     defaultPenaltyFee: string;
     firstTimeAdminFee: string;
-    loanInterestFee: string;
     loanPenaltyFee: string;
+    fixedSavingsAnualInterest: string;
+    fixedSavingsPenaltyFee: string;
 }
 
 // 👇 define static methods on this interface
@@ -13,8 +15,9 @@ interface AdminConfigModel extends Model<AdminConfigDocument> {
     updateSettings(
         defaultPenaltyFee: string,
         firstTimeAdminFee: string,
-        loanInterestFee: string,
         loanPenaltyFee: string,
+        fixedSavingsAnualInterest: string,
+        fixedSavingsPenaltyFee: string,
     ): Promise<AdminConfigDocument>;
 }
 
@@ -26,10 +29,13 @@ const adminConfigSchema = new mongoose.Schema(
         firstTimeAdminFee: {
             type: String,
         },
-        loanInterestFee: {
+        loanPenaltyFee: {
             type: String,
         },
-        loanPenaltyFee: {
+        fixedSavingsAnualInterest: {
+            type: String,
+        },
+        fixedSavingsPenaltyFee: {
             type: String,
         },
     },
@@ -42,8 +48,9 @@ adminConfigSchema.statics.getSettings = async function () {
         const defaultSettings = new this({
             defaultPenaltyFee: "25",
             firstTimeAdminFee: "50",
-            loanInterestFee: "1.2",
             loanPenaltyFee: "2.0",
+            fixedSavingsAnualInterest: "28.0",
+            fixedSavingsPenaltyFee: "0.5",
         });
         await defaultSettings.save();
         return defaultSettings;

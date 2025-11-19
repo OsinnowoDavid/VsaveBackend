@@ -2,11 +2,6 @@ import mongoose from "mongoose";
 
 const savingsCircleSchema = new mongoose.Schema(
     {
-        savingsPlanId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Savings",
-            required: true,
-        },
         savingsTitle: { type: String },
         subRegion: {
             type: mongoose.Schema.Types.ObjectId,
@@ -26,15 +21,16 @@ const savingsCircleSchema = new mongoose.Schema(
             type: String,
         },
         savingsAmount: { type: Number, required: true },
-        startDate: { type: Date, default: Date.now },
-        endDate: { type: Date },
-        circleIndex: { type: Number, default: 1 },
+        circleId: { type: String },
         status: {
             type: String,
             enum: ["ACTIVE", "PAUSED", "ENDED"],
             default: "ACTIVE",
         },
         maturityAmount: { type: Number },
+        adminId: {
+            type: String,
+        },
     },
     { timestamps: true },
 );

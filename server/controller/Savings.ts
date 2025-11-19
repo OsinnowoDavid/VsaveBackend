@@ -13,45 +13,28 @@ export const createSavingPlanController = async (
             frequency,
             savingsAmount,
             startDate,
-            autoRestartEnabled,
             deductionPeriod,
             duration,
         } = req.body;
         const user = req.user as any;
-        let endDate = calculateEndDate(frequency, startDate, duration);
         let maturityAmount = calculateMaturityAmount(
             frequency,
             duration,
             savingsAmount,
             startDate,
         );
-        let status = "";
-        let currentDate = new Date().toLocaleDateString("en-US");
-        console.log("compare:", { startDate, currentDate });
-        if (currentDate == startDate) {
-            status = "ACTIVE";
-        } else {
-            status = "PAUSED";
-        }
-        const newSavings = await initSavingsPlan(
+
+        const newSavingsPlan = await initSavingsPlan(
             user._id.toString(),
             subRegion,
             savingsTitle,
             frequency,
             savingsAmount,
-            startDate,
-            endDate,
-            status,
-            autoRestartEnabled,
+            "ACTIVE",
             deductionPeriod,
             duration,
             maturityAmount,
         );
-        return res.json({
-            status: "success",
-            message: "plan created",
-            data: newSavings,
-        });
     } catch (err: any) {
         return res.json({
             status: "Failed",

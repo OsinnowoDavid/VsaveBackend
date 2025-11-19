@@ -1,3 +1,5 @@
+import { LargeNumberLike } from "node:crypto";
+
 export function calculateEndDate(
     frequency: string,
     startDate: Date | string,
@@ -53,7 +55,7 @@ export function calculateMaturityAmount(
     frequency: string,
     duration: number,
     amount: number,
-    startDate?: Date,
+    adminFirstTimeFee: number,
 ) {
     let totalPeriods;
 
@@ -74,7 +76,10 @@ export function calculateMaturityAmount(
     }
 
     totalPeriods = Math.floor(totalPeriods); // optional rounding
-    return amount * totalPeriods;
+    let totalDeposit = amount * totalPeriods;
+    let adminFee = (amount * adminFirstTimeFee) / 100;
+    let result = totalDeposit - adminFee;
+    return result;
 }
 
 export function getDayName(dateString: Date | string) {
@@ -212,3 +217,59 @@ export function getUserRating(loans: any) {
 
     return { ratingStatus, interestRate };
 }
+interface interestResult {
+    interestAmount: number;
+    interestPercentage: number;
+}
+export function calculateProportionalInterest(
+    amount: number,
+    annualRate: number,
+    durationInDays: number,
+): interestResult {
+    const daysInYear = 365;
+    const interestPercentage = (annualRate * durationInDays) / daysInYear;
+    const interestAmount = (amount * interestPercentage) / 100;
+    return {
+        interestAmount,
+        interestPercentage,
+    };
+}
+
+export function getCurrentDateWithClosestHour(): Date {
+    const now = new Date();
+
+    // Create a new date with minutes, seconds and ms set to zero
+    const result = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        now.getHours(),
+        0, // minutes
+        0, // seconds
+        0, // milliseconds
+    );
+
+    return result;
+}
+
+export const isPastYesterday = (date: Date) => {
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+    return date <= yesterday;
+};
+export const isPastTomorrow = (date: Date) => {
+    const today = new Date();
+    const tomorrow = new Date();
+    tomorrow.setDate(today.getDate() + 1);
+    return date >= tomorrow;
+};
+export const checkIfContributionIsCompleted = (recordStatus: [any]) => {
+    let isContributionComplete = true;
+    for (const status of recordStatus) {
+        if (status === "pending") {
+            isContributionComplete = false;
+        }
+    }
+    return isContributionComplete;
+};

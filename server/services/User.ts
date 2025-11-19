@@ -6,9 +6,6 @@ import Transaction from "../model/Transaction";
 import { IUser, IUserSavingsRecord } from "../../types";
 import axios from "axios";
 import BankCode from "../model/Bank_code";
-import SavingsGroup from "../model/Savings_group";
-import UserSavingsRecord from "../model/User_savings_record";
-import SavingsCircle from "../model/Savings_circle";
 import { getAllSubRegion } from "./RegionalAdmin";
 import FixedSavings from "../model/FixedSavings";
 import {
@@ -736,31 +733,6 @@ export const getUserTransactionByType = async (user: string, type: string) => {
         throw err;
     }
 };
-
-export const joinSavings = async (user: IUser, circleId: string) => {
-    try {
-        const savingsGroup = await SavingsGroup.findOne({
-            savingsCircleId: circleId,
-        });
-        let currentCircle = await SavingsCircle.findById(circleId);
-        if (!savingsGroup) {
-            throw { message: "No SavingsGroup found with this CircleID" };
-        }
-        savingsGroup.users.push(user._id);
-        await savingsGroup.save();
-        // create user savings record
-        const userSavingsRecord = await UserSavingsRecord.create({
-            user: user._id,
-            savingsId: savingsGroup.savingsId,
-            savingsCircleId: savingsGroup.savingsCircleId,
-            maturityAmount: currentCircle?.maturityAmount,
-        });
-        return userSavingsRecord;
-    } catch (err: any) {
-        throw err;
-    }
-};
-
 export const userGetAllSubRegion = async () => {
     try {
         const allSubRegion = await getAllSubRegion();
@@ -779,6 +751,8 @@ export const createFixedSaving = async (
     startDate: Date,
     endDate: Date,
     status: string,
+    interestPayoutType: string,
+    interestAmount: number,
 ) => {
     try {
         const newFixedSavings = await FixedSavings.create({
@@ -792,42 +766,10 @@ export const createFixedSaving = async (
             startDate,
             endDate,
             status,
+            interestPayoutType,
+            interestAmount,
         });
         return newFixedSavings;
-    } catch (err: any) {
-        throw err;
-    }
-};
-
-export const avaliableSavings = async (user: IUser) => {
-    try {
-        const avaliableSavings = await SavingsCircle.find({
-            subRegion: user.subRegion,
-            status: "ACTIVE",
-        });
-
-        return avaliableSavings;
-    } catch (err: any) {
-        throw err;
-    }
-};
-
-export const userActiveSavingsRecord = async (user: IUser) => {
-    try {
-        const activeSavings = await UserSavingsRecord.find({
-            user: user._id,
-            status: "ACTIVE",
-        });
-        return activeSavings;
-    } catch (err: any) {
-        throw err;
-    }
-};
-
-export const userSavingsRecords = async (user: IUser) => {
-    try {
-        const userSavings = await UserSavingsRecord.find({ user: user._id });
-        return userSavings;
     } catch (err: any) {
         throw err;
     }
@@ -837,6 +779,8 @@ export const userWithdraw = async (
     user: string,
     amount: number,
     remark: string,
+    transactionRef?: string,
+    reciever?: string,
 ) => {
     try {
         const foundUser = (await User.findById(user)) as IUser;
@@ -849,17 +793,21 @@ export const userWithdraw = async (
         let balance = Number(foundUser.availableBalance) - Number(amount);
         foundUser.availableBalance = balance;
         await foundUser.save();
+        let ref = transactionRef || generateSavingsRefrenceCode();
+        let to = reciever || "";
         //create transaction record
         const transaction = await createUserTransaction(
             user,
             "withdrawal",
-            generateSavingsRefrenceCode(),
+            ref,
             amount,
             balanceBefore,
             balanceAfter,
             remark,
             "success",
             new Date(),
+            "",
+            to,
         );
         return transaction;
     } catch (err: any) {
@@ -903,40 +851,45 @@ export const userDeposit = async (
         throw err;
     }
 };
-export const updateUserSavingsRecords = async (
-    user: string,
-    circleId: string,
-    amount: number,
-    period: number,
-    status: string,
-) => {
-    try {
-        const foundUser = (await UserSavingsRecord.findOne({
-            user,
-            savingsCircleId: circleId,
-            status: "ACTIVE",
-        })) as IUserSavingsRecord;
-        let record: any = {
-            period,
-            periodIndex: Number(period),
-            amount,
-            status,
-        };
-        if (status === "paid") {
-            foundUser.currentAmountSaved += amount;
-        }
-        foundUser.records.push(record);
-        await foundUser.save();
-        return foundUser;
-    } catch (err: any) {
-        throw err;
-    }
-};
 
 export const getCircleById = async (circleId: string) => {
     try {
         const SavingsCircle = await savingsCircle.findById(circleId);
         return SavingsCircle;
+    } catch (err: any) {
+        throw err;
+    }
+};
+
+export const getActiveFixedSavings = async (user: IUser) => {
+    try {
+        const activeRecord = await FixedSavings.find({
+            user: user._id,
+            status: "active",
+        });
+        return activeRecord;
+    } catch (err: any) {
+        throw err;
+    }
+};
+export const getCompletedFixedSavings = async (user: IUser) => {
+    try {
+        const completedRecord = await FixedSavings.find({
+            user: user._id,
+            status: "completed",
+        });
+        return completedRecord;
+    } catch (err: any) {
+        throw err;
+    }
+};
+
+export const getAllFixedSavings = async (user: IUser) => {
+    try {
+        const allRecord = await FixedSavings.find({
+            user: user._id,
+        });
+        return allRecord;
     } catch (err: any) {
         throw err;
     }

@@ -155,15 +155,17 @@ export const getRegionByName = async (regionName: string) => {
 export const setAdminSavingsConfig = async (
     defaultPenaltyFee: string,
     firstTimeAdminFee: string,
-    loanInterestFee: string,
     loanPenaltyFee: string,
+    fixedSavingsAnualInterest: string,
+    fixedSavingsPenaltyFee: string,
 ) => {
     try {
         const configSettings = await AdminConfig.getSettings();
         configSettings.defaultPenaltyFee = defaultPenaltyFee;
         configSettings.firstTimeAdminFee = firstTimeAdminFee;
-        configSettings.loanInterestFee = loanInterestFee;
         configSettings.loanPenaltyFee = loanPenaltyFee;
+        configSettings.fixedSavingsAnualInterest = fixedSavingsAnualInterest;
+        configSettings.fixedSavingsPenaltyFee = fixedSavingsPenaltyFee;
         await configSettings.save();
         return configSettings;
     } catch (err: any) {

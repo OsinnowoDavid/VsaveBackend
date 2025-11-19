@@ -22,17 +22,8 @@ const userSavingsCircleSchema = new mongoose.Schema(
         deductionPeriod: {
             type: String,
         },
-        firstTimeAdminFee: { type: String },
         savingsAmount: { type: Number, required: true },
-        startDate: { type: Date, default: Date.now },
-        endDate: { type: Date },
-        circleIndex: { type: Number, default: 1 },
-        status: {
-            type: String,
-            enum: ["ACTIVE", "PAUSED", "ENDED"],
-            default: "ACTIVE",
-        },
-        autoRestartEnabled: { type: Boolean, default: false },
+        circleId: { type: String },
         maturityAmount: { type: Number },
     },
     { timestamps: true },

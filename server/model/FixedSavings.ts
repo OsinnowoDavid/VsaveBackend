@@ -14,8 +14,16 @@ const fixedSavingsSchema = new mongoose.Schema(
             type: String,
             default: "NG",
         },
+        interestPayoutType: {
+            type: String,
+            enum: ["MATURITY", "UPFRONT"],
+            required: true,
+        },
         interestRate: {
             type: String,
+        },
+        interestAmount: {
+            type: Number,
         },
         paymentAmount: {
             type: Number,

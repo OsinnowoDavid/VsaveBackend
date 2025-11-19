@@ -1,93 +1,119 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deactivateExpiredSavings = exports.textNodeCron = exports.deductSavingsFromUser = void 0;
+exports.savingsDisbursement = exports.deductSavingsFromUser = exports.endExpiredSavings = exports.startPauseSavings = void 0;
 const Savings_1 = require("../services/Savings");
 const User_1 = require("../services/User");
-const Bank_code_1 = __importDefault(require("../model/Bank_code"));
 const tools_1 = require("../config/tools");
-const checkPlanForUserDeduction = async (plans) => {
-    let dateFormat = new Date();
-    let todaysDate = `${(dateFormat.getMonth() + 1)
-        .toString()
-        .padStart(2, "0")}/${dateFormat
-        .getDate()
-        .toString()
-        .padStart(2, "0")}/${dateFormat.getFullYear()}`;
-    for (const plan of plans) {
-        const savingsDetails = (await (0, Savings_1.getCircleById)(plan.savingsCircleId));
-        let remark = `${savingsDetails?.savingsAmount}N is withdrawn from your account for ${savingsDetails?.savingsTitle} Plan`;
-        // check and deduct based on frequency
-        if (savingsDetails.frequency === "MONTHLY") {
-            if (savingsDetails.deductionPeriod === todaysDate) {
-                for (const user of plan.users) {
-                    const withdraw = await (0, User_1.userWithdraw)(user, savingsDetails.savingsAmount, remark);
-                    if (withdraw === "Insufficient Funds") {
-                        await (0, User_1.updateUserSavingsRecords)(user, plan.savingsCircleId, savingsDetails.savingsAmount, plan.periods, "pending");
-                        return;
-                    }
-                    await (0, User_1.updateUserSavingsRecords)(user, plan.savingsCircleId, savingsDetails.savingsAmount, plan.periods, "paid");
-                    return;
-                }
-            }
-        }
-        if (savingsDetails.frequency === "WEEKLY") {
-            if (savingsDetails.deductionPeriod === (0, tools_1.getDayName)(todaysDate)) {
-                for (const user of plan.users) {
-                    const withdraw = await (0, User_1.userWithdraw)(user, savingsDetails.savingsAmount, remark);
-                    if (withdraw === "Insufficient Funds") {
-                        await (0, User_1.updateUserSavingsRecords)(user, plan.savingsCircleId, savingsDetails.savingsAmount, plan.periods, "pending");
-                        return;
-                    }
-                    await (0, User_1.updateUserSavingsRecords)(user, plan.savingsCircleId, savingsDetails.savingsAmount, plan.periods, "paid");
-                    return;
-                }
-            }
-        }
-        if (savingsDetails.frequency === "DAILY") {
-            for (const user of plan.users) {
-                const withdraw = await (0, User_1.userWithdraw)(user, savingsDetails.savingsAmount, remark);
-                if (withdraw === "Insufficient Funds") {
-                    await (0, User_1.updateUserSavingsRecords)(user, plan.savingsCircleId, savingsDetails.savingsAmount, plan.periods, "pending");
-                    return;
-                }
-                await (0, User_1.updateUserSavingsRecords)(user, plan.savingsCircleId, savingsDetails.savingsAmount, plan.periods, "paid");
-            }
-            return "done";
-        }
-    }
-};
-const deductSavingsFromUser = async () => {
+const startPauseSavings = async () => {
     try {
-        console.log("got to 12:00 node cron job");
-        const activePlan = await (0, Savings_1.getAllActiveSavingsGroup)();
-        const deduction = await checkPlanForUserDeduction(activePlan);
-        console.log("done:", deduction);
-        return { message: "done" };
-    }
-    catch (err) {
-        console.log("job error:", err.message, "date:", new Date());
-        return;
-    }
-};
-exports.deductSavingsFromUser = deductSavingsFromUser;
-const textNodeCron = async () => {
-    try {
-        console.log("got to 6:43 pm node cron job");
-        await Bank_code_1.default.create({ bankCode: "texting 6", bank: "textings 6" });
+        // check for paused record that needs to start
+        const allPausedSavings = await (0, Savings_1.getAllUserPausedSavingsRecord)();
+        let todaysDate = new Date();
+        for (const record of allPausedSavings) {
+            let startDate = new Date(record.startDate);
+            if (startDate === todaysDate) {
+                record.status = "ACTIVE";
+                await record.save();
+            }
+        }
+        return "Done";
     }
     catch (err) {
         throw err;
     }
 };
-exports.textNodeCron = textNodeCron;
-const deactivateExpiredSavings = async () => {
+exports.startPauseSavings = startPauseSavings;
+const endExpiredSavings = async () => {
     try {
+        // check for expired record that needs to end
+        const allActiveSavings = await (0, Savings_1.getAllUserActiveSavingsRecord)();
+        let todaysDate = new Date();
+        for (const record of allActiveSavings) {
+            let endDate = new Date(record.endDate);
+            let pastTomorrow = (0, tools_1.isPastTomorrow)(endDate);
+            if (pastTomorrow) {
+                // check if the contribution is completed
+                const allStatus = await (0, Savings_1.getAllContributionStatus)(record.contributionId.toString());
+                const isCompleted = (0, tools_1.checkIfContributionIsCompleted)(allStatus);
+                if (isCompleted) {
+                    record.status = "ENDED";
+                    await record.save();
+                    // first check if autorenew is on do user can start a new circle
+                    if (record.autoRestartEnabled) {
+                        await (0, Savings_1.restartSavingsCircle)(record.user.toString(), record.savingsCircleId.toString());
+                    }
+                    return;
+                }
+            }
+        }
+        return "Done";
     }
     catch (err) {
-        console.log("job error:", err.message, "date:", new Date());
+        throw err;
     }
 };
-exports.deactivateExpiredSavings = deactivateExpiredSavings;
+exports.endExpiredSavings = endExpiredSavings;
+const deductSavingsFromUser = async () => {
+    try {
+        let todaysDate = new Date();
+        // first get all active record first
+        const allActiveSavings = await (0, Savings_1.getAllUserActiveSavingsRecord)();
+        for (const record of allActiveSavings) {
+            const savingsDetails = await (0, Savings_1.checkForCircleById)(record.savingsCircleId.toString());
+            let remark = `${savingsDetails?.savingsAmount}N is withdrawn from your account for ${savingsDetails?.savingsTitle} Plan`;
+            // check and deduct based on frequency
+            if (savingsDetails.frequency === "MONTHLY") {
+                if (new Date(savingsDetails.deductionPeriod) === todaysDate) {
+                    const withdraw = await (0, User_1.userWithdraw)(record.user.toString(), savingsDetails.savingsAmount, remark);
+                    if (withdraw === "Insufficient Funds") {
+                        await (0, Savings_1.savingsDeductionSchedule)(record._id.toString(), savingsDetails.savingsAmount, false);
+                    }
+                    await (0, Savings_1.savingsDeductionSchedule)(record._id.toString(), savingsDetails.savingsAmount, true);
+                    return;
+                }
+            }
+            if (savingsDetails.frequency === "WEEKLY") {
+                if (savingsDetails.deductionPeriod === (0, tools_1.getDayName)(todaysDate)) {
+                    const withdraw = await (0, User_1.userWithdraw)(record.user.toString(), savingsDetails.savingsAmount, remark);
+                    if (withdraw === "Insufficient Funds") {
+                        await (0, Savings_1.savingsDeductionSchedule)(record._id.toString(), savingsDetails.savingsAmount, false);
+                    }
+                    await (0, Savings_1.savingsDeductionSchedule)(record._id.toString(), savingsDetails.savingsAmount, true);
+                }
+            }
+            if (savingsDetails.frequency === "DAILY") {
+                const withdraw = await (0, User_1.userWithdraw)(record.user.toString(), savingsDetails.savingsAmount, remark);
+                if (withdraw === "Insufficient Funds") {
+                    await (0, Savings_1.savingsDeductionSchedule)(record._id.toString(), savingsDetails.savingsAmount, false);
+                }
+                await (0, Savings_1.savingsDeductionSchedule)(record._id.toString(), savingsDetails.savingsAmount, true);
+            }
+        }
+        return "Done";
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.deductSavingsFromUser = deductSavingsFromUser;
+const savingsDisbursement = async () => {
+    try {
+        //get all acttive user savings record
+        const allActiveSavings = await (0, Savings_1.getAllUserActiveSavingsRecord)();
+        for (const record of allActiveSavings) {
+            // check if its past  endDate
+            let PastEndDate = (0, tools_1.isPastYesterday)(record.endDate);
+            if (PastEndDate) {
+                // check if the contribution is completed
+                const allStatus = await (0, Savings_1.getAllContributionStatus)(record.contributionId.toString());
+                const isCompleted = (0, tools_1.checkIfContributionIsCompleted)(allStatus);
+                if (isCompleted) {
+                }
+            }
+        }
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.savingsDisbursement = savingsDisbursement;

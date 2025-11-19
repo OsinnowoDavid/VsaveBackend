@@ -48,11 +48,53 @@ export const getUserSettledLoan = async (user: IUser) => {
 };
 export const getUserUnsettledLoan = async (user: IUser) => {
     try {
-        const allLoans = await Loan.findOne({
+        const loan = await Loan.findOne({
             user: user._id,
             isSettled: false,
         });
-        return allLoans;
+        return loan;
+    } catch (err: any) {
+        throw err;
+    }
+};
+
+export const payUnsettledLoan = async (user: IUser, amount: number) => {
+    try {
+        const foundLoanRecord = await getUserUnsettledLoan(user);
+        // check if its the exact amount to clear the dept
+        if (Number(foundLoanRecord.repaymentAmount) === amount) {
+            foundLoanRecord.status = "completed";
+            foundLoanRecord.isSettled = true;
+            foundLoanRecord.repaymentCompletedDate = new Date();
+            foundLoanRecord.remark = `Loan id Completed`;
+            foundLoanRecord.repayments.push({
+                amount,
+                date: new Date(),
+            });
+            foundLoanRecord.repaymentAmount = 0;
+            await foundLoanRecord.save();
+            return foundLoanRecord;
+        }
+        let newRepaymentAmount =
+            Number(foundLoanRecord.repaymentAmount) - amount;
+        foundLoanRecord.repaymentAmount = Number(newRepaymentAmount);
+        foundLoanRecord.repayments.push({
+            amount,
+            date: new Date(),
+        });
+        await foundLoanRecord.save();
+        return foundLoanRecord;
+    } catch (err: any) {
+        throw err;
+    }
+};
+
+export const allUnsettledRecord = async () => {
+    try {
+        const allUnsettledLoan = await Loan.find({
+            isSettled: false,
+        });
+        return allUnsettledLoan;
     } catch (err: any) {
         throw err;
     }

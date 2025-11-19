@@ -245,18 +245,17 @@ export interface ISavingsGroup extends Document {
 export interface IUserSavingsRecord extends Document {
     _id: Types.ObjectId;
     user: Types.ObjectId;
-    savingId: Types.ObjectId;
     savingsCircleId: Types.ObjectId;
-    currentAmountSaved: number;
-    records: {
-        period?: string;
-        periodIndex?: string;
-        amount?: number;
-        status?: "pending" | "paid";
-    }[];
-    status?: "ACTIVE" | "PAUSED" | "ENDED";
+    period?: number; // default 1 in schema
+    duration?: number;
+    startDate?: Date;
+    endDate?: Date;
+    contributionId?: Types.ObjectId | null;
+    payOutDate?: Date;
+    status?: "ACTIVE" | "PAUSED" | "ENDED" | "PENDING";
     maturityAmount?: number;
-    payOut?: number;
+    payOutStatus?: boolean;
+    autoRestartEnabled?: boolean;
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -272,6 +271,67 @@ export interface ISavingsPlan extends Document {
     autoRestartEnabled?: boolean;
     status?: "ACTIVE" | "PAUSED" | "ENDED";
     adminId?: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+export interface ILoanElegibility extends Document {
+    _id: Types.ObjectId;
+    user?: Types.ObjectId;
+    stage?: number;
+    payedLastLoan?: string;
+    elegibility?: boolean;
+    lastLoanId?: Types.ObjectId | null;
+    elegibilityAmount?: number;
+    interestRate?: string;
+    status?: "no rating" | "beginner" | "good" | "excellent";
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+export interface ISavingsContribution extends Document {
+    _id: Types.ObjectId;
+    user: Types.ObjectId;
+    savingsRecordId: Types.ObjectId;
+    record?: {
+        period?: string;
+        periodIndex?: string;
+        amount?: number;
+        status?: "pending" | "paid";
+    }[];
+    currentAmountSaved?: number;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+export interface IUserSavingsCircle extends Document {
+    _id: Types.ObjectId;
+    user: Types.ObjectId;
+    savingsTitle?: string;
+    frequency: "DAILY" | "WEEKLY" | "MONTHLY";
+    duration: number;
+    deductionPeriod?: string;
+    firstTimeAdminFee?: string;
+    savingsAmount: number;
+    circleId?: string;
+    status?: "ACTIVE" | "PAUSED" | "ENDED";
+    maturityAmount?: number;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+export interface IFixedSavings extends Document {
+    _id: Types.ObjectId;
+    user?: Types.ObjectId;
+    amount: number;
+    currency?: string;
+    interestRate?: string;
+    paymentAmount?: number;
+    duration?: string;
+    durationIndex?: number;
+    startDate?: Date;
+    endDate?: string;
+    status?: "pending" | "rejected" | "active" | "completed";
     createdAt?: Date;
     updatedAt?: Date;
 }

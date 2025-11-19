@@ -3,7 +3,12 @@ const jwt_secret: any = process.env.jwt_secret;
 import { NextFunction, Request, Response } from "express";
 import { getUserById } from "../services/User";
 import { getSuperAdminById } from "../services/Admin";
-import { ISuperAdmin, IRegionalAdmin, ISubRegionalAdmin } from "../../types";
+import {
+    ISuperAdmin,
+    IRegionalAdmin,
+    ISubRegionalAdmin,
+    IUser,
+} from "../../types";
 import {
     getRegionalAdminById,
     getSubRegionalAdminById,
@@ -11,7 +16,7 @@ import {
 
 export const signUserToken = (user: any) => {
     const payload = {
-        user: user.id,
+        user: user,
         email: user.email,
         exp: Math.floor(Date.now() / 1000) + 60 * 60 * 2, // 2 hours expiry
     };
@@ -35,7 +40,7 @@ export const verifyUserToken = async (
         }
         const decoded: any = jwt.verify(authorization, jwt_secret);
 
-        const foundId = decoded.user;
+        const foundId = decoded.user._id;
 
         // Find client by decoded user ID
         const currentClient = await getUserById(foundId);
@@ -74,7 +79,7 @@ export const verifySuperAdminToken = async (
             });
         }
         const decoded: any = jwt.verify(authorization, jwt_secret);
-        const foundId = decoded.user;
+        const foundId = decoded.user._id;
         // find superadmin by decoded user id
         const currentAdmin = await getSuperAdminById(foundId);
         if (!currentAdmin) {
@@ -109,7 +114,7 @@ export const verifyRegionalAdminToken = async (
             });
         }
         const decoded: any = jwt.verify(authorization, jwt_secret);
-        const foundId = decoded.user;
+        const foundId = decoded.user._id;
         const foundSuperAdmin = (await getSuperAdminById(
             foundId,
         )) as ISuperAdmin;
@@ -148,7 +153,7 @@ export const verifySubRegionalAdminToken = async (
             });
         }
         const decoded: any = jwt.verify(authorization, jwt_secret);
-        const foundId = decoded.user;
+        const foundId = decoded.user._id;
         const foundSuperAdmin = (await getSuperAdminById(
             foundId,
         )) as ISuperAdmin;

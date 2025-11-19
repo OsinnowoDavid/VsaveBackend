@@ -15,8 +15,7 @@ const Savings_1 = __importDefault(require("./routes/Savings"));
 const Webhook_1 = __importDefault(require("./routes/Webhook"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
-const node_cron_1 = __importDefault(require("node-cron"));
-const SavingsJobs_1 = require("./middleware/SavingsJobs");
+//import { deductSavingsFromUser, textNodeCron } from "./middleware/SavingsJobs";
 dotenv_1.default.config();
 const port = process.env.PORT || 5000;
 const app = (0, express_1.default)();
@@ -33,16 +32,16 @@ app.use(body_parser_1.default.urlencoded({ extended: true }));
 app.use((0, cookie_parser_1.default)());
 (0, mongodB_1.default)();
 // schedule node-cron job to deductSavings from users account
-node_cron_1.default.schedule("0 0 * * *", SavingsJobs_1.deductSavingsFromUser, {
-    timezone: "Africa/Lagos",
-});
-node_cron_1.default.schedule("15 19 * * *", SavingsJobs_1.textNodeCron, {
-    timezone: "Africa/Lagos",
-});
+// nodeCron.schedule("0 0 * * *", deductSavingsFromUser, {
+//     timezone: "Africa/Lagos",
+// });
+// nodeCron.schedule("15 19 * * *", textNodeCron, {
+//     timezone: "Africa/Lagos",
+// });
 app.get("/", (req, res) => {
     res.send("Welcome to Vsave Backend");
 });
-app.post("/deducte-savings", SavingsJobs_1.deductSavingsFromUser);
+//app.post("/deducte-savings", deductSavingsFromUser);
 //user route config
 app.use("/user", User_1.default);
 // superAdmin routes config

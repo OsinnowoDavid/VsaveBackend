@@ -33,17 +33,35 @@ import {
     getUserTransactionByStatus,
     getUserTransactionByType,
     userGetAllSubRegion,
-    joinSavings,
-    avaliableSavings,
-    userActiveSavingsRecord,
-    userSavingsRecords,
+    // userActiveSavingsRecord,
+    // userSavingsRecords,
     getCircleById,
+    createFixedSaving,
+    userWithdraw,
+    userDeposit,
+    getActiveFixedSavings,
+    getCompletedFixedSavings,
+    getAllFixedSavings,
 } from "../services/User";
 import { IUser, IVerificationToken, IKYC1 } from "../../types";
 import { signUserToken } from "../config/JWT";
 import SGMail from "@sendgrid/mail";
-import { createUserPersonalSavings } from "../services/Savings";
-import { calculateEndDate, calculateMaturityAmount } from "../config/tools";
+import {
+    createUserPersonalSavings,
+    joinSavings,
+    getAllActiveSavingsCircle,
+    checkForCircleById,
+    getUserActiveSavingsRecord,
+    userSavingsRecords,
+} from "../services/Savings";
+import {
+    calculateEndDate,
+    calculateMaturityAmount,
+    calculateProportionalInterest,
+    generateSavingsRefrenceCode,
+    getCurrentDateWithClosestHour,
+} from "../config/tools";
+import AdminSavingsConfig from "../model/Admin_config";
 const QOREID_API_KEY = process.env.QOREID_SECRET_KEY as string;
 const QOREID_BASE_URL = process.env.QOREID_BASE_URL as string;
 
@@ -819,12 +837,31 @@ export const userGetAllSubRegionController = async (
         });
     }
 };
-
+function getTomorrowDate(): Date {
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+    return tomorrow;
+}
 export const joinSavingsController = async (req: Request, res: Response) => {
     try {
         const user = req.user as IUser;
-        const { circleId } = req.body;
-        const jointSavings = await joinSavings(user, circleId);
+        const { circleId, autoRestartEnabled } = req.body;
+        const foundSavingsCircle = await getCircleById(circleId);
+        let startDate = getTomorrowDate();
+        let endDate = calculateEndDate(
+            foundSavingsCircle.frequency,
+            startDate,
+            foundSavingsCircle.duration,
+        );
+        const jointSavings = await joinSavings(
+            user,
+            circleId,
+            autoRestartEnabled,
+            startDate,
+            endDate,
+            "PAUSED",
+        );
         return res.json({
             status: "Success",
             message: "joined savings group successfuly",
@@ -859,13 +896,7 @@ export const createPersonalSavingsCircleController = async (
             savingsAmount,
             startDate,
         );
-        let status = "";
-        let currentDate = new Date().toLocaleDateString("en-US");
-        if (currentDate == startDate) {
-            status = "ACTIVE";
-        } else {
-            status = "PENDING";
-        }
+
         const newSavingsCircle = await createUserPersonalSavings(
             user,
             savingsTitle,
@@ -873,10 +904,9 @@ export const createPersonalSavingsCircleController = async (
             duration,
             deductionPeriod,
             savingsAmount,
+            maturityAmount,
             startDate,
             endDate,
-            status,
-            maturityAmount,
             autoRestartEnabled,
         );
         return res.json({
@@ -897,7 +927,9 @@ export const getAvaliableSavingsController = async (
 ) => {
     try {
         const user = req.user as IUser;
-        const allAvaliableSavings = await avaliableSavings(user);
+        const allAvaliableSavings = await getAllActiveSavingsCircle(
+            user.subRegion.toString(),
+        );
         return res.json({
             status: "Success",
             message: "found savings",
@@ -911,17 +943,28 @@ export const getAvaliableSavingsController = async (
     }
 };
 
-export const getUserActiveSavingsController = async (
+export const getUserActiveSavingsRecordController = async (
     req: Request,
     res: Response,
 ) => {
     try {
         const user = req.user as IUser;
-        const activeSavings = await userActiveSavingsRecord(user);
+        const record = await getUserActiveSavingsRecord(user);
+        let result = [] as any;
+        for (const rec of record) {
+            let savingsCircle = await checkForCircleById(
+                rec.savingsCircleId.toString(),
+            );
+            let miniResult = [] as any;
+            miniResult.push(savingsCircle);
+            miniResult.push(rec);
+            result.push(miniResult);
+        }
+
         return res.json({
             status: "Success",
-            message: "found savings",
-            data: activeSavings,
+            message: "found savings plan",
+            data: result,
         });
     } catch (err: any) {
         return res.json({
@@ -930,18 +973,28 @@ export const getUserActiveSavingsController = async (
         });
     }
 };
-
-export const getUserSavingsRecordsController = async (
+export const getAllUserSavingsRecordController = async (
     req: Request,
     res: Response,
 ) => {
     try {
         const user = req.user as IUser;
-        const foundRecords = await userSavingsRecords(user);
+        const record = await userSavingsRecords(user);
+        let result = [] as any;
+        for (const rec of record) {
+            let savingsCircle = await checkForCircleById(
+                rec.savingsCircleId.toString(),
+            );
+            let miniResult = [] as any;
+            miniResult.push(savingsCircle);
+            miniResult.push(rec);
+            result.push(miniResult);
+        }
+
         return res.json({
             status: "Success",
-            message: "found savings",
-            data: foundRecords,
+            message: "found savings plan",
+            data: result,
         });
     } catch (err: any) {
         return res.json({
@@ -950,14 +1003,13 @@ export const getUserSavingsRecordsController = async (
         });
     }
 };
-
 export const getSavingsCircleByIdController = async (
     req: Request,
     res: Response,
 ) => {
     try {
         const { id } = req.params;
-        const foundCircle = await getCircleById(id);
+        const foundCircle = await checkForCircleById(id.toString());
         if (!foundCircle) {
             return res.json({
                 status: "Failed",
@@ -968,6 +1020,158 @@ export const getSavingsCircleByIdController = async (
             status: "Success",
             message: "found savings ",
             data: foundCircle,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+function getFixedEndDate(startDate: Date, durationInDays: number): Date {
+    const year = startDate.getFullYear();
+    const month = startDate.getMonth();
+    const day = startDate.getDate() + durationInDays;
+    const hour = startDate.getHours();
+    return new Date(year, month, day, hour, 0, 0, 0);
+}
+export const createFixedSavingController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const user = req.user as IUser;
+        const { amount, interestPayoutType, duration } = req.body;
+        const { fixedSavingsAnualInterest } =
+            await AdminSavingsConfig.getSettings();
+
+        // withdaw money from user account
+        let remark = `deposit of ${amount} to your fixed savings account`;
+        const withdrawal = await userWithdraw(
+            user._id.toString(),
+            amount,
+            remark,
+        );
+        if (withdrawal === "Insufficient Funds") {
+            return res.json({
+                status: "Failed",
+                message: "Insufficient funds to initiate fixed savings",
+            });
+        }
+        const { interestAmount, interestPercentage } =
+            calculateProportionalInterest(
+                amount,
+                Number(fixedSavingsAnualInterest),
+                duration,
+            );
+        let sender = `${user.firstName} ${user.lastName}`;
+        let depositRemark = `interest deposit on fixed savings`;
+        let startDate = getCurrentDateWithClosestHour();
+        let endDate = getFixedEndDate(startDate, Number(duration));
+
+        if (interestPayoutType === "UPFRONT") {
+            const deposit = await userDeposit(
+                user._id.toString(),
+                interestAmount,
+                generateSavingsRefrenceCode(),
+                new Date(),
+                sender,
+                depositRemark,
+            );
+            const newSavingsRecord = await createFixedSaving(
+                user._id.toString(),
+                amount,
+                interestPercentage.toString(),
+                amount,
+                Number(duration),
+                startDate,
+                endDate,
+                "active",
+                "UPFRONT",
+                interestAmount,
+            );
+            return res.json({
+                status: "Success",
+                message: "fixed savings created successfully",
+                data: newSavingsRecord,
+            });
+        }
+        let payout = amount + interestAmount;
+        const newSavingsRecord = await createFixedSaving(
+            user._id.toString(),
+            amount,
+            interestPercentage.toString(),
+            payout,
+            Number(duration),
+            startDate,
+            endDate,
+            "active",
+            "MATURITY",
+            interestAmount,
+        );
+        return res.json({
+            status: "Success",
+            message: "fixed savings created successfully",
+            data: newSavingsRecord,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+export const getActiveFixedSavingsController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const user = req.user as IUser;
+        const allRecord = await getActiveFixedSavings(user);
+        return res.json({
+            status: "Success",
+            message: "all record found",
+            data: allRecord,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+
+export const getCompletedFixedSavingsController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const user = req.user as IUser;
+        const allRecord = await getCompletedFixedSavings(user);
+        return res.json({
+            status: "Success",
+            message: "all record found",
+            data: allRecord,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+
+export const getAllFixedSavingsController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const user = req.user as IUser;
+        const allRecord = await getAllFixedSavings(user);
+        return res.json({
+            status: "Success",
+            message: "all record found",
+            data: allRecord,
         });
     } catch (err: any) {
         return res.json({
