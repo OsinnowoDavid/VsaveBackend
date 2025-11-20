@@ -68,6 +68,9 @@ const userSchema = new Schema({
         type: String,
         unique: true,
     },
+    pin: {
+        type: Number,
+    },
 }, { timestamps: true });
 const User = mongoose_1.default.model("User", userSchema);
 exports.default = User;

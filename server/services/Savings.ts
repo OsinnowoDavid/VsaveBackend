@@ -3,6 +3,7 @@ import SavingsCircle from "../model/Savings_circle";
 import UserSavingsRecord from "../model/User_savings_record";
 import UserPersonalSavings from "../model/User_savings_circle";
 import SavingsContribution from "../model/SavingsContribution";
+import FixedSavings from "../model/FixedSavings";
 import {
     ISavingsPlan,
     ISavingsGroup,
@@ -10,7 +11,8 @@ import {
     IUserSavingsRecord,
     IUser,
 } from "../../types";
-import { calculateEndDate } from "../config/tools";
+import { calculateEndDate, generateSavingsRefrenceCode } from "../config/tools";
+import { userDeposit } from "./User";
 const generateCircleId = () => {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     let code = "";
@@ -402,6 +404,18 @@ export const userSavingsRecords = async (user: IUser) => {
         throw err;
     }
 };
+export const getAllContributionStatus = async (contributionId: string) => {
+    try {
+        const foundRecord = await SavingsContribution.findById(contributionId);
+        let result = [] as any;
+        for (const record of foundRecord.record) {
+            result.push(record.status);
+        }
+        return result;
+    } catch (err: any) {
+        throw err;
+    }
+};
 
 export const latePaymentDeduction = async (user: IUser) => {
     try {
@@ -419,14 +433,75 @@ export const latePaymentDeduction = async (user: IUser) => {
     }
 };
 
-export const getAllContributionStatus = async (contributionId: string) => {
+export const disburseSavings = async (savingsRecordId: string) => {
     try {
-        const foundRecord = await SavingsContribution.findById(contributionId);
-        let result = [] as any;
-        for (const record of foundRecord.record) {
-            result.push(record.status);
-        }
-        return result;
+        const foundRecord = await UserSavingsRecord.findById(savingsRecordId);
+        const foundContribution = await SavingsContribution.findById(
+            foundRecord.contributionId,
+        );
+        let ref = generateSavingsRefrenceCode();
+        let remark = `savings disbursement , savings circle is completed, and ${foundRecord.maturityAmount} is been deposited`;
+        const deposit = await userDeposit(
+            foundRecord.user.toString(),
+            foundRecord.maturityAmount,
+            ref,
+            new Date(),
+            "Vsave savings",
+            remark,
+        );
+        // update savings record and contribution
+        foundRecord.payOutDate = new Date();
+        foundRecord.payOutStatus = true;
+        foundRecord.status = "ENDED";
+        await foundRecord.save();
+        return {
+            userRecord: foundRecord,
+            userContribution: foundContribution,
+        };
+    } catch (err: any) {
+        throw err;
+    }
+};
+
+export const getUserActiveFixedSavings = async (user: IUser) => {
+    try {
+        const activeRecord = await FixedSavings.find({
+            user: user._id,
+            status: "active",
+        });
+        return activeRecord;
+    } catch (err: any) {
+        throw err;
+    }
+};
+export const getUserCompletedFixedSavings = async (user: IUser) => {
+    try {
+        const completedRecord = await FixedSavings.find({
+            user: user._id,
+            status: "completed",
+        });
+        return completedRecord;
+    } catch (err: any) {
+        throw err;
+    }
+};
+
+export const getUserFixedSavings = async (user: IUser) => {
+    try {
+        const allRecord = await FixedSavings.find({
+            user: user._id,
+        });
+        return allRecord;
+    } catch (err: any) {
+        throw err;
+    }
+};
+export const getAllActiveFixedSavings = async () => {
+    try {
+        const foundRecord = await FixedSavings.find({
+            status: "active",
+        });
+        return foundRecord;
     } catch (err: any) {
         throw err;
     }

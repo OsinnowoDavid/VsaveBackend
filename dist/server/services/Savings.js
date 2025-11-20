@@ -3,13 +3,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllContributionStatus = exports.latePaymentDeduction = exports.userSavingsRecords = exports.getSavingsContributionById = exports.allUserActiveSavingsRecord = exports.savingsDeductionSchedule = exports.checkForCircleById = exports.updateSavingsAutoRenewStatus = exports.restartSavingsCircle = exports.getAllUserActiveSavingsRecord = exports.getAllUserPausedSavingsRecord = exports.getUserPausedSavingsRecord = exports.getUserActiveSavingsRecord = exports.getAllUserSavingsCircle = exports.joinSavings = exports.getUserSavingsCircleById = exports.createUserPersonalSavings = exports.getAllSavingsCircle = exports.getAllActiveSavingsCircle = exports.getCircleById = exports.initSavingsPlan = void 0;
+exports.getAllActiveFixedSavings = exports.getUserFixedSavings = exports.getUserCompletedFixedSavings = exports.getUserActiveFixedSavings = exports.disburseSavings = exports.latePaymentDeduction = exports.getAllContributionStatus = exports.userSavingsRecords = exports.getSavingsContributionById = exports.allUserActiveSavingsRecord = exports.savingsDeductionSchedule = exports.checkForCircleById = exports.updateSavingsAutoRenewStatus = exports.restartSavingsCircle = exports.getAllUserActiveSavingsRecord = exports.getAllUserPausedSavingsRecord = exports.getUserPausedSavingsRecord = exports.getUserActiveSavingsRecord = exports.getAllUserSavingsCircle = exports.joinSavings = exports.getUserSavingsCircleById = exports.createUserPersonalSavings = exports.getAllSavingsCircle = exports.getAllActiveSavingsCircle = exports.getCircleById = exports.initSavingsPlan = void 0;
 const Admin_config_1 = __importDefault(require("../model/Admin_config"));
 const Savings_circle_1 = __importDefault(require("../model/Savings_circle"));
 const User_savings_record_1 = __importDefault(require("../model/User_savings_record"));
 const User_savings_circle_1 = __importDefault(require("../model/User_savings_circle"));
 const SavingsContribution_1 = __importDefault(require("../model/SavingsContribution"));
+const FixedSavings_1 = __importDefault(require("../model/FixedSavings"));
 const tools_1 = require("../config/tools");
+const User_1 = require("./User");
 const generateCircleId = () => {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     let code = "";
@@ -375,6 +377,20 @@ const userSavingsRecords = async (user) => {
     }
 };
 exports.userSavingsRecords = userSavingsRecords;
+const getAllContributionStatus = async (contributionId) => {
+    try {
+        const foundRecord = await SavingsContribution_1.default.findById(contributionId);
+        let result = [];
+        for (const record of foundRecord.record) {
+            result.push(record.status);
+        }
+        return result;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.getAllContributionStatus = getAllContributionStatus;
 const latePaymentDeduction = async (user) => {
     try {
         const { defaultPenaltyFee } = await Admin_config_1.default.getSettings();
@@ -392,17 +408,75 @@ const latePaymentDeduction = async (user) => {
     }
 };
 exports.latePaymentDeduction = latePaymentDeduction;
-const getAllContributionStatus = async (contributionId) => {
+const disburseSavings = async (savingsRecordId) => {
     try {
-        const foundRecord = await SavingsContribution_1.default.findById(contributionId);
-        let result = [];
-        for (const record of foundRecord.record) {
-            result.push(record.status);
-        }
-        return result;
+        const foundRecord = await User_savings_record_1.default.findById(savingsRecordId);
+        const foundContribution = await SavingsContribution_1.default.findById(foundRecord.contributionId);
+        let ref = (0, tools_1.generateSavingsRefrenceCode)();
+        let remark = `savings disbursement , savings circle is completed, and ${foundRecord.maturityAmount} is been deposited`;
+        const deposit = await (0, User_1.userDeposit)(foundRecord.user.toString(), foundRecord.maturityAmount, ref, new Date(), "Vsave savings", remark);
+        // update savings record and contribution
+        foundRecord.payOutDate = new Date();
+        foundRecord.payOutStatus = true;
+        foundRecord.status = "ENDED";
+        await foundRecord.save();
+        return {
+            userRecord: foundRecord,
+            userContribution: foundContribution,
+        };
     }
     catch (err) {
         throw err;
     }
 };
-exports.getAllContributionStatus = getAllContributionStatus;
+exports.disburseSavings = disburseSavings;
+const getUserActiveFixedSavings = async (user) => {
+    try {
+        const activeRecord = await FixedSavings_1.default.find({
+            user: user._id,
+            status: "active",
+        });
+        return activeRecord;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.getUserActiveFixedSavings = getUserActiveFixedSavings;
+const getUserCompletedFixedSavings = async (user) => {
+    try {
+        const completedRecord = await FixedSavings_1.default.find({
+            user: user._id,
+            status: "completed",
+        });
+        return completedRecord;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.getUserCompletedFixedSavings = getUserCompletedFixedSavings;
+const getUserFixedSavings = async (user) => {
+    try {
+        const allRecord = await FixedSavings_1.default.find({
+            user: user._id,
+        });
+        return allRecord;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.getUserFixedSavings = getUserFixedSavings;
+const getAllActiveFixedSavings = async () => {
+    try {
+        const foundRecord = await FixedSavings_1.default.find({
+            status: "active",
+        });
+        return foundRecord;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.getAllActiveFixedSavings = getAllActiveFixedSavings;

@@ -39,11 +39,13 @@ import {
     createFixedSaving,
     userWithdraw,
     userDeposit,
-    getActiveFixedSavings,
-    getCompletedFixedSavings,
-    getAllFixedSavings,
 } from "../services/User";
 import { IUser, IVerificationToken, IKYC1 } from "../../types";
+import {
+    getUserActiveFixedSavings,
+    getUserCompletedFixedSavings,
+    getUserFixedSavings,
+} from "../services/Savings";
 import { signUserToken } from "../config/JWT";
 import SGMail from "@sendgrid/mail";
 import {
@@ -1127,7 +1129,7 @@ export const getActiveFixedSavingsController = async (
 ) => {
     try {
         const user = req.user as IUser;
-        const allRecord = await getActiveFixedSavings(user);
+        const allRecord = await getUserActiveFixedSavings(user);
         return res.json({
             status: "Success",
             message: "all record found",
@@ -1147,7 +1149,7 @@ export const getCompletedFixedSavingsController = async (
 ) => {
     try {
         const user = req.user as IUser;
-        const allRecord = await getCompletedFixedSavings(user);
+        const allRecord = await getUserCompletedFixedSavings(user);
         return res.json({
             status: "Success",
             message: "all record found",
@@ -1167,7 +1169,7 @@ export const getAllFixedSavingsController = async (
 ) => {
     try {
         const user = req.user as IUser;
-        const allRecord = await getAllFixedSavings(user);
+        const allRecord = await getUserFixedSavings(user);
         return res.json({
             status: "Success",
             message: "all record found",

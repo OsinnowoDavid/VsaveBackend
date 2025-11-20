@@ -5,6 +5,7 @@ import {
     checkForCircleById,
     savingsDeductionSchedule,
     getAllContributionStatus,
+    disburseSavings,
 } from "../services/Savings";
 import { userWithdraw } from "../services/User";
 import {
@@ -36,11 +37,8 @@ export const endExpiredSavings = async () => {
     try {
         // check for expired record that needs to end
         const allActiveSavings = await getAllUserActiveSavingsRecord();
-        let todaysDate = new Date();
-
         for (const record of allActiveSavings) {
-            let endDate = new Date(record.endDate);
-            let pastTomorrow = isPastTomorrow(endDate);
+            let pastTomorrow = isPastTomorrow(record.endDate);
             if (pastTomorrow) {
                 // check if the contribution is completed
                 const allStatus = await getAllContributionStatus(
@@ -162,10 +160,20 @@ export const savingsDisbursement = async () => {
                 );
                 const isCompleted = checkIfContributionIsCompleted(allStatus);
                 if (isCompleted) {
+                    await disburseSavings(record._id.toString());
                 }
             }
+            return "done";
         }
     } catch (err: any) {
         throw err;
     }
 };
+
+export const fixedSavingsDisbursement = async () =>{
+    try{
+        
+    }catch(err:any){
+        throw err
+    }
+}

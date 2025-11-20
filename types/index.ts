@@ -6,18 +6,15 @@ export interface IUser extends Document {
     lastName: string;
     email: string;
     password: string;
-
     phoneNumber?: string | null;
     profilePicture?: string | null;
     vsavePoint: number;
-
     subRegion?: Types.ObjectId | string | null;
     KYC?: Types.ObjectId | null;
-
     availableBalance: number;
     pendingBalance: number;
-
     isEmailVerified: boolean;
+    pin?: number;
     status?: string | null;
     gender?: "Male" | "Female" | string | null | undefined;
     dateOfBirth?: Date | string | null | undefined;

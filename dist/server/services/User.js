@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllFixedSavings = exports.getCompletedFixedSavings = exports.getActiveFixedSavings = exports.getCircleById = exports.userDeposit = exports.userWithdraw = exports.createFixedSaving = exports.userGetAllSubRegion = exports.getUserTransactionByType = exports.getUserTransactionByStatus = exports.getUserSingleTransaction = exports.getUserTransactions = exports.payOut = exports.accountLookUp = exports.getBankCode = exports.createUserAirtimeTransaction = exports.createUserDataTransaction = exports.checkTransferByRefrence = exports.createUserTransaction = exports.deposit = exports.withdraw = exports.buyData = exports.getUserKyc1Record = exports.getDataPlan = exports.buyAirtime = exports.createVirtualAccountIndex = exports.createVirtualAccountForPayment = exports.verifyBankaccount = exports.getAllBanksAndCode = exports.updateKYC1Record = exports.createKYC1Record = exports.kycStatusChange = exports.createKYCRecord = exports.changePassword = exports.updateProfile = exports.getUserVerificationToken = exports.assignUserEmailVerificationToken = exports.getUserByEmail = exports.getUserById = exports.createNewUser = void 0;
+exports.validateTransactionPin = exports.createTransactionPin = exports.getCircleById = exports.userDeposit = exports.userWithdraw = exports.createFixedSaving = exports.userGetAllSubRegion = exports.getUserTransactionByType = exports.getUserTransactionByStatus = exports.getUserSingleTransaction = exports.getUserTransactions = exports.payOut = exports.accountLookUp = exports.getBankCode = exports.createUserAirtimeTransaction = exports.createUserDataTransaction = exports.checkTransferByRefrence = exports.createUserTransaction = exports.deposit = exports.withdraw = exports.buyData = exports.getUserKyc1Record = exports.getDataPlan = exports.buyAirtime = exports.createVirtualAccountIndex = exports.createVirtualAccountForPayment = exports.verifyBankaccount = exports.getAllBanksAndCode = exports.updateKYC1Record = exports.createKYC1Record = exports.kycStatusChange = exports.createKYCRecord = exports.changePassword = exports.updateProfile = exports.getUserVerificationToken = exports.assignUserEmailVerificationToken = exports.getUserByEmail = exports.getUserById = exports.createNewUser = void 0;
 const User_1 = __importDefault(require("../model/User"));
 const VerificationToken_1 = __importDefault(require("../model/VerificationToken"));
 const KYC1_1 = __importDefault(require("../model/KYC1"));
@@ -746,41 +746,27 @@ const getCircleById = async (circleId) => {
     }
 };
 exports.getCircleById = getCircleById;
-const getActiveFixedSavings = async (user) => {
+const createTransactionPin = async (user, pin) => {
     try {
-        const activeRecord = await FixedSavings_1.default.find({
-            user: user._id,
-            status: "active",
-        });
-        return activeRecord;
+        const foundUser = await User_1.default.findByIdAndUpdate(user, { pin });
+        return foundUser;
     }
     catch (err) {
         throw err;
     }
 };
-exports.getActiveFixedSavings = getActiveFixedSavings;
-const getCompletedFixedSavings = async (user) => {
+exports.createTransactionPin = createTransactionPin;
+const validateTransactionPin = async (user, enteredPin) => {
     try {
-        const completedRecord = await FixedSavings_1.default.find({
-            user: user._id,
-            status: "completed",
-        });
-        return completedRecord;
+        const foundUser = await User_1.default.findById(user);
+        let result = false;
+        if (foundUser.pin === enteredPin) {
+            result = true;
+        }
+        return result;
     }
     catch (err) {
         throw err;
     }
 };
-exports.getCompletedFixedSavings = getCompletedFixedSavings;
-const getAllFixedSavings = async (user) => {
-    try {
-        const allRecord = await FixedSavings_1.default.find({
-            user: user._id,
-        });
-        return allRecord;
-    }
-    catch (err) {
-        throw err;
-    }
-};
-exports.getAllFixedSavings = getAllFixedSavings;
+exports.validateTransactionPin = validateTransactionPin;

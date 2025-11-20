@@ -861,35 +861,26 @@ export const getCircleById = async (circleId: string) => {
     }
 };
 
-export const getActiveFixedSavings = async (user: IUser) => {
+export const createTransactionPin = async (user: string, pin: number) => {
     try {
-        const activeRecord = await FixedSavings.find({
-            user: user._id,
-            status: "active",
-        });
-        return activeRecord;
-    } catch (err: any) {
-        throw err;
-    }
-};
-export const getCompletedFixedSavings = async (user: IUser) => {
-    try {
-        const completedRecord = await FixedSavings.find({
-            user: user._id,
-            status: "completed",
-        });
-        return completedRecord;
+        const foundUser = await User.findByIdAndUpdate(user, { pin });
+        return foundUser;
     } catch (err: any) {
         throw err;
     }
 };
 
-export const getAllFixedSavings = async (user: IUser) => {
+export const validateTransactionPin = async (
+    user: string,
+    enteredPin: number,
+) => {
     try {
-        const allRecord = await FixedSavings.find({
-            user: user._id,
-        });
-        return allRecord;
+        const foundUser = await User.findById(user);
+        let result = false;
+        if (foundUser.pin === enteredPin) {
+            result = true;
+        }
+        return result;
     } catch (err: any) {
         throw err;
     }

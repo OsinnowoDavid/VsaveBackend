@@ -7,9 +7,10 @@ exports.getAllFixedSavingsController = exports.getCompletedFixedSavingsControlle
 const argon2_1 = __importDefault(require("argon2"));
 const Agent_1 = require("../services/Agent");
 const User_1 = require("../services/User");
+const Savings_1 = require("../services/Savings");
 const JWT_1 = require("../config/JWT");
 const mail_1 = __importDefault(require("@sendgrid/mail"));
-const Savings_1 = require("../services/Savings");
+const Savings_2 = require("../services/Savings");
 const tools_1 = require("../config/tools");
 const Admin_config_1 = __importDefault(require("../model/Admin_config"));
 const QOREID_API_KEY = process.env.QOREID_SECRET_KEY;
@@ -667,7 +668,7 @@ const joinSavingsController = async (req, res) => {
         const foundSavingsCircle = await (0, User_1.getCircleById)(circleId);
         let startDate = getTomorrowDate();
         let endDate = (0, tools_1.calculateEndDate)(foundSavingsCircle.frequency, startDate, foundSavingsCircle.duration);
-        const jointSavings = await (0, Savings_1.joinSavings)(user, circleId, autoRestartEnabled, startDate, endDate, "PAUSED");
+        const jointSavings = await (0, Savings_2.joinSavings)(user, circleId, autoRestartEnabled, startDate, endDate, "PAUSED");
         return res.json({
             status: "Success",
             message: "joined savings group successfuly",
@@ -688,7 +689,7 @@ const createPersonalSavingsCircleController = async (req, res) => {
         let user = req.user;
         let endDate = (0, tools_1.calculateEndDate)(frequency, startDate, duration);
         let maturityAmount = (0, tools_1.calculateMaturityAmount)(frequency, duration, savingsAmount, startDate);
-        const newSavingsCircle = await (0, Savings_1.createUserPersonalSavings)(user, savingsTitle, frequency, duration, deductionPeriod, savingsAmount, maturityAmount, startDate, endDate, autoRestartEnabled);
+        const newSavingsCircle = await (0, Savings_2.createUserPersonalSavings)(user, savingsTitle, frequency, duration, deductionPeriod, savingsAmount, maturityAmount, startDate, endDate, autoRestartEnabled);
         return res.json({
             status: "Success",
             message: "savings created successfuly",
@@ -706,7 +707,7 @@ exports.createPersonalSavingsCircleController = createPersonalSavingsCircleContr
 const getAvaliableSavingsController = async (req, res) => {
     try {
         const user = req.user;
-        const allAvaliableSavings = await (0, Savings_1.getAllActiveSavingsCircle)(user.subRegion.toString());
+        const allAvaliableSavings = await (0, Savings_2.getAllActiveSavingsCircle)(user.subRegion.toString());
         return res.json({
             status: "Success",
             message: "found savings",
@@ -724,10 +725,10 @@ exports.getAvaliableSavingsController = getAvaliableSavingsController;
 const getUserActiveSavingsRecordController = async (req, res) => {
     try {
         const user = req.user;
-        const record = await (0, Savings_1.getUserActiveSavingsRecord)(user);
+        const record = await (0, Savings_2.getUserActiveSavingsRecord)(user);
         let result = [];
         for (const rec of record) {
-            let savingsCircle = await (0, Savings_1.checkForCircleById)(rec.savingsCircleId.toString());
+            let savingsCircle = await (0, Savings_2.checkForCircleById)(rec.savingsCircleId.toString());
             let miniResult = [];
             miniResult.push(savingsCircle);
             miniResult.push(rec);
@@ -750,10 +751,10 @@ exports.getUserActiveSavingsRecordController = getUserActiveSavingsRecordControl
 const getAllUserSavingsRecordController = async (req, res) => {
     try {
         const user = req.user;
-        const record = await (0, Savings_1.userSavingsRecords)(user);
+        const record = await (0, Savings_2.userSavingsRecords)(user);
         let result = [];
         for (const rec of record) {
-            let savingsCircle = await (0, Savings_1.checkForCircleById)(rec.savingsCircleId.toString());
+            let savingsCircle = await (0, Savings_2.checkForCircleById)(rec.savingsCircleId.toString());
             let miniResult = [];
             miniResult.push(savingsCircle);
             miniResult.push(rec);
@@ -776,7 +777,7 @@ exports.getAllUserSavingsRecordController = getAllUserSavingsRecordController;
 const getSavingsCircleByIdController = async (req, res) => {
     try {
         const { id } = req.params;
-        const foundCircle = await (0, Savings_1.checkForCircleById)(id.toString());
+        const foundCircle = await (0, Savings_2.checkForCircleById)(id.toString());
         if (!foundCircle) {
             return res.json({
                 status: "Failed",
@@ -851,7 +852,7 @@ exports.createFixedSavingController = createFixedSavingController;
 const getActiveFixedSavingsController = async (req, res) => {
     try {
         const user = req.user;
-        const allRecord = await (0, User_1.getActiveFixedSavings)(user);
+        const allRecord = await (0, Savings_1.getUserActiveFixedSavings)(user);
         return res.json({
             status: "Success",
             message: "all record found",
@@ -869,7 +870,7 @@ exports.getActiveFixedSavingsController = getActiveFixedSavingsController;
 const getCompletedFixedSavingsController = async (req, res) => {
     try {
         const user = req.user;
-        const allRecord = await (0, User_1.getCompletedFixedSavings)(user);
+        const allRecord = await (0, Savings_1.getUserCompletedFixedSavings)(user);
         return res.json({
             status: "Success",
             message: "all record found",
@@ -887,7 +888,7 @@ exports.getCompletedFixedSavingsController = getCompletedFixedSavingsController;
 const getAllFixedSavingsController = async (req, res) => {
     try {
         const user = req.user;
-        const allRecord = await (0, User_1.getAllFixedSavings)(user);
+        const allRecord = await (0, Savings_1.getUserFixedSavings)(user);
         return res.json({
             status: "Success",
             message: "all record found",

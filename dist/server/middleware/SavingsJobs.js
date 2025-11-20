@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.savingsDisbursement = exports.deductSavingsFromUser = exports.endExpiredSavings = exports.startPauseSavings = void 0;
+exports.fixedSavingsDisbursement = exports.savingsDisbursement = exports.deductSavingsFromUser = exports.endExpiredSavings = exports.startPauseSavings = void 0;
 const Savings_1 = require("../services/Savings");
 const User_1 = require("../services/User");
 const tools_1 = require("../config/tools");
@@ -27,10 +27,8 @@ const endExpiredSavings = async () => {
     try {
         // check for expired record that needs to end
         const allActiveSavings = await (0, Savings_1.getAllUserActiveSavingsRecord)();
-        let todaysDate = new Date();
         for (const record of allActiveSavings) {
-            let endDate = new Date(record.endDate);
-            let pastTomorrow = (0, tools_1.isPastTomorrow)(endDate);
+            let pastTomorrow = (0, tools_1.isPastTomorrow)(record.endDate);
             if (pastTomorrow) {
                 // check if the contribution is completed
                 const allStatus = await (0, Savings_1.getAllContributionStatus)(record.contributionId.toString());
@@ -108,8 +106,10 @@ const savingsDisbursement = async () => {
                 const allStatus = await (0, Savings_1.getAllContributionStatus)(record.contributionId.toString());
                 const isCompleted = (0, tools_1.checkIfContributionIsCompleted)(allStatus);
                 if (isCompleted) {
+                    await (0, Savings_1.disburseSavings)(record._id.toString());
                 }
             }
+            return "done";
         }
     }
     catch (err) {
@@ -117,3 +117,11 @@ const savingsDisbursement = async () => {
     }
 };
 exports.savingsDisbursement = savingsDisbursement;
+const fixedSavingsDisbursement = async () => {
+    try {
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.fixedSavingsDisbursement = fixedSavingsDisbursement;
