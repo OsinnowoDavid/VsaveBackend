@@ -20,7 +20,7 @@ router.post("/change-password", JWT_1.verifyUserToken, User_1.changePasswordCont
 //   verifyUserToken,
 //   verifyBankAccountController
 // );
-router.get("/register-kyc1", JWT_1.verifyUserToken, User_1.registerKYC1);
+router.post("/register-kyc1", JWT_1.verifyUserToken, User_1.registerKYC1);
 router.post("/update-kyc1", JWT_1.verifyUserToken, User_1.updateKYC1RecordController);
 router.get("/kyc1", JWT_1.verifyUserToken, User_1.getUserKyc1RecordController);
 router.get("/get-data-plan/:network", JWT_1.verifyUserToken, User_1.getDataPlanController);
