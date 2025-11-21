@@ -53,7 +53,7 @@ router.post("/change-password", verifyUserToken, changePasswordController);
 //   verifyUserToken,
 //   verifyBankAccountController
 // );
-router.get("/register-kyc1", verifyUserToken, registerKYC1);
+router.post("/register-kyc1", verifyUserToken, registerKYC1);
 
 router.post("/update-kyc1", verifyUserToken, updateKYC1RecordController);
 
