@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllFixedSavingsController = exports.getCompletedFixedSavingsController = exports.getActiveFixedSavingsController = exports.createFixedSavingController = exports.getSavingsCircleByIdController = exports.getAllUserSavingsRecordController = exports.getUserActiveSavingsRecordController = exports.getAvaliableSavingsController = exports.createPersonalSavingsCircleController = exports.joinSavingsController = exports.userGetAllSubRegionController = exports.getUserTransactionByTypeController = exports.getUserTransactionByStatusController = exports.getUserSingleTransactionController = exports.getUserTransactionsController = exports.payOutController = exports.accountLookUpController = exports.getBankCodeController = exports.buyDataController = exports.buyAirtimeController = exports.getDataPlanController = exports.getUserKyc1RecordController = exports.updateKYC1RecordController = exports.registerKYC1 = exports.changePasswordController = exports.updateProfileController = exports.userProfile = exports.loginUser = exports.resendUserVerificationEmail = exports.verifyEmail = exports.registerUser = void 0;
+exports.getAllFixedSavingsController = exports.getCompletedFixedSavingsController = exports.getActiveFixedSavingsController = exports.createFixedSavingController = exports.getSavingsCircleByIdController = exports.getAllUserSavingsRecordController = exports.getUserActiveSavingsRecordController = exports.getAvaliableSavingsController = exports.createPersonalSavingsCircleController = exports.joinSavingsController = exports.userGetAllSubRegionController = exports.getUserTransactionByTypeController = exports.getUserTransactionByStatusController = exports.getUserSingleTransactionController = exports.getUserTransactionsController = exports.payOutController = exports.accountLookUpController = exports.getBankCodeController = exports.buyDataController = exports.buyAirtimeController = exports.getDataPlanController = exports.validateTransactionPinController = exports.updateTransactionPinController = exports.createTransactionPinController = exports.getUserKyc1RecordController = exports.updateKYC1RecordController = exports.registerKYC1 = exports.changePasswordController = exports.updateProfileController = exports.userProfile = exports.loginUser = exports.resendUserVerificationEmail = exports.verifyEmail = exports.registerUser = void 0;
 const argon2_1 = __importDefault(require("argon2"));
 const Agent_1 = require("../services/Agent");
 const User_1 = require("../services/User");
@@ -391,6 +391,75 @@ const getUserKyc1RecordController = async (req, res) => {
     }
 };
 exports.getUserKyc1RecordController = getUserKyc1RecordController;
+const createTransactionPinController = async (req, res) => {
+    try {
+        const user = req.user;
+        const { pin } = req.body;
+        const newRecord = await (0, User_1.createTransactionPin)(user._id.toString(), pin);
+        return res.json({
+            status: "Success",
+            message: "transaction pin updated successfuly",
+            data: newRecord,
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.createTransactionPinController = createTransactionPinController;
+const updateTransactionPinController = async (req, res) => {
+    try {
+        const user = req.user;
+        const { oldPin, newPin } = req.body;
+        if (oldPin !== user.pin) {
+            return res.json({
+                status: "Failed",
+                message: "Incorrect old pin",
+            });
+        }
+        const updateRecord = await (0, User_1.createTransactionPin)(user._id.toString(), newPin);
+        return res.json({
+            status: "Success",
+            message: "Pin updated successfuly",
+            data: updateRecord,
+        });
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.updateTransactionPinController = updateTransactionPinController;
+const validateTransactionPinController = async (req, res) => {
+    try {
+        const { pin } = req.body;
+        const user = req.user;
+        const isValid = await (0, User_1.validateTransactionPin)(user._id.toString(), pin);
+        if (isValid) {
+            req.validateTransactionPin.pin = pin;
+            req.validateTransactionPin.status = true;
+            return res.json({
+                status: "Success",
+                message: "Transaction pin Validation successful",
+            });
+        }
+        req.validateTransactionPin.pin = 0;
+        req.validateTransactionPin.status = false;
+        return res.json({
+            status: "Failed",
+            message: "Incorrect pin",
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.validateTransactionPinController = validateTransactionPinController;
 const getDataPlanController = async (req, res) => {
     try {
         const { network } = req.params;
@@ -418,6 +487,13 @@ exports.getDataPlanController = getDataPlanController;
 const buyAirtimeController = async (req, res) => {
     try {
         const { phoneNumber, amount } = req.body;
+        // check if user validate transaction pin
+        if (!req.validateTransactionPin.status) {
+            return res.json({
+                status: "Failed",
+                message: "Validate transaction pin to procced with transaction",
+            });
+        }
         const user = req.user;
         // check if avaliablebalance is greater than the purchased amount
         if (amount > user.availableBalance) {
@@ -458,6 +534,13 @@ const buyDataController = async (req, res) => {
     try {
         const { phoneNumber, amount, planCode } = req.body;
         const user = req.user;
+        // check if user validate transaction pin
+        if (!req.validateTransactionPin.status) {
+            return res.json({
+                status: "Failed",
+                message: "Validate transaction pin to procced with transaction",
+            });
+        }
         // check if avaliablebalance is greater than the purchased amount
         if (amount > user.availableBalance) {
             return res.json({
@@ -534,6 +617,13 @@ const payOutController = async (req, res) => {
     try {
         const { bankCode, accountNumber, accountName, amount } = req.body;
         const user = req.user;
+        // check if user validate transaction pin
+        if (!req.validateTransactionPin.status) {
+            return res.json({
+                status: "Failed",
+                message: "Validate transaction pin to procced with transaction",
+            });
+        }
         //check if user avaliableBalance is greater than the amount
         if (amount > user.availableBalance) {
             return res.json({

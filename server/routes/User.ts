@@ -32,6 +32,9 @@ import {
     getActiveFixedSavingsController,
     getCompletedFixedSavingsController,
     getAllFixedSavingsController,
+    validateTransactionPinController,
+    updateTransactionPinController,
+    createTransactionPinController,
 } from "../controller/User";
 import {
     validateUserRegitrationInput,
@@ -60,6 +63,24 @@ router.post("/update-kyc1", verifyUserToken, updateKYC1RecordController);
 router.get("/kyc1", verifyUserToken, getUserKyc1RecordController);
 
 router.get("/get-data-plan/:network", verifyUserToken, getDataPlanController);
+
+router.post(
+    "/create-transaction-pin",
+    verifyUserToken,
+    createTransactionPinController,
+);
+
+router.post(
+    "/validate-transaction-pin",
+    verifyUserToken,
+    validateTransactionPinController,
+);
+
+router.post(
+    "/update-transaction-pin",
+    verifyUserToken,
+    updateTransactionPinController,
+);
 
 router.post("/buy-airtime", verifyUserToken, buyAirtimeController);
 

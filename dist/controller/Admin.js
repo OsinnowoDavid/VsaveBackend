@@ -199,8 +199,8 @@ const getRegionalAdminByEmailController = async (req, res) => {
 exports.getRegionalAdminByEmailController = getRegionalAdminByEmailController;
 const setAdminConfigController = async (req, res) => {
     try {
-        const { defaultPenaltyFee, firstTimeAdminFee, loanInterestFee, loanPenaltyFee, } = req.body;
-        const config = await (0, Admin_1.setAdminSavingsConfig)(defaultPenaltyFee, firstTimeAdminFee, loanInterestFee, loanPenaltyFee);
+        const { defaultPenaltyFee, firstTimeAdminFee, loanPenaltyFee, fixedSavingsAnualInterest, fixedSavingsPenaltyFee, } = req.body;
+        const config = await (0, Admin_1.setAdminSavingsConfig)(defaultPenaltyFee, firstTimeAdminFee, loanPenaltyFee, fixedSavingsAnualInterest, fixedSavingsPenaltyFee);
         if (!config) {
             return res.json({
                 status: "Failed",

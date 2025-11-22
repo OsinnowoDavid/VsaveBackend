@@ -5,11 +5,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
 const savingsCircleSchema = new mongoose_1.default.Schema({
-    savingsPlanId: {
-        type: mongoose_1.default.Schema.Types.ObjectId,
-        ref: "Savings",
-        required: true,
-    },
     savingsTitle: { type: String },
     subRegion: {
         type: mongoose_1.default.Schema.Types.ObjectId,
@@ -29,15 +24,16 @@ const savingsCircleSchema = new mongoose_1.default.Schema({
         type: String,
     },
     savingsAmount: { type: Number, required: true },
-    startDate: { type: Date, default: Date.now },
-    endDate: { type: Date },
-    circleIndex: { type: Number, default: 1 },
+    circleId: { type: String },
     status: {
         type: String,
         enum: ["ACTIVE", "PAUSED", "ENDED"],
         default: "ACTIVE",
     },
     maturityAmount: { type: Number },
+    adminId: {
+        type: String,
+    },
 }, { timestamps: true });
 const savingsCircle = mongoose_1.default.model("Savings_circle", savingsCircleSchema);
 exports.default = savingsCircle;

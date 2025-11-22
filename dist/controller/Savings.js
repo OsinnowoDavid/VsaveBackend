@@ -5,25 +5,10 @@ const Savings_1 = require("../services/Savings");
 const tools_1 = require("../config/tools");
 const createSavingPlanController = async (req, res) => {
     try {
-        const { subRegion, savingsTitle, frequency, savingsAmount, startDate, autoRestartEnabled, deductionPeriod, duration, } = req.body;
+        const { subRegion, savingsTitle, frequency, savingsAmount, startDate, deductionPeriod, duration, } = req.body;
         const user = req.user;
-        let endDate = (0, tools_1.calculateEndDate)(frequency, startDate, duration);
         let maturityAmount = (0, tools_1.calculateMaturityAmount)(frequency, duration, savingsAmount, startDate);
-        let status = "";
-        let currentDate = new Date().toLocaleDateString("en-US");
-        console.log("compare:", { startDate, currentDate });
-        if (currentDate == startDate) {
-            status = "ACTIVE";
-        }
-        else {
-            status = "PAUSED";
-        }
-        const newSavings = await (0, Savings_1.initSavingsPlan)(user._id.toString(), subRegion, savingsTitle, frequency, savingsAmount, startDate, endDate, status, autoRestartEnabled, deductionPeriod, duration, maturityAmount);
-        return res.json({
-            status: "success",
-            message: "plan created",
-            data: newSavings,
-        });
+        const newSavingsPlan = await (0, Savings_1.initSavingsPlan)(user._id.toString(), subRegion, savingsTitle, frequency, savingsAmount, "ACTIVE", deductionPeriod, duration, maturityAmount);
     }
     catch (err) {
         return res.json({

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.generateLoanRefrenceCode = exports.generateSavingsRefrenceCode = exports.generateRefrenceCode = void 0;
+exports.checkIfContributionIsCompleted = exports.isPastTomorrow = exports.isPastYesterday = exports.generateLoanRefrenceCode = exports.generateSavingsRefrenceCode = exports.generateRefrenceCode = void 0;
 exports.calculateEndDate = calculateEndDate;
 exports.calculateMaturityAmount = calculateMaturityAmount;
 exports.getDayName = getDayName;
@@ -8,6 +8,8 @@ exports.getFiveMinutesAgo = getFiveMinutesAgo;
 exports.isOlderThanThreeMonths = isOlderThanThreeMonths;
 exports.getStageAndMaxAmount = getStageAndMaxAmount;
 exports.getUserRating = getUserRating;
+exports.calculateProportionalInterest = calculateProportionalInterest;
+exports.getCurrentDateWithClosestHour = getCurrentDateWithClosestHour;
 function calculateEndDate(frequency, startDate, duration) {
     if (typeof duration !== "number" ||
         !Number.isFinite(duration) ||
@@ -42,7 +44,7 @@ function calculateEndDate(frequency, startDate, duration) {
     }
     return end;
 }
-function calculateMaturityAmount(frequency, duration, amount, startDate) {
+function calculateMaturityAmount(frequency, duration, amount, adminFirstTimeFee) {
     let totalPeriods;
     switch (frequency) {
         case "DAILY":
@@ -58,7 +60,10 @@ function calculateMaturityAmount(frequency, duration, amount, startDate) {
             throw new Error("Invalid frequency. Must be daily, weekly, or monthly.");
     }
     totalPeriods = Math.floor(totalPeriods); // optional rounding
-    return amount * totalPeriods;
+    let totalDeposit = amount * totalPeriods;
+    let adminFee = (amount * adminFirstTimeFee) / 100;
+    let result = totalDeposit - adminFee;
+    return result;
 }
 function getDayName(dateString) {
     // Convert the string to a Date object
@@ -183,3 +188,44 @@ function getUserRating(loans) {
     }
     return { ratingStatus, interestRate };
 }
+function calculateProportionalInterest(amount, annualRate, durationInDays) {
+    const daysInYear = 365;
+    const interestPercentage = (annualRate * durationInDays) / daysInYear;
+    const interestAmount = (amount * interestPercentage) / 100;
+    return {
+        interestAmount,
+        interestPercentage,
+    };
+}
+function getCurrentDateWithClosestHour() {
+    const now = new Date();
+    // Create a new date with minutes, seconds and ms set to zero
+    const result = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), 0, // minutes
+    0, // seconds
+    0);
+    return result;
+}
+const isPastYesterday = (date) => {
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+    return date <= yesterday;
+};
+exports.isPastYesterday = isPastYesterday;
+const isPastTomorrow = (date) => {
+    const today = new Date();
+    const tomorrow = new Date();
+    tomorrow.setDate(today.getDate() + 1);
+    return date >= tomorrow;
+};
+exports.isPastTomorrow = isPastTomorrow;
+const checkIfContributionIsCompleted = (recordStatus) => {
+    let isContributionComplete = true;
+    for (const status of recordStatus) {
+        if (status === "pending") {
+            isContributionComplete = false;
+        }
+    }
+    return isContributionComplete;
+};
+exports.checkIfContributionIsCompleted = checkIfContributionIsCompleted;
