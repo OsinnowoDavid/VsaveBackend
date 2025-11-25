@@ -338,12 +338,14 @@ export const savingsDeductionSchedule = async (
                     await AdminSavingsConfig.getSettings();
                 //deduct Admin fee
                 let adminFeeAmount = (amount * Number(firstTimeAdminFee)) / 100;
+                let recordedAmount = amount - Number(adminFeeAmount);
                 let record = {
                     periodIndex: foundSavingsRecord.period,
-                    amount: amount - Number(adminFeeAmount),
+                    amount: recordedAmount,
                     status: "paid",
                 };
                 foundContribution.adminFirstTimeFee = adminFeeAmount;
+                foundContribution.currentAmountSaved += recordedAmount;
                 foundContribution.record.push(record);
                 await foundSavingsRecord.save();
                 await foundContribution.save();
@@ -357,6 +359,7 @@ export const savingsDeductionSchedule = async (
                 amount,
                 status: "paid",
             };
+            foundContribution.currentAmountSaved += amount;
             foundContribution.record.push(record);
             await foundContribution.save();
             return {
@@ -436,6 +439,7 @@ export const latePaymentDeduction = async (user: IUser) => {
         const foundSavingsContribution = await SavingsContribution.find({
             user: user._id,
         });
+        let collectedSavings = 0;
         for (const contributionRecord of foundSavingsContribution) {
             // check record array for pending payment
             for (const record of contributionRecord.record) {
@@ -455,7 +459,9 @@ export const latePaymentDeduction = async (user: IUser) => {
                             record.status = "pending";
                             return;
                         }
+                        record.amount = record.amount - adminFeeAmount;
                         record.status = "paid";
+                        collectedSavings += record.amount - adminFeeAmount;
                         return;
                     }
                     let amount = record.amount + Number(defaultPenaltyFee);
@@ -470,9 +476,11 @@ export const latePaymentDeduction = async (user: IUser) => {
                         return;
                     }
                     record.status = "paid";
+                    collectedSavings += record.amount;
                     return;
                 }
             }
+            contributionRecord.currentAmountSaved += collectedSavings;
             await contributionRecord.save();
             return;
         }
@@ -582,6 +590,41 @@ export const getAllActiveFixedSavings = async () => {
             status: "active",
         });
         return foundRecord;
+    } catch (err: any) {
+        throw err;
+    }
+};
+
+export const breakSavingsCircle = async (user: string, recordId: string) => {
+    try {
+        const foundUserSavingsRecord = await UserSavingsRecord.findOne({
+            user,
+            _id: recordId,
+        });
+        const foundCircleRecord = await checkForCircleById(
+            foundUserSavingsRecord.savingsCircleId.toString(),
+        );
+        const foundContribution = await SavingsContribution.findById(
+            foundUserSavingsRecord.contributionId,
+        );
+        // end savings record
+        foundUserSavingsRecord.endDate = new Date();
+        foundUserSavingsRecord.payOutDate = new Date();
+        foundUserSavingsRecord.status = "ENDED";
+        foundUserSavingsRecord.payOutStatus = true;
+        // new deposit user currentAmountSaved
+        let ref = generateSavingsRefrenceCode();
+        let remark = `savings disbursement , Your savings circle has been broken, and ${foundContribution.currentAmountSaved} is been deposited`;
+        const deposit = await userDeposit(
+            foundUserSavingsRecord.user.toString(),
+            foundContribution.currentAmountSaved,
+            ref,
+            new Date(),
+            "Vsave",
+            remark,
+        );
+        await foundUserSavingsRecord.save();
+        return;
     } catch (err: any) {
         throw err;
     }

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllActiveFixedSavings = exports.getUserFixedSavings = exports.getUserCompletedFixedSavings = exports.getUserActiveFixedSavings = exports.disburseSavings = exports.havePendingLoanAndSaVingsStatus = exports.latePaymentDeduction = exports.getAllContributionStatus = exports.userSavingsRecords = exports.getSavingsContributionById = exports.allUserActiveSavingsRecord = exports.savingsDeductionSchedule = exports.checkForCircleById = exports.updateSavingsAutoRenewStatus = exports.restartSavingsCircle = exports.getAllUserActiveSavingsRecord = exports.getAllUserPausedSavingsRecord = exports.getUserPausedSavingsRecord = exports.getUserActiveSavingsRecord = exports.getAllUserSavingsCircle = exports.joinSavings = exports.getUserSavingsRecordById = exports.getUserSavingsCircleById = exports.createUserPersonalSavings = exports.getAllSavingsCircle = exports.getAllActiveSavingsCircle = exports.getCircleById = exports.initSavingsPlan = void 0;
+exports.breakSavingsCircle = exports.getAllActiveFixedSavings = exports.getUserFixedSavings = exports.getUserCompletedFixedSavings = exports.getUserActiveFixedSavings = exports.disburseSavings = exports.havePendingLoanAndSaVingsStatus = exports.latePaymentDeduction = exports.getAllContributionStatus = exports.userSavingsRecords = exports.getSavingsContributionById = exports.allUserActiveSavingsRecord = exports.savingsDeductionSchedule = exports.checkForCircleById = exports.updateSavingsAutoRenewStatus = exports.restartSavingsCircle = exports.getAllUserActiveSavingsRecord = exports.getAllUserPausedSavingsRecord = exports.getUserPausedSavingsRecord = exports.getUserActiveSavingsRecord = exports.getAllUserSavingsCircle = exports.joinSavings = exports.getUserSavingsRecordById = exports.getUserSavingsCircleById = exports.createUserPersonalSavings = exports.getAllSavingsCircle = exports.getAllActiveSavingsCircle = exports.getCircleById = exports.initSavingsPlan = void 0;
 const Admin_config_1 = __importDefault(require("../model/Admin_config"));
 const Savings_circle_1 = __importDefault(require("../model/Savings_circle"));
 const User_savings_record_1 = __importDefault(require("../model/User_savings_record"));
@@ -308,12 +308,14 @@ const savingsDeductionSchedule = async (savingsRecordId, amount, withdrawStatus)
                 const { firstTimeAdminFee } = await Admin_config_1.default.getSettings();
                 //deduct Admin fee
                 let adminFeeAmount = (amount * Number(firstTimeAdminFee)) / 100;
+                let recordedAmount = amount - Number(adminFeeAmount);
                 let record = {
                     periodIndex: foundSavingsRecord.period,
-                    amount: amount - Number(adminFeeAmount),
+                    amount: recordedAmount,
                     status: "paid",
                 };
                 foundContribution.adminFirstTimeFee = adminFeeAmount;
+                foundContribution.currentAmountSaved += recordedAmount;
                 foundContribution.record.push(record);
                 await foundSavingsRecord.save();
                 await foundContribution.save();
@@ -327,6 +329,7 @@ const savingsDeductionSchedule = async (savingsRecordId, amount, withdrawStatus)
                 amount,
                 status: "paid",
             };
+            foundContribution.currentAmountSaved += amount;
             foundContribution.record.push(record);
             await foundContribution.save();
             return {
@@ -407,6 +410,7 @@ const latePaymentDeduction = async (user) => {
         const foundSavingsContribution = await SavingsContribution_1.default.find({
             user: user._id,
         });
+        let collectedSavings = 0;
         for (const contributionRecord of foundSavingsContribution) {
             // check record array for pending payment
             for (const record of contributionRecord.record) {
@@ -421,7 +425,9 @@ const latePaymentDeduction = async (user) => {
                             record.status = "pending";
                             return;
                         }
+                        record.amount = record.amount - adminFeeAmount;
                         record.status = "paid";
+                        collectedSavings += record.amount - adminFeeAmount;
                         return;
                     }
                     let amount = record.amount + Number(defaultPenaltyFee);
@@ -432,9 +438,11 @@ const latePaymentDeduction = async (user) => {
                         return;
                     }
                     record.status = "paid";
+                    collectedSavings += record.amount;
                     return;
                 }
             }
+            contributionRecord.currentAmountSaved += collectedSavings;
             await contributionRecord.save();
             return;
         }
@@ -545,3 +553,28 @@ const getAllActiveFixedSavings = async () => {
     }
 };
 exports.getAllActiveFixedSavings = getAllActiveFixedSavings;
+const breakSavingsCircle = async (user, recordId) => {
+    try {
+        const foundUserSavingsRecord = await User_savings_record_1.default.findOne({
+            user,
+            _id: recordId,
+        });
+        const foundCircleRecord = await (0, exports.checkForCircleById)(foundUserSavingsRecord.savingsCircleId.toString());
+        const foundContribution = await SavingsContribution_1.default.findById(foundUserSavingsRecord.contributionId);
+        // end savings record
+        foundUserSavingsRecord.endDate = new Date();
+        foundUserSavingsRecord.payOutDate = new Date();
+        foundUserSavingsRecord.status = "ENDED";
+        foundUserSavingsRecord.payOutStatus = true;
+        // new deposit user currentAmountSaved
+        let ref = (0, tools_1.generateSavingsRefrenceCode)();
+        let remark = `savings disbursement , Your savings circle has been broken, and ${foundContribution.currentAmountSaved} is been deposited`;
+        const deposit = await (0, User_1.userDeposit)(foundUserSavingsRecord.user.toString(), foundContribution.currentAmountSaved, ref, new Date(), "Vsave", remark);
+        await foundUserSavingsRecord.save();
+        return;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.breakSavingsCircle = breakSavingsCircle;
