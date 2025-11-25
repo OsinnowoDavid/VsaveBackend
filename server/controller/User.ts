@@ -275,7 +275,7 @@ export const resendUserVerificationEmail = async (
 export const loginUser = async (req: Request, res: Response) => {
     try {
         const { email, password } = req.body;
-        const user = (await getUserByEmail(email)) as IUser;
+        const user = (await getUserByEmail(email.toLowerCase())) as IUser;
         if (!user) {
             return res.json({
                 status: "Failed",
@@ -990,14 +990,15 @@ export const createPersonalSavingsCircleController = async (
             autoRestartEnabled,
         } = req.body;
         let user = req.user as IUser;
+        const { firstTimeAdminFee } = await AdminSavingsConfig.getSettings();
         let endDate = calculateEndDate(frequency, startDate, duration);
         let maturityAmount = calculateMaturityAmount(
             frequency,
             duration,
             savingsAmount,
-            startDate,
+            Number(firstTimeAdminFee),
         );
-
+        console.log("maturity amount:", maturityAmount);
         const newSavingsCircle = await createUserPersonalSavings(
             user,
             savingsTitle,
@@ -1142,7 +1143,7 @@ export const createFixedSavingController = async (
 ) => {
     try {
         const user = req.user as IUser;
-        const { amount, interestPayoutType, duration } = req.body;
+        const { amount, title, interestPayoutType, duration } = req.body;
         const { fixedSavingsAnualInterest } =
             await AdminSavingsConfig.getSettings();
 
@@ -1181,6 +1182,7 @@ export const createFixedSavingController = async (
             );
             const newSavingsRecord = await createFixedSaving(
                 user._id.toString(),
+                title,
                 amount,
                 interestPercentage.toString(),
                 amount,
@@ -1200,6 +1202,7 @@ export const createFixedSavingController = async (
         let payout = amount + interestAmount;
         const newSavingsRecord = await createFixedSaving(
             user._id.toString(),
+            title,
             amount,
             interestPercentage.toString(),
             payout,

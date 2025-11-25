@@ -3,13 +3,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllActiveFixedSavings = exports.getUserFixedSavings = exports.getUserCompletedFixedSavings = exports.getUserActiveFixedSavings = exports.disburseSavings = exports.latePaymentDeduction = exports.getAllContributionStatus = exports.userSavingsRecords = exports.getSavingsContributionById = exports.allUserActiveSavingsRecord = exports.savingsDeductionSchedule = exports.checkForCircleById = exports.updateSavingsAutoRenewStatus = exports.restartSavingsCircle = exports.getAllUserActiveSavingsRecord = exports.getAllUserPausedSavingsRecord = exports.getUserPausedSavingsRecord = exports.getUserActiveSavingsRecord = exports.getAllUserSavingsCircle = exports.joinSavings = exports.getUserSavingsCircleById = exports.createUserPersonalSavings = exports.getAllSavingsCircle = exports.getAllActiveSavingsCircle = exports.getCircleById = exports.initSavingsPlan = void 0;
+exports.getAllActiveFixedSavings = exports.getUserFixedSavings = exports.getUserCompletedFixedSavings = exports.getUserActiveFixedSavings = exports.disburseSavings = exports.havePendingLoanAndSaVingsStatus = exports.latePaymentDeduction = exports.getAllContributionStatus = exports.userSavingsRecords = exports.getSavingsContributionById = exports.allUserActiveSavingsRecord = exports.savingsDeductionSchedule = exports.checkForCircleById = exports.updateSavingsAutoRenewStatus = exports.restartSavingsCircle = exports.getAllUserActiveSavingsRecord = exports.getAllUserPausedSavingsRecord = exports.getUserPausedSavingsRecord = exports.getUserActiveSavingsRecord = exports.getAllUserSavingsCircle = exports.joinSavings = exports.getUserSavingsRecordById = exports.getUserSavingsCircleById = exports.createUserPersonalSavings = exports.getAllSavingsCircle = exports.getAllActiveSavingsCircle = exports.getCircleById = exports.initSavingsPlan = void 0;
 const Admin_config_1 = __importDefault(require("../model/Admin_config"));
 const Savings_circle_1 = __importDefault(require("../model/Savings_circle"));
 const User_savings_record_1 = __importDefault(require("../model/User_savings_record"));
 const User_savings_circle_1 = __importDefault(require("../model/User_savings_circle"));
 const SavingsContribution_1 = __importDefault(require("../model/SavingsContribution"));
 const FixedSavings_1 = __importDefault(require("../model/FixedSavings"));
+const Loan_1 = __importDefault(require("../model/Loan"));
 const tools_1 = require("../config/tools");
 const User_1 = require("./User");
 const generateCircleId = () => {
@@ -124,6 +125,16 @@ const getUserSavingsCircleById = async (circleId) => {
     }
 };
 exports.getUserSavingsCircleById = getUserSavingsCircleById;
+const getUserSavingsRecordById = async (id) => {
+    try {
+        const foundRecord = await User_savings_record_1.default.findById(id);
+        return foundRecord;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.getUserSavingsRecordById = getUserSavingsRecordById;
 const joinSavings = async (user, circleId, autoRestartEnabled, startDate, endDate, status) => {
     try {
         const foundSavingsCircle = await Savings_circle_1.default.findById(circleId);
@@ -304,7 +315,6 @@ const savingsDeductionSchedule = async (savingsRecordId, amount, withdrawStatus)
                 };
                 foundContribution.adminFirstTimeFee = adminFeeAmount;
                 foundContribution.record.push(record);
-                foundSavingsRecord.adminFirstTimeFee = adminFeeAmount;
                 await foundSavingsRecord.save();
                 await foundContribution.save();
                 return {
@@ -393,14 +403,40 @@ const getAllContributionStatus = async (contributionId) => {
 exports.getAllContributionStatus = getAllContributionStatus;
 const latePaymentDeduction = async (user) => {
     try {
-        const { defaultPenaltyFee } = await Admin_config_1.default.getSettings();
+        const { defaultPenaltyFee, firstTimeAdminFee } = await Admin_config_1.default.getSettings();
         const foundSavingsContribution = await SavingsContribution_1.default.find({
             user: user._id,
         });
         for (const contributionRecord of foundSavingsContribution) {
             // check record array for pending payment
             for (const record of contributionRecord.record) {
+                if (record.status === "pending") {
+                    // check if its the first index  so as to deduct admin first time fee
+                    if (record.periodIndex === 1) {
+                        let amount = record.amount + Number(defaultPenaltyFee);
+                        let adminFeeAmount = (record.amount * Number(firstTimeAdminFee)) / 100;
+                        let remark = `savings late repayment deduction record : ${contributionRecord._id}`;
+                        const withdraw = await (0, User_1.userWithdraw)(contributionRecord.user.toString(), amount, remark);
+                        if (withdraw === "Insufficient Funds") {
+                            record.status = "pending";
+                            return;
+                        }
+                        record.status = "paid";
+                        return;
+                    }
+                    let amount = record.amount + Number(defaultPenaltyFee);
+                    let remark = `savings late repayment deduction record : ${contributionRecord._id}`;
+                    const withdraw = await (0, User_1.userWithdraw)(contributionRecord.user.toString(), amount, remark);
+                    if (withdraw === "Insufficient Funds") {
+                        record.status = "pending";
+                        return;
+                    }
+                    record.status = "paid";
+                    return;
+                }
             }
+            await contributionRecord.save();
+            return;
         }
     }
     catch (err) {
@@ -408,6 +444,35 @@ const latePaymentDeduction = async (user) => {
     }
 };
 exports.latePaymentDeduction = latePaymentDeduction;
+const havePendingLoanAndSaVingsStatus = async (user) => {
+    try {
+        const foundLoanRecord = await Loan_1.default.find({ user, isSettled: false });
+        const foundSavingsRecord = await User_savings_record_1.default.find({
+            user,
+            status: "ACTIVE",
+        });
+        let result = {
+            loanStatus: false,
+            savingsStatus: false,
+        };
+        if (foundLoanRecord.length > 0) {
+            result.loanStatus = true;
+        }
+        for (const savingsRecord of foundSavingsRecord) {
+            const foundContribution = await SavingsContribution_1.default.findById(savingsRecord._id);
+            const allStatus = await (0, exports.getAllContributionStatus)(foundContribution._id.toString());
+            const isCompleted = (0, tools_1.checkIfContributionIsCompleted)(allStatus);
+            if (!isCompleted) {
+                result.savingsStatus = true;
+            }
+        }
+        return result;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.havePendingLoanAndSaVingsStatus = havePendingLoanAndSaVingsStatus;
 const disburseSavings = async (savingsRecordId) => {
     try {
         const foundRecord = await User_savings_record_1.default.findById(savingsRecordId);

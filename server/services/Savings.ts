@@ -4,6 +4,7 @@ import UserSavingsRecord from "../model/User_savings_record";
 import UserPersonalSavings from "../model/User_savings_circle";
 import SavingsContribution from "../model/SavingsContribution";
 import FixedSavings from "../model/FixedSavings";
+import Loan from "../model/Loan";
 import {
     ISavingsPlan,
     ISavingsGroup,
@@ -11,8 +12,12 @@ import {
     IUserSavingsRecord,
     IUser,
 } from "../../types";
-import { calculateEndDate, generateSavingsRefrenceCode } from "../config/tools";
-import { userDeposit } from "./User";
+import {
+    calculateEndDate,
+    generateSavingsRefrenceCode,
+    checkIfContributionIsCompleted,
+} from "../config/tools";
+import { userDeposit, userWithdraw } from "./User";
 const generateCircleId = () => {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     let code = "";
@@ -137,6 +142,14 @@ export const getUserSavingsCircleById = async (circleId: string) => {
             circleId,
         );
         return foundUserSavingsCircle;
+    } catch (err: any) {
+        throw err;
+    }
+};
+export const getUserSavingsRecordById = async (id: string) => {
+    try {
+        const foundRecord = await UserSavingsRecord.findById(id);
+        return foundRecord;
     } catch (err: any) {
         throw err;
     }
@@ -332,7 +345,6 @@ export const savingsDeductionSchedule = async (
                 };
                 foundContribution.adminFirstTimeFee = adminFeeAmount;
                 foundContribution.record.push(record);
-                foundSavingsRecord.adminFirstTimeFee = adminFeeAmount;
                 await foundSavingsRecord.save();
                 await foundContribution.save();
                 return {
@@ -419,15 +431,83 @@ export const getAllContributionStatus = async (contributionId: string) => {
 
 export const latePaymentDeduction = async (user: IUser) => {
     try {
-        const { defaultPenaltyFee } = await AdminSavingsConfig.getSettings();
+        const { defaultPenaltyFee, firstTimeAdminFee } =
+            await AdminSavingsConfig.getSettings();
         const foundSavingsContribution = await SavingsContribution.find({
             user: user._id,
         });
         for (const contributionRecord of foundSavingsContribution) {
             // check record array for pending payment
             for (const record of contributionRecord.record) {
+                if (record.status === "pending") {
+                    // check if its the first index  so as to deduct admin first time fee
+                    if (record.periodIndex === 1) {
+                        let amount = record.amount + Number(defaultPenaltyFee);
+                        let adminFeeAmount =
+                            (record.amount * Number(firstTimeAdminFee)) / 100;
+                        let remark = `savings late repayment deduction record : ${contributionRecord._id}`;
+                        const withdraw = await userWithdraw(
+                            contributionRecord.user.toString(),
+                            amount,
+                            remark,
+                        );
+                        if (withdraw === "Insufficient Funds") {
+                            record.status = "pending";
+                            return;
+                        }
+                        record.status = "paid";
+                        return;
+                    }
+                    let amount = record.amount + Number(defaultPenaltyFee);
+                    let remark = `savings late repayment deduction record : ${contributionRecord._id}`;
+                    const withdraw = await userWithdraw(
+                        contributionRecord.user.toString(),
+                        amount,
+                        remark,
+                    );
+                    if (withdraw === "Insufficient Funds") {
+                        record.status = "pending";
+                        return;
+                    }
+                    record.status = "paid";
+                    return;
+                }
+            }
+            await contributionRecord.save();
+            return;
+        }
+    } catch (err: any) {
+        throw err;
+    }
+};
+
+export const havePendingLoanAndSaVingsStatus = async (user: string) => {
+    try {
+        const foundLoanRecord = await Loan.find({ user, isSettled: false });
+        const foundSavingsRecord = await UserSavingsRecord.find({
+            user,
+            status: "ACTIVE",
+        });
+        let result = {
+            loanStatus: false,
+            savingsStatus: false,
+        };
+        if (foundLoanRecord.length > 0) {
+            result.loanStatus = true;
+        }
+        for (const savingsRecord of foundSavingsRecord) {
+            const foundContribution = await SavingsContribution.findById(
+                savingsRecord._id,
+            );
+            const allStatus = await getAllContributionStatus(
+                foundContribution._id.toString(),
+            );
+            const isCompleted = checkIfContributionIsCompleted(allStatus);
+            if (!isCompleted) {
+                result.savingsStatus = true;
             }
         }
+        return result;
     } catch (err: any) {
         throw err;
     }

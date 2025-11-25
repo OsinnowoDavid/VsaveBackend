@@ -6,13 +6,16 @@ import {
     savingsDeductionSchedule,
     getAllContributionStatus,
     disburseSavings,
+    getAllActiveFixedSavings,
 } from "../services/Savings";
-import { userWithdraw } from "../services/User";
+import { userWithdraw, userDeposit } from "../services/User";
 import {
     getDayName,
     isPastYesterday,
     isPastTomorrow,
     checkIfContributionIsCompleted,
+    getCurrentDateWithClosestHour,
+    generateSavingsRefrenceCode,
 } from "../config/tools";
 import { getAdminSavingsConfig } from "../services/Admin";
 export const startPauseSavings = async () => {
@@ -170,10 +173,29 @@ export const savingsDisbursement = async () => {
     }
 };
 
-export const fixedSavingsDisbursement = async () =>{
-    try{
-        
-    }catch(err:any){
-        throw err
+export const fixedSavingsDisbursement = async () => {
+    try {
+        const allActiveSavings = await getAllActiveFixedSavings();
+        for (const record of allActiveSavings) {
+            if (getCurrentDateWithClosestHour() === record.endDate) {
+                // deposite user account with payment amount
+                let ref = generateSavingsRefrenceCode();
+                let remark = `Fixed savings maturity payout`;
+                const deposit = await userDeposit(
+                    record.user.toString(),
+                    record.paymentAmount,
+                    ref,
+                    new Date(),
+                    "Vsave",
+                    remark,
+                );
+                record.status = "completed";
+                await record.save();
+                return "Done";
+            }
+        }
+        return "Done";
+    } catch (err: any) {
+        throw err;
     }
-}
+};

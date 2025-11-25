@@ -21,7 +21,7 @@ const createNewUser = async (firstName, lastName, email, password, gender, dateO
         const newUser = await User_1.default.create({
             firstName,
             lastName,
-            email,
+            email: email.toLowerCase(),
             password,
             gender,
             dateOfBirth,
@@ -672,10 +672,11 @@ const userGetAllSubRegion = async () => {
     }
 };
 exports.userGetAllSubRegion = userGetAllSubRegion;
-const createFixedSaving = async (user, amount, interestRate, paymentAmount, duration, startDate, endDate, status, interestPayoutType, interestAmount) => {
+const createFixedSaving = async (user, title, amount, interestRate, paymentAmount, duration, startDate, endDate, status, interestPayoutType, interestAmount) => {
     try {
         const newFixedSavings = await FixedSavings_1.default.create({
             user,
+            title,
             amount,
             currency: "NG",
             interestRate,
@@ -723,7 +724,6 @@ const userDeposit = async (user, amount, transactionRef, date, senderName, remar
         const foundUser = (await User_1.default.findById(user));
         let balanceBefore = Number(foundUser.availableBalance);
         let balanceAfter = Number(foundUser.availableBalance) - Number(amount);
-        // withdraw money
         let balance = Number(foundUser.availableBalance) + Number(amount);
         foundUser.availableBalance = balance;
         await foundUser.save();

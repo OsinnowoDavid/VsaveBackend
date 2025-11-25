@@ -12,10 +12,6 @@ const userSavingsRecordSchema = new mongoose.Schema(
             ref: "Savings_circle", // Reference to your  savings_circle model
             required: true,
         },
-        adminFirstTimeFee: {
-            type: Number,
-            default: 0,
-        },
         period: { type: Number, default: 0 },
         duration: { type: Number },
         startDate: { type: Date },

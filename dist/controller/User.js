@@ -183,7 +183,7 @@ exports.resendUserVerificationEmail = resendUserVerificationEmail;
 const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
-        const user = (await (0, User_1.getUserByEmail)(email));
+        const user = (await (0, User_1.getUserByEmail)(email.toLowerCase()));
         if (!user) {
             return res.json({
                 status: "Failed",
@@ -777,8 +777,10 @@ const createPersonalSavingsCircleController = async (req, res) => {
     try {
         const { savingsTitle, frequency, duration, deductionPeriod, savingsAmount, startDate, autoRestartEnabled, } = req.body;
         let user = req.user;
+        const { firstTimeAdminFee } = await Admin_config_1.default.getSettings();
         let endDate = (0, tools_1.calculateEndDate)(frequency, startDate, duration);
-        let maturityAmount = (0, tools_1.calculateMaturityAmount)(frequency, duration, savingsAmount, startDate);
+        let maturityAmount = (0, tools_1.calculateMaturityAmount)(frequency, duration, savingsAmount, Number(firstTimeAdminFee));
+        console.log("maturity amount:", maturityAmount);
         const newSavingsCircle = await (0, Savings_2.createUserPersonalSavings)(user, savingsTitle, frequency, duration, deductionPeriod, savingsAmount, maturityAmount, startDate, endDate, autoRestartEnabled);
         return res.json({
             status: "Success",
@@ -898,7 +900,7 @@ function getFixedEndDate(startDate, durationInDays) {
 const createFixedSavingController = async (req, res) => {
     try {
         const user = req.user;
-        const { amount, interestPayoutType, duration } = req.body;
+        const { amount, title, interestPayoutType, duration } = req.body;
         const { fixedSavingsAnualInterest } = await Admin_config_1.default.getSettings();
         // withdaw money from user account
         let remark = `deposit of ${amount} to your fixed savings account`;
@@ -916,7 +918,7 @@ const createFixedSavingController = async (req, res) => {
         let endDate = getFixedEndDate(startDate, Number(duration));
         if (interestPayoutType === "UPFRONT") {
             const deposit = await (0, User_1.userDeposit)(user._id.toString(), interestAmount, (0, tools_1.generateSavingsRefrenceCode)(), new Date(), sender, depositRemark);
-            const newSavingsRecord = await (0, User_1.createFixedSaving)(user._id.toString(), amount, interestPercentage.toString(), amount, Number(duration), startDate, endDate, "active", "UPFRONT", interestAmount);
+            const newSavingsRecord = await (0, User_1.createFixedSaving)(user._id.toString(), title, amount, interestPercentage.toString(), amount, Number(duration), startDate, endDate, "active", "UPFRONT", interestAmount);
             return res.json({
                 status: "Success",
                 message: "fixed savings created successfully",
@@ -924,7 +926,7 @@ const createFixedSavingController = async (req, res) => {
             });
         }
         let payout = amount + interestAmount;
-        const newSavingsRecord = await (0, User_1.createFixedSaving)(user._id.toString(), amount, interestPercentage.toString(), payout, Number(duration), startDate, endDate, "active", "MATURITY", interestAmount);
+        const newSavingsRecord = await (0, User_1.createFixedSaving)(user._id.toString(), title, amount, interestPercentage.toString(), payout, Number(duration), startDate, endDate, "active", "MATURITY", interestAmount);
         return res.json({
             status: "Success",
             message: "fixed savings created successfully",

@@ -78,7 +78,7 @@ export function calculateMaturityAmount(
     totalPeriods = Math.floor(totalPeriods); // optional rounding
     let totalDeposit = amount * totalPeriods;
     let adminFee = (amount * adminFirstTimeFee) / 100;
-    let result = totalDeposit - adminFee;
+    let result = Number(totalDeposit) - Number(adminFee);
     return result;
 }
 

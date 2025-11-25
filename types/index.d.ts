@@ -1,6 +1,6 @@
 import { Types, Document } from "mongoose";
 
-export interface IUser extends Document {
+declare interface IUser extends Document {
     _id: Types.ObjectId;
     firstName: string;
     lastName: string;
@@ -22,7 +22,7 @@ export interface IUser extends Document {
     createdAt?: Date;
     updatedAt?: Date;
 }
-export interface IVerificationToken extends Document {
+declare interface IVerificationToken extends Document {
     user?: Types.ObjectId;
     email: string;
     token: string;
@@ -31,7 +31,7 @@ export interface IVerificationToken extends Document {
     updatedAt?: Date;
 }
 
-export interface ISuperAdmin extends Document {
+declare interface ISuperAdmin extends Document {
     _id: Types.ObjectId;
     firstName: string;
     lastName: string;
@@ -41,7 +41,7 @@ export interface ISuperAdmin extends Document {
     profilePicture?: string | null | undefined;
 }
 
-export interface IRegion extends Document {
+declare interface IRegion extends Document {
     _id: Types.ObjectId;
     regionName: string;
     shortCode: string;
@@ -51,7 +51,7 @@ export interface IRegion extends Document {
     updatedAt?: Date;
 }
 
-export interface IRegionalAdmin extends Document {
+declare interface IRegionalAdmin extends Document {
     _id: Types.ObjectId;
     firstName: string;
     lastName: string;
@@ -64,7 +64,7 @@ export interface IRegionalAdmin extends Document {
     updatedAt?: Date;
 }
 
-export interface ISubRegion extends Document {
+declare interface ISubRegion extends Document {
     _id: Types.ObjectId;
     subRegionName: string;
     shortCode: string;
@@ -76,7 +76,7 @@ export interface ISubRegion extends Document {
     updatedAt?: Date;
 }
 
-export interface IAgent extends Document {
+declare interface IAgent extends Document {
     _id: Types.ObjectId;
     firstName: string;
     lastName: string;
@@ -90,7 +90,7 @@ export interface IAgent extends Document {
     updatedAt?: Date;
 }
 
-export interface IKYC extends Document {
+declare interface IKYC extends Document {
     _id: Types.ObjectId;
     user: Types.ObjectId;
     kycStage: number;
@@ -103,7 +103,7 @@ export interface IKYC extends Document {
     updatedAt?: Date;
 }
 
-export interface IKYC1 extends Document {
+declare interface IKYC1 extends Document {
     _id: Types.ObjectId;
     user: Types.ObjectId;
     profession:
@@ -123,7 +123,7 @@ export interface IKYC1 extends Document {
     updatedAt?: Date;
 }
 
-export interface ILoan extends Document {
+declare interface ILoan extends Document {
     _id: Types.ObjectId;
     user: Types.ObjectId;
     amount: number;
@@ -139,13 +139,13 @@ export interface ILoan extends Document {
     updatedAt?: Date;
 }
 
-export interface INotification extends Document {
+declare interface INotification extends Document {
     _id: Types.ObjectId;
     type: string;
     message: string;
 }
 
-export interface IWebhook extends Document {
+declare interface IWebhook extends Document {
     _id: Types.ObjectId;
     user?: Types.ObjectId;
     payload: object;
@@ -154,7 +154,7 @@ export interface IWebhook extends Document {
     updatedAt?: Date;
 }
 
-export interface ISubRegionalAdmin extends Document {
+declare interface ISubRegionalAdmin extends Document {
     _id: Types.ObjectId;
     firstName: string;
     lastName: string;
@@ -167,7 +167,7 @@ export interface ISubRegionalAdmin extends Document {
     updatedAt?: Date;
 }
 
-export interface ITransaction extends Document {
+declare interface ITransaction extends Document {
     _id: Types.ObjectId;
     userId: Types.ObjectId;
     type: "deposit" | "withdrawal" | "transfer" | "airtime" | "data";
@@ -187,13 +187,13 @@ export interface ITransaction extends Document {
     updatedAt?: Date;
 }
 
-export interface IAdminConfig extends Document {
+declare interface IAdminConfig extends Document {
     _id: Types.ObjectId;
     defaultPenaltyFee?: string;
     firstTimeAdminFee?: string;
 }
 
-export interface IAgentReferral extends Document {
+declare interface IAgentReferral extends Document {
     _id: Types.ObjectId;
     agent: Types.ObjectId;
     referralCode: string;
@@ -202,13 +202,13 @@ export interface IAgentReferral extends Document {
     updatedAt?: Date;
 }
 
-export interface IBankCode extends Document {
+declare interface IBankCode extends Document {
     _id: Types.ObjectId;
     bankCode?: string;
     bank?: string;
 }
 
-export interface ISavingsCircle extends Document {
+declare interface ISavingsCircle extends Document {
     _id: Types.ObjectId;
     savingsPlanId: Types.ObjectId;
     savingsTitle: string;
@@ -226,7 +226,7 @@ export interface ISavingsCircle extends Document {
     updatedAt?: Date;
 }
 
-export interface ISavingsGroup extends Document {
+declare interface ISavingsGroup extends Document {
     _id: Types.ObjectId;
     savingsId: Types.ObjectId;
     savingsCircleId: Types.ObjectId;
@@ -239,7 +239,7 @@ export interface ISavingsGroup extends Document {
     updatedAt?: Date;
 }
 
-export interface IUserSavingsRecord extends Document {
+declare interface IUserSavingsRecord extends Document {
     _id: Types.ObjectId;
     user: Types.ObjectId;
     savingsCircleId: Types.ObjectId;
@@ -257,7 +257,7 @@ export interface IUserSavingsRecord extends Document {
     updatedAt?: Date;
 }
 
-export interface ISavingsPlan extends Document {
+declare interface ISavingsPlan extends Document {
     _id: Types.ObjectId;
     savingsTitle: string;
     subRegion: Types.ObjectId;
@@ -272,7 +272,7 @@ export interface ISavingsPlan extends Document {
     updatedAt?: Date;
 }
 
-export interface ILoanElegibility extends Document {
+declare interface ILoanElegibility extends Document {
     _id: Types.ObjectId;
     user?: Types.ObjectId;
     stage?: number;
@@ -286,7 +286,7 @@ export interface ILoanElegibility extends Document {
     updatedAt?: Date;
 }
 
-export interface ISavingsContribution extends Document {
+declare interface ISavingsContribution extends Document {
     _id: Types.ObjectId;
     user: Types.ObjectId;
     savingsRecordId: Types.ObjectId;
@@ -301,7 +301,7 @@ export interface ISavingsContribution extends Document {
     updatedAt?: Date;
 }
 
-export interface IUserSavingsCircle extends Document {
+declare interface IUserSavingsCircle extends Document {
     _id: Types.ObjectId;
     user: Types.ObjectId;
     savingsTitle?: string;
@@ -317,9 +317,10 @@ export interface IUserSavingsCircle extends Document {
     updatedAt?: Date;
 }
 
-export interface IFixedSavings extends Document {
+declare interface IFixedSavings extends Document {
     _id: Types.ObjectId;
     user?: Types.ObjectId;
+    title: string;
     amount: number;
     currency?: string;
     interestRate?: string;
@@ -327,7 +328,7 @@ export interface IFixedSavings extends Document {
     duration?: string;
     durationIndex?: number;
     startDate?: Date;
-    endDate?: string;
+    endDate?: Date;
     status?: "pending" | "rejected" | "active" | "completed";
     createdAt?: Date;
     updatedAt?: Date;

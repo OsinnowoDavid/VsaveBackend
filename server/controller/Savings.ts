@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { initSavingsPlan } from "../services/Savings";
 import { calculateMaturityAmount, calculateEndDate } from "../config/tools";
+import AdminSavingsConfig from "../model/Admin_config";
 
 export const createSavingPlanController = async (
     req: Request,
@@ -17,11 +18,12 @@ export const createSavingPlanController = async (
             duration,
         } = req.body;
         const user = req.user as any;
+        const { firstTimeAdminFee } = await AdminSavingsConfig.getSettings();
         let maturityAmount = calculateMaturityAmount(
             frequency,
             duration,
             savingsAmount,
-            startDate,
+            Number(firstTimeAdminFee),
         );
 
         const newSavingsPlan = await initSavingsPlan(

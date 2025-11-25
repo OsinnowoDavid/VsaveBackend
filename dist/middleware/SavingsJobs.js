@@ -119,6 +119,19 @@ const savingsDisbursement = async () => {
 exports.savingsDisbursement = savingsDisbursement;
 const fixedSavingsDisbursement = async () => {
     try {
+        const allActiveSavings = await (0, Savings_1.getAllActiveFixedSavings)();
+        for (const record of allActiveSavings) {
+            if ((0, tools_1.getCurrentDateWithClosestHour)() === record.endDate) {
+                // deposite user account with payment amount
+                let ref = (0, tools_1.generateSavingsRefrenceCode)();
+                let remark = `Fixed savings maturity payout`;
+                const deposit = await (0, User_1.userDeposit)(record.user.toString(), record.paymentAmount, ref, new Date(), "Vsave", remark);
+                record.status = "completed";
+                await record.save();
+                return "Done";
+            }
+        }
+        return "Done";
     }
     catch (err) {
         throw err;
