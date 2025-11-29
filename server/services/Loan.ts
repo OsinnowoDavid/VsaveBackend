@@ -99,3 +99,87 @@ export const allUnsettledRecord = async () => {
         throw err;
     }
 };
+type ILoanStatus = "pending" | "approved" | "rejected" | "completed";
+export const getUserLoanByStatus = async (
+    user: string,
+    status: ILoanStatus,
+) => {
+    try {
+        const foundRecord = await Loan.find({ user, status });
+        return foundRecord;
+    } catch (err: any) {
+        throw err;
+    }
+};
+
+export const getAllLoanRecord = async () => {
+    try {
+        const foundRecord = await Loan.find();
+        return foundRecord;
+    } catch (err: any) {
+        throw err;
+    }
+};
+
+export const getLoanRecordByStatus = async (status: string) => {
+    try {
+        const foundRecord = await Loan.find({ status });
+        return foundRecord;
+    } catch (err: any) {
+        throw err;
+    }
+};
+
+export const editLoanRecord = async (
+    id: string,
+    amount: number,
+    interest: number,
+    interestPercentage: number,
+    repaymentAmount: number,
+    startDate: Date,
+    duration: string,
+    endDate: Date,
+    remark: string,
+) => {
+    try {
+        const foundLoanRecord = await Loan.findById(id);
+        foundLoanRecord.amount = amount;
+        foundLoanRecord.interest = interest;
+        foundLoanRecord.interestPercentage = interestPercentage;
+        foundLoanRecord.repaymentAmount = repaymentAmount;
+        foundLoanRecord.startDate = startDate;
+        foundLoanRecord.duration = duration;
+        foundLoanRecord.dueDate = endDate;
+        if (remark) {
+            foundLoanRecord.remark = remark;
+        }
+        await foundLoanRecord.save();
+        return foundLoanRecord;
+    } catch (err: any) {
+        throw err;
+    }
+};
+
+export const approveOrRejectLoan = async (
+    id: string,
+    status: "approved" | "rejected",
+    duration: string,
+    dueDate: Date,
+) => {
+    try {
+        const foundRecord = await Loan.findById(id);
+        if (status === "approved") {
+            foundRecord.status = "approved";
+            foundRecord.startDate = new Date();
+            foundRecord.duration = duration;
+            foundRecord.dueDate = dueDate;
+            await foundRecord.save();
+            return foundRecord;
+        }
+        foundRecord.status = "rejected";
+        await foundRecord.save();
+        return foundRecord;
+    } catch (err: any) {
+        throw err;
+    }
+};

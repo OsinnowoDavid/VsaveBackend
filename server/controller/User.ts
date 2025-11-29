@@ -44,6 +44,7 @@ import {
 } from "../services/User";
 import { IUser, IVerificationToken, IKYC1 } from "../../types";
 import {
+    getFixedSavingsByStatus,
     getUserActiveFixedSavings,
     getUserCompletedFixedSavings,
     getUserFixedSavings,
@@ -1276,6 +1277,29 @@ export const getAllFixedSavingsController = async (
             status: "Success",
             message: "all record found",
             data: allRecord,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+export const getFixedSavingsByStatusController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const user = req.user as IUser;
+        const { status } = req.body;
+        const foundRecord = await getFixedSavingsByStatus(
+            user._id.toString(),
+            status,
+        );
+        return res.json({
+            status: "Success",
+            message: "found record",
+            data: foundRecord,
         });
     } catch (err: any) {
         return res.json({

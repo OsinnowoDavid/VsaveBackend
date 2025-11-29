@@ -247,7 +247,31 @@ const getTomorrowsDate = () => {
     tomorrow.setDate(tomorrow.getDate() + 1);
     return tomorrow;
 };
-
+export const getUserSavingsRecordByStatus = async (
+    user: string,
+    status: string,
+) => {
+    try {
+        const foundSavingsRecord = await UserSavingsRecord.find({
+            user,
+            status,
+        });
+        let result = [];
+        for (const record of foundSavingsRecord) {
+            const foundContributionRecord = await SavingsContribution.findById(
+                record.contributionId,
+            );
+            let resultToPush = {
+                savingsRecord: foundSavingsRecord,
+                contributionRecord: foundContributionRecord,
+            };
+            result.push(resultToPush);
+        }
+        return result;
+    } catch (err: any) {
+        throw err;
+    }
+};
 export const restartSavingsCircle = async (user: string, circleId: string) => {
     try {
         const foundSavingsCircle = await SavingsCircle.findById(circleId);
@@ -594,7 +618,14 @@ export const getAllActiveFixedSavings = async () => {
         throw err;
     }
 };
-
+export const getFixedSavingsByStatus = async (user: string, status: string) => {
+    try {
+        const foundRecord = await FixedSavings.find({ user, status });
+        return foundRecord;
+    } catch (err: any) {
+        throw err;
+    }
+};
 export const breakSavingsCircle = async (user: string, recordId: string) => {
     try {
         const foundUserSavingsRecord = await UserSavingsRecord.findOne({
@@ -625,6 +656,20 @@ export const breakSavingsCircle = async (user: string, recordId: string) => {
         );
         await foundUserSavingsRecord.save();
         return;
+    } catch (err: any) {
+        throw err;
+    }
+};
+
+export const breakFixedSavings = async (user: string, recordId: string) => {
+    try {
+        const foundSavingsRecord = await FixedSavings.findOne({
+            _id: recordId,
+            user,
+        });
+        // check the interestPayoutType
+        if (foundSavingsRecord.interestPayoutType === "UPFRONT") {
+        }
     } catch (err: any) {
         throw err;
     }

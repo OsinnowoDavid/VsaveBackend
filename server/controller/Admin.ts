@@ -293,3 +293,24 @@ export const getAdminSavingsConfigController = async (
         });
     }
 };
+
+// get all loan record
+export const getAllLoanRecordController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        // const foundRecord = await
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+// get  loan record by status
+// aprovve pending loan
+// edit pending loan for approval
+// send general notification
+// send personal notification
+// suspend admin account

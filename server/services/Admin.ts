@@ -181,3 +181,15 @@ export const getAdminSavingsConfig = async () => {
         throw err;
     }
 };
+type INotificationTo = "User" | "Regionaladmin" | "SubRegionalAdmin" | "Agent";
+export const sendNotification = async (
+    to: INotificationTo,
+    recipientId: string,
+    title: string,
+    message: string,
+) => {
+    try {
+    } catch (err: any) {
+        throw err;
+    }
+};

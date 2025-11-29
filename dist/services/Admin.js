@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAdminSavingsConfig = exports.setAdminSavingsConfig = exports.getRegionByName = exports.getAllRegion = exports.getRegionalAdminByEmail = exports.getRegionalAdminById = exports.getAllRegionalAdmin = exports.assignRegionalAdmin = exports.createRegionalAdmin = exports.createNewRegion = exports.getAllSuperAdminByEmail = exports.getSuperAdminById = exports.CreateSuperAdmin = void 0;
+exports.sendNotification = exports.getAdminSavingsConfig = exports.setAdminSavingsConfig = exports.getRegionByName = exports.getAllRegion = exports.getRegionalAdminByEmail = exports.getRegionalAdminById = exports.getAllRegionalAdmin = exports.assignRegionalAdmin = exports.createRegionalAdmin = exports.createNewRegion = exports.getAllSuperAdminByEmail = exports.getSuperAdminById = exports.CreateSuperAdmin = void 0;
 const Super_admin_1 = __importDefault(require("../model/Super_admin"));
 const Regionaladmin_1 = __importDefault(require("../model/Regionaladmin"));
 const Region_1 = __importDefault(require("../model/Region"));
@@ -175,3 +175,11 @@ const getAdminSavingsConfig = async () => {
     }
 };
 exports.getAdminSavingsConfig = getAdminSavingsConfig;
+const sendNotification = async (to, recipientId, title, message) => {
+    try {
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.sendNotification = sendNotification;

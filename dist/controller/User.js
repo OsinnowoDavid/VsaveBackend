@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllFixedSavingsController = exports.getCompletedFixedSavingsController = exports.getActiveFixedSavingsController = exports.createFixedSavingController = exports.getSavingsCircleByIdController = exports.getAllUserSavingsRecordController = exports.getUserActiveSavingsRecordController = exports.getAvaliableSavingsController = exports.createPersonalSavingsCircleController = exports.joinSavingsController = exports.userGetAllSubRegionController = exports.getUserTransactionByTypeController = exports.getUserTransactionByStatusController = exports.getUserSingleTransactionController = exports.getUserTransactionsController = exports.payOutController = exports.accountLookUpController = exports.getBankCodeController = exports.buyDataController = exports.buyAirtimeController = exports.getDataPlanController = exports.validateTransactionPinController = exports.updateTransactionPinController = exports.createTransactionPinController = exports.getUserKyc1RecordController = exports.updateKYC1RecordController = exports.registerKYC1 = exports.changePasswordController = exports.updateProfileController = exports.userProfile = exports.loginUser = exports.resendUserVerificationEmail = exports.verifyEmail = exports.registerUser = void 0;
+exports.getFixedSavingsByStatusController = exports.getAllFixedSavingsController = exports.getCompletedFixedSavingsController = exports.getActiveFixedSavingsController = exports.createFixedSavingController = exports.getSavingsCircleByIdController = exports.getAllUserSavingsRecordController = exports.getUserActiveSavingsRecordController = exports.getAvaliableSavingsController = exports.createPersonalSavingsCircleController = exports.joinSavingsController = exports.userGetAllSubRegionController = exports.getUserTransactionByTypeController = exports.getUserTransactionByStatusController = exports.getUserSingleTransactionController = exports.getUserTransactionsController = exports.payOutController = exports.accountLookUpController = exports.getBankCodeController = exports.buyDataController = exports.buyAirtimeController = exports.getDataPlanController = exports.validateTransactionPinController = exports.updateTransactionPinController = exports.createTransactionPinController = exports.getUserKyc1RecordController = exports.updateKYC1RecordController = exports.registerKYC1 = exports.changePasswordController = exports.updateProfileController = exports.userProfile = exports.loginUser = exports.resendUserVerificationEmail = exports.verifyEmail = exports.registerUser = void 0;
 const argon2_1 = __importDefault(require("argon2"));
 const Agent_1 = require("../services/Agent");
 const User_1 = require("../services/User");
@@ -995,3 +995,22 @@ const getAllFixedSavingsController = async (req, res) => {
     }
 };
 exports.getAllFixedSavingsController = getAllFixedSavingsController;
+const getFixedSavingsByStatusController = async (req, res) => {
+    try {
+        const user = req.user;
+        const { status } = req.body;
+        const foundRecord = await (0, Savings_1.getFixedSavingsByStatus)(user._id.toString(), status);
+        return res.json({
+            status: "Success",
+            message: "found record",
+            data: foundRecord,
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.getFixedSavingsByStatusController = getFixedSavingsByStatusController;

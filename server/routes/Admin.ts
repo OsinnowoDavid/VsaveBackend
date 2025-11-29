@@ -25,7 +25,7 @@ router.post(
 router.post("/login", LoginSuperAdminController);
 
 router.get("/profile", verifySuperAdminToken, superAdminProfileController);
-
+// get index info
 router.post("/create-region", verifySuperAdminToken, createNewRegionController);
 
 router.post(
@@ -58,5 +58,10 @@ router.get(
     verifySuperAdminToken,
     getAdminSavingsConfigController,
 );
-
+// get all loan record
+// get  loan record by status
+// aprovve pending loan
+// send general notification
+// send personal notification
+// suspend admin account
 export default router;
