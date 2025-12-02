@@ -70,6 +70,10 @@ const userSchema = new Schema(
         pin: {
             type: Number,
         },
+        kycStatus: {
+            type: Boolean,
+            default: false,
+        },
     },
     { timestamps: true },
 );

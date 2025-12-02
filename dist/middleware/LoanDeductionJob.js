@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.loanDeductionJob = exports.deductLoanRepayment = void 0;
+exports.loanDeductionJob = void 0;
 const Loan_1 = require("../services/Loan");
 const User_1 = require("../services/User");
 const tools_1 = require("../config/tools");
@@ -30,12 +30,11 @@ const deductLoanRepayment = async (user) => {
         return err.message;
     }
 };
-exports.deductLoanRepayment = deductLoanRepayment;
 const loanDeductionJob = async () => {
     try {
         const allUnsettledLoan = await (0, Loan_1.allUnsettledRecord)();
         for (const record of allUnsettledLoan) {
-            const deduction = await (0, exports.deductLoanRepayment)(record.user.toString());
+            const deduction = await deductLoanRepayment(record.user.toString());
             return "done";
         }
         return "done";

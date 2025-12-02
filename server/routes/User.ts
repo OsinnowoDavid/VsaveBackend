@@ -35,6 +35,8 @@ import {
     validateTransactionPinController,
     updateTransactionPinController,
     createTransactionPinController,
+    getFixedSavingsByStatusController,
+    getUserSavingsRecordsByStatusController,
 } from "../controller/User";
 import {
     validateUserRegitrationInput,
@@ -165,4 +167,15 @@ router.get(
     verifyUserToken,
     getActiveFixedSavingsController,
 );
+router.post(
+    "/get-saving-by-status",
+    verifyUserToken,
+    getFixedSavingsByStatusController,
+);
+router.post(
+    "/get-fixedsaving-by-status",
+    verifyUserToken,
+    getUserSavingsRecordsByStatusController,
+);
+
 export default router;

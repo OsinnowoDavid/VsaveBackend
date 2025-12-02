@@ -10,7 +10,7 @@ const Region_1 = __importDefault(require("../model/Region"));
 const SubRegionalAdmin_1 = __importDefault(require("../model/SubRegionalAdmin"));
 const getRegionalAdminById = async (id) => {
     try {
-        const foundAdmin = await Regionaladmin_1.default.findById(id);
+        const foundAdmin = await Regionaladmin_1.default.findById(id, { password: 0 });
         return foundAdmin;
     }
     catch (err) {
@@ -91,7 +91,9 @@ const createSubRegionalAdmin = async (firstName, lastName, email, password, phon
 exports.createSubRegionalAdmin = createSubRegionalAdmin;
 const getSubRegionalAdminById = async (id) => {
     try {
-        const foundSubRegionAdmin = await SubRegionalAdmin_1.default.findById(id);
+        const foundSubRegionAdmin = await SubRegionalAdmin_1.default.findById(id, {
+            password: 0,
+        });
         return foundSubRegionAdmin;
     }
     catch (err) {

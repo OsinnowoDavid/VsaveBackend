@@ -41,6 +41,7 @@ import {
     userDeposit,
     createTransactionPin,
     validateTransactionPin,
+    getUserByIdPublicUse,
 } from "../services/User";
 import { IUser, IVerificationToken, IKYC1 } from "../../types";
 import {
@@ -48,6 +49,7 @@ import {
     getUserActiveFixedSavings,
     getUserCompletedFixedSavings,
     getUserFixedSavings,
+    getUserSavingsRecordByStatus,
 } from "../services/Savings";
 import { signUserToken } from "../config/JWT";
 import SGMail from "@sendgrid/mail";
@@ -321,11 +323,12 @@ export const loginUser = async (req: Request, res: Response) => {
                 message: "incorrect password ",
             });
         }
+        const signedUser = await getUserByIdPublicUse(user._id.toString());
         // Return success with JWT token
         return res.json({
             status: "Success",
             message: "login successfuly",
-            token: signUserToken(user),
+            token: signUserToken(signedUser),
         });
     } catch (err: any) {
         res.json({
@@ -444,7 +447,7 @@ export const registerKYC1 = async (req: Request, res: Response) => {
             });
         }
         // change KYC status
-        await kycStatusChange(user, "verified", 1);
+
         const virtualAccount = await createVirtualAccountForPayment(
             user,
             bvn,
@@ -461,6 +464,7 @@ export const registerKYC1 = async (req: Request, res: Response) => {
             user._id.toString(),
             virtualAccount.data.virtual_account_number,
         );
+
         return res.json({
             status: "Success",
             message: "KYC1 record created successfuly",
@@ -1123,6 +1127,29 @@ export const getSavingsCircleByIdController = async (
             status: "Success",
             message: "found savings ",
             data: foundCircle,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+export const getUserSavingsRecordsByStatusController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const user = req.user as IUser;
+        const { status } = req.body;
+        const foundRecords = await getUserSavingsRecordByStatus(
+            user._id.toString(),
+            status,
+        );
+        return res.json({
+            status: "Success",
+            message: "foundRecord",
+            data: foundRecords,
         });
     } catch (err: any) {
         return res.json({

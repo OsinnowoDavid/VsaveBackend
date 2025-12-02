@@ -27,7 +27,7 @@ const CreateSuperAdmin = async (firstName, lastName, email, phoneNumber, passwor
 exports.CreateSuperAdmin = CreateSuperAdmin;
 const getSuperAdminById = async (id) => {
     try {
-        const foundAdmin = await Super_admin_1.default.findById(id);
+        const foundAdmin = await Super_admin_1.default.findById(id, { password: 0 });
         return foundAdmin;
     }
     catch (err) {

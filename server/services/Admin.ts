@@ -28,7 +28,7 @@ export const CreateSuperAdmin = async (
 
 export const getSuperAdminById = async (id: string) => {
     try {
-        const foundAdmin = await Admin.findById(id);
+        const foundAdmin = await Admin.findById(id, { password: 0 });
         return foundAdmin;
     } catch (err: any) {
         throw err;

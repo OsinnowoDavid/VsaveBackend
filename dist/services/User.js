@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validateTransactionPin = exports.createTransactionPin = exports.getCircleById = exports.userDeposit = exports.userWithdraw = exports.createFixedSaving = exports.userGetAllSubRegion = exports.getUserTransactionByType = exports.getUserTransactionByStatus = exports.getUserSingleTransaction = exports.getUserTransactions = exports.payOut = exports.accountLookUp = exports.getBankCode = exports.createUserAirtimeTransaction = exports.createUserDataTransaction = exports.checkTransferByRefrence = exports.createUserTransaction = exports.deposit = exports.withdraw = exports.buyData = exports.getUserKyc1Record = exports.getDataPlan = exports.buyAirtime = exports.createVirtualAccountIndex = exports.createVirtualAccountForPayment = exports.verifyBankaccount = exports.getAllBanksAndCode = exports.updateKYC1Record = exports.createKYC1Record = exports.kycStatusChange = exports.createKYCRecord = exports.changePassword = exports.updateProfile = exports.getUserVerificationToken = exports.assignUserEmailVerificationToken = exports.getUserByEmail = exports.getUserById = exports.createNewUser = void 0;
+exports.getAllUser = exports.validateTransactionPin = exports.createTransactionPin = exports.getCircleById = exports.userDeposit = exports.userWithdraw = exports.createFixedSaving = exports.userGetAllSubRegion = exports.getUserTransactionByType = exports.getUserTransactionByStatus = exports.getUserSingleTransaction = exports.getUserTransactions = exports.payOut = exports.accountLookUp = exports.getBankCode = exports.createUserAirtimeTransaction = exports.createUserDataTransaction = exports.checkTransferByRefrence = exports.createUserTransaction = exports.deposit = exports.withdraw = exports.buyData = exports.getUserKyc1Record = exports.getDataPlan = exports.buyAirtime = exports.createVirtualAccountIndex = exports.createVirtualAccountForPayment = exports.verifyBankaccount = exports.getAllBanksAndCode = exports.updateKYC1Record = exports.createKYC1Record = exports.kycStatusChange = exports.createKYCRecord = exports.changePassword = exports.updateProfile = exports.getUserVerificationToken = exports.assignUserEmailVerificationToken = exports.getUserByEmail = exports.getUserByIdPublicUse = exports.getUserById = exports.createNewUser = void 0;
 const User_1 = __importDefault(require("../model/User"));
 const VerificationToken_1 = __importDefault(require("../model/VerificationToken"));
 const KYC1_1 = __importDefault(require("../model/KYC1"));
@@ -44,6 +44,16 @@ const getUserById = async (id) => {
     }
 };
 exports.getUserById = getUserById;
+const getUserByIdPublicUse = async (id) => {
+    try {
+        const foundUser = await User_1.default.findById(id, { password: 0 });
+        return foundUser;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.getUserByIdPublicUse = getUserByIdPublicUse;
 const getUserByEmail = async (email) => {
     try {
         const foundUser = await User_1.default.findOne({ email });
@@ -289,6 +299,7 @@ const createVirtualAccountIndex = async (user, account) => {
     try {
         const foundUser = await User_1.default.findByIdAndUpdate(user, {
             virtualAccountNumber: account,
+            kycStatus: true,
         });
         return foundUser;
     }
@@ -770,3 +781,13 @@ const validateTransactionPin = async (user, enteredPin) => {
     }
 };
 exports.validateTransactionPin = validateTransactionPin;
+const getAllUser = async () => {
+    try {
+        const allUser = await User_1.default.find();
+        return allUser;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.getAllUser = getAllUser;

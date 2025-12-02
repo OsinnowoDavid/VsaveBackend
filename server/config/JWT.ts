@@ -43,6 +43,7 @@ export const verifyUserToken = async (
         const foundId = decoded.user._id;
 
         // Find client by decoded user ID
+
         const currentClient = await getUserById(foundId);
 
         if (!currentClient) {

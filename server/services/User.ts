@@ -49,7 +49,14 @@ export const getUserById = async (id: string) => {
         throw err;
     }
 };
-
+export const getUserByIdPublicUse = async (id: string) => {
+    try {
+        const foundUser = await User.findById(id, { password: 0 });
+        return foundUser;
+    } catch (err: any) {
+        throw err;
+    }
+};
 export const getUserByEmail = async (email: string) => {
     try {
         const foundUser = await User.findOne({ email });
@@ -344,6 +351,7 @@ export const createVirtualAccountIndex = async (
     try {
         const foundUser = await User.findByIdAndUpdate(user, {
             virtualAccountNumber: account,
+            kycStatus: true,
         });
         return foundUser;
     } catch (err: any) {
@@ -882,6 +890,15 @@ export const validateTransactionPin = async (
             result = true;
         }
         return result;
+    } catch (err: any) {
+        throw err;
+    }
+};
+
+export const getAllUser = async () => {
+    try {
+        const allUser = await User.find();
+        return allUser;
     } catch (err: any) {
         throw err;
     }

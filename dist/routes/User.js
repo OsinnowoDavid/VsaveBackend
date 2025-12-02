@@ -47,4 +47,6 @@ router.post("/create-fixed-deposit", JWT_1.verifyUserToken, User_1.createFixedSa
 router.get("/get-all-fixed-savings", JWT_1.verifyUserToken, User_1.getAllFixedSavingsController);
 router.get("/get-completed-fixed-savings", JWT_1.verifyUserToken, User_1.getCompletedFixedSavingsController);
 router.get("/get-active-fixed-savings", JWT_1.verifyUserToken, User_1.getActiveFixedSavingsController);
+router.post("/get-saving-by-status", JWT_1.verifyUserToken, User_1.getFixedSavingsByStatusController);
+router.post("/get-fixedsaving-by-status", JWT_1.verifyUserToken, User_1.getUserSavingsRecordsByStatusController);
 exports.default = router;

@@ -7,7 +7,7 @@ import {
 import { userWithdraw, getUserById } from "../services/User";
 import { generateLoanRefrenceCode } from "../config/tools";
 
-export const deductLoanRepayment = async (user: string) => {
+const deductLoanRepayment = async (user: string) => {
     try {
         const foundUser = await getUserById(user);
         const foundUnsettledLoan = await getUserUnsettledLoan(foundUser);
