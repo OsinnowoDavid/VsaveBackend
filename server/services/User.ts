@@ -365,6 +365,7 @@ export const buyAirtime = async (phoneNumber: string, amount: number) => {
             phone_number: phoneNumber,
             amount,
         };
+        console.log("got inside service");
         let config = {
             method: "post",
             maxBodyLength: Infinity,
@@ -376,6 +377,7 @@ export const buyAirtime = async (phoneNumber: string, amount: number) => {
             data: data,
         };
         const response = await axios.request(config);
+        console.log("response:", response.data);
         return response.data;
     } catch (err: any) {
         // If the request fails, we log the response from the provider

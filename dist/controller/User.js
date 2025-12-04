@@ -488,21 +488,26 @@ const buyAirtimeController = async (req, res) => {
     try {
         const { phoneNumber, amount } = req.body;
         // check if user validate transaction pin
-        if (!req.validateTransactionPin.status) {
+        console.log("got inside controller");
+        if (!req.validateTransactionPin) {
             return res.json({
                 status: "Failed",
                 message: "Validate transaction pin to procced with transaction",
             });
         }
         const user = req.user;
+        console.log("got inside controller");
         // check if avaliablebalance is greater than the purchased amount
         if (amount > user.availableBalance) {
+            console.log("insuficient");
             return res.json({
                 status: "Failed",
                 message: "Insufficient Fund Topup your account and try again",
             });
         }
+        console.log("start buy airtime process");
         const airtime = await (0, User_1.buyAirtime)(phoneNumber, amount);
+        console.log("finish buy airtime process");
         if (!airtime) {
             return res.json({
                 status: "Failed",
@@ -526,6 +531,7 @@ const buyAirtimeController = async (req, res) => {
         return res.json({
             status: "Failed",
             message: err.message,
+            err,
         });
     }
 };
@@ -778,10 +784,13 @@ const createPersonalSavingsCircleController = async (req, res) => {
         const { savingsTitle, frequency, duration, deductionPeriod, savingsAmount, startDate, autoRestartEnabled, } = req.body;
         let user = req.user;
         const { firstTimeAdminFee } = await Admin_config_1.default.getSettings();
-        let endDate = (0, tools_1.calculateEndDate)(frequency, startDate, duration);
+        // Parse the startDate in the local time zone
+        const localStartDate = new Date(startDate);
+        localStartDate.setHours(0, 0, 0, 0); // Normalize to the start of the day in local time ;
+        let endDate = (0, tools_1.calculateEndDate)(frequency, localStartDate, duration);
         let maturityAmount = (0, tools_1.calculateMaturityAmount)(frequency, duration, savingsAmount, Number(firstTimeAdminFee));
         console.log("maturity amount:", maturityAmount);
-        const newSavingsCircle = await (0, Savings_2.createUserPersonalSavings)(user, savingsTitle, frequency, duration, deductionPeriod, savingsAmount, maturityAmount, startDate, endDate, autoRestartEnabled);
+        const newSavingsCircle = await (0, Savings_2.createUserPersonalSavings)(user, savingsTitle, frequency, duration, deductionPeriod, savingsAmount, maturityAmount, localStartDate, endDate, autoRestartEnabled);
         return res.json({
             status: "Success",
             message: "savings created successfuly",

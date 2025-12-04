@@ -13,7 +13,6 @@ export const createSavingPlanController = async (
             savingsTitle,
             frequency,
             savingsAmount,
-            startDate,
             deductionPeriod,
             duration,
         } = req.body;
@@ -37,6 +36,11 @@ export const createSavingPlanController = async (
             duration,
             maturityAmount,
         );
+        return res.json({
+            status: "Success",
+            message: "Savings created",
+            data: newSavingsPlan,
+        });
     } catch (err: any) {
         return res.json({
             status: "Failed",

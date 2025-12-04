@@ -13,40 +13,41 @@ export function calculateEndDate(
         throw new Error("duration must be a positive integer (>= 1).");
     }
 
-    // Normalize start date and validate
+    // ---- FORCE LOCAL TIME (Africa/Lagos) ----
     const start =
         startDate instanceof Date ? new Date(startDate) : new Date(startDate);
+
     if (isNaN(start.getTime())) {
         throw new Error("startDate is invalid.");
     }
 
-    // Work on a copy so we don't mutate input
+    // Normalize to **local** midnight (prevents timezone shifts)
+    start.setHours(0, 0, 0, 0);
+
+    // Copy for calculation
     const end = new Date(start.getTime());
 
     switch (frequency) {
         case "DAILY":
-            // inclusive: duration=1 => same day
             end.setDate(end.getDate() + (duration - 1));
             break;
 
         case "WEEKLY":
-            // each period = 7 days; inclusive
-            end.setDate(end.getDate() + (duration * 7 - 1));
+            end.setDate(end.getDate() + duration * 7 - 1);
             break;
 
         case "MONTHLY":
-            // adding months while keeping day where possible;
-            // inclusive: duration=1 => same month/day
-            // Use setMonth which handles month overflow (and end-of-month behavior)
             end.setMonth(end.getMonth() + (duration - 1));
             break;
 
         default:
-            // compile-time safety but also runtime guard
             throw new Error(
                 "frequency must be 'DAILY', 'WEEKLY', or 'MONTHLY'.",
             );
     }
+
+    // Normalize endDate to same local timezone start of day
+    end.setHours(0, 0, 0, 0);
 
     return end;
 }
@@ -238,8 +239,8 @@ export function calculateProportionalInterest(
 export function getCurrentDateWithClosestHour(): Date {
     const now = new Date();
 
-    // Create a new date with minutes, seconds and ms set to zero
-    const result = new Date(
+    // Normalize to local hour (Africa/Lagos) without changing the day
+    const local = new Date(
         now.getFullYear(),
         now.getMonth(),
         now.getDate(),
@@ -249,21 +250,35 @@ export function getCurrentDateWithClosestHour(): Date {
         0, // milliseconds
     );
 
-    return result;
+    return local;
 }
 
 export const isPastYesterday = (date: Date) => {
+    const input = new Date(date);
+    input.setHours(0, 0, 0, 0); // Normalize input to local midnight
+
     const today = new Date();
-    const yesterday = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
-    return date <= yesterday;
+
+    return input <= yesterday;
 };
+
 export const isPastTomorrow = (date: Date) => {
+    const input = new Date(date);
+    input.setHours(0, 0, 0, 0); // Normalize input to local midnight
+
     const today = new Date();
-    const tomorrow = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const tomorrow = new Date(today);
     tomorrow.setDate(today.getDate() + 1);
-    return date >= tomorrow;
+
+    return input <= tomorrow;
 };
+
 export const checkIfContributionIsCompleted = (recordStatus: [any]) => {
     let isContributionComplete = true;
     for (const status of recordStatus) {

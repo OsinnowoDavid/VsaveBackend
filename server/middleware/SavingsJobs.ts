@@ -20,16 +20,33 @@ import {
 import { getAdminSavingsConfig } from "../services/Admin";
 export const startPauseSavings = async () => {
     try {
-        // check for paused record that needs to start
         const allPausedSavings = await getAllUserPausedSavingsRecord();
+
+        // Get today's date normalized to local midnight
         let todaysDate = new Date();
+        todaysDate.setHours(0, 0, 0, 0);
+
         for (const record of allPausedSavings) {
+            // Convert MongoDB UTC date → local date
             let startDate = new Date(record.startDate);
-            if (startDate === todaysDate) {
+            startDate.setHours(0, 0, 0, 0); // Normalize to local midnight
+
+            console.log(
+                "Local Today:",
+                todaysDate.getTime(),
+                "Record Start:",
+                startDate.getTime(),
+            );
+
+            // Compare by timestamp, not ===
+            if (startDate.getTime() === todaysDate.getTime()) {
+                console.log("got here start paused");
                 record.status = "ACTIVE";
                 await record.save();
             }
+            console.log("start paused record status:", record);
         }
+
         return "Done";
     } catch (err: any) {
         throw err;
@@ -42,13 +59,21 @@ export const endExpiredSavings = async () => {
         const allActiveSavings = await getAllUserActiveSavingsRecord();
         for (const record of allActiveSavings) {
             let pastTomorrow = isPastTomorrow(record.endDate);
-            if (pastTomorrow) {
+            console.log(
+                "ispasttomorrow",
+                pastTomorrow,
+                "the end date",
+                record.endDate,
+            );
+            if (pastTomorrow === true) {
+                console.log("got here end expired");
                 // check if the contribution is completed
                 const allStatus = await getAllContributionStatus(
                     record.contributionId.toString(),
                 );
                 const isCompleted = checkIfContributionIsCompleted(allStatus);
                 if (isCompleted) {
+                    console.log("got here iscompleted expirering", record);
                     record.status = "ENDED";
                     await record.save();
                     // first check if autorenew is on do user can start a new circle
@@ -58,6 +83,7 @@ export const endExpiredSavings = async () => {
                             record.savingsCircleId.toString(),
                         );
                     }
+                    console.log("expire record status after:", record);
                     return;
                 }
             }
@@ -80,7 +106,10 @@ export const deductSavingsFromUser = async () => {
             let remark = `${savingsDetails?.savingsAmount}N is withdrawn from your account for ${savingsDetails?.savingsTitle} Plan`;
             // check and deduct based on frequency
             if (savingsDetails.frequency === "MONTHLY") {
-                if (new Date(savingsDetails.deductionPeriod) === todaysDate) {
+                if (
+                    new Date(savingsDetails.deductionPeriod).getTime() ===
+                    todaysDate.getTime()
+                ) {
                     const withdraw = await userWithdraw(
                         record.user.toString(),
                         savingsDetails.savingsAmount,
@@ -177,7 +206,10 @@ export const fixedSavingsDisbursement = async () => {
     try {
         const allActiveSavings = await getAllActiveFixedSavings();
         for (const record of allActiveSavings) {
-            if (getCurrentDateWithClosestHour() === record.endDate) {
+            if (
+                getCurrentDateWithClosestHour().getTime() ===
+                record.endDate.getTime()
+            ) {
                 // deposite user account with payment amount
                 let ref = generateSavingsRefrenceCode();
                 let remark = `Fixed savings maturity payout`;

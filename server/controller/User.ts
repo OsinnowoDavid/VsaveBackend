@@ -644,21 +644,26 @@ export const buyAirtimeController = async (req: Request, res: Response) => {
     try {
         const { phoneNumber, amount } = req.body;
         // check if user validate transaction pin
-        if (!req.validateTransactionPin.status) {
+        console.log("got inside controller");
+        if (!req.validateTransactionPin) {
             return res.json({
                 status: "Failed",
                 message: "Validate transaction pin to procced with transaction",
             });
         }
         const user = req.user as IUser;
+        console.log("got inside controller");
         // check if avaliablebalance is greater than the purchased amount
         if (amount > user.availableBalance) {
+            console.log("insuficient");
             return res.json({
                 status: "Failed",
                 message: "Insufficient Fund Topup your account and try again",
             });
         }
+        console.log("start buy airtime process");
         const airtime = await buyAirtime(phoneNumber, amount);
+        console.log("finish buy airtime process");
         if (!airtime) {
             return res.json({
                 status: "Failed",
@@ -689,6 +694,7 @@ export const buyAirtimeController = async (req: Request, res: Response) => {
         return res.json({
             status: "Failed",
             message: err.message,
+            err,
         });
     }
 };
@@ -996,7 +1002,10 @@ export const createPersonalSavingsCircleController = async (
         } = req.body;
         let user = req.user as IUser;
         const { firstTimeAdminFee } = await AdminSavingsConfig.getSettings();
-        let endDate = calculateEndDate(frequency, startDate, duration);
+        // Parse the startDate in the local time zone
+        const localStartDate = new Date(startDate);
+        localStartDate.setHours(0, 0, 0, 0); // Normalize to the start of the day in local time ;
+        let endDate = calculateEndDate(frequency, localStartDate, duration);
         let maturityAmount = calculateMaturityAmount(
             frequency,
             duration,
@@ -1012,7 +1021,7 @@ export const createPersonalSavingsCircleController = async (
             deductionPeriod,
             savingsAmount,
             maturityAmount,
-            startDate,
+            localStartDate,
             endDate,
             autoRestartEnabled,
         );
