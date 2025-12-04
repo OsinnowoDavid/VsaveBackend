@@ -41,7 +41,6 @@ const verifyUserToken = async (req, res, next) => {
         }
         // Attach user to request object
         req.user = currentClient;
-        console.log("pass token validation");
         return next();
     }
     catch (err) {

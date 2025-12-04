@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.hourlyScheduleJob = exports.firstMinsOfTheDayJob = void 0;
+exports.transactionPinMiddleware = exports.hourlyScheduleJob = exports.firstMinsOfTheDayJob = void 0;
 const SavingsJobs_1 = require("./SavingsJobs");
 const LoanDeductionJob_1 = require("./LoanDeductionJob");
 const firstMinsOfTheDayJob = async () => {
@@ -37,3 +37,13 @@ const hourlyScheduleJob = async () => {
     }
 };
 exports.hourlyScheduleJob = hourlyScheduleJob;
+const transactionPinMiddleware = (req, res, next) => {
+    if (!req.validateTransactionPin) {
+        req.validateTransactionPin = {
+            pin: 0,
+            status: false,
+        };
+    }
+    next();
+};
+exports.transactionPinMiddleware = transactionPinMiddleware;

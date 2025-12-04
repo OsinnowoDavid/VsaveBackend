@@ -66,7 +66,6 @@ const userSchema = new Schema({
     },
     virtualAccountNumber: {
         type: String,
-        unique: true,
     },
     pin: {
         type: Number,

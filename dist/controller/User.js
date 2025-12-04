@@ -456,6 +456,7 @@ const validateTransactionPinController = async (req, res) => {
         return res.json({
             status: "Failed",
             message: err.message,
+            err,
         });
     }
 };
@@ -489,7 +490,7 @@ const buyAirtimeController = async (req, res) => {
         const { phoneNumber, amount } = req.body;
         // check if user validate transaction pin
         console.log("got inside controller");
-        if (!req.validateTransactionPin) {
+        if (!req.validateTransactionPin || !req.validateTransactionPin.status) {
             return res.json({
                 status: "Failed",
                 message: "Validate transaction pin to procced with transaction",
@@ -541,7 +542,7 @@ const buyDataController = async (req, res) => {
         const { phoneNumber, amount, planCode } = req.body;
         const user = req.user;
         // check if user validate transaction pin
-        if (!req.validateTransactionPin.status) {
+        if (!req.validateTransactionPin || !req.validateTransactionPin.status) {
             return res.json({
                 status: "Failed",
                 message: "Validate transaction pin to procced with transaction",
@@ -624,7 +625,7 @@ const payOutController = async (req, res) => {
         const { bankCode, accountNumber, accountName, amount } = req.body;
         const user = req.user;
         // check if user validate transaction pin
-        if (!req.validateTransactionPin.status) {
+        if (!req.validateTransactionPin || !req.validateTransactionPin.status) {
             return res.json({
                 status: "Failed",
                 message: "Validate transaction pin to procced with transaction",

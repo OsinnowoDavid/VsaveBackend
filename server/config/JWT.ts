@@ -55,7 +55,6 @@ export const verifyUserToken = async (
 
         // Attach user to request object
         req.user = currentClient;
-        console.log("pass token validation");
         return next();
     } catch (err: any) {
         res.json({

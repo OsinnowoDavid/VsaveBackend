@@ -91,7 +91,6 @@ export const registerUser = async (req: Request, res: Response) => {
             phoneNumber,
             referralCode,
         } = req.body;
-
         let hashPassword = await argon.hash(password);
         const newUser = await createNewUser(
             firstName,
@@ -102,7 +101,6 @@ export const registerUser = async (req: Request, res: Response) => {
             dateOfBirth,
             phoneNumber,
         );
-
         if (!newUser) {
             return res.status(500).json({
                 status: "Failed",
@@ -603,6 +601,7 @@ export const validateTransactionPinController = async (
                 message: "Transaction pin Validation successful",
             });
         }
+
         req.validateTransactionPin.pin = 0;
         req.validateTransactionPin.status = false;
         return res.json({
@@ -613,6 +612,7 @@ export const validateTransactionPinController = async (
         return res.json({
             status: "Failed",
             message: err.message,
+            err,
         });
     }
 };
@@ -645,7 +645,7 @@ export const buyAirtimeController = async (req: Request, res: Response) => {
         const { phoneNumber, amount } = req.body;
         // check if user validate transaction pin
         console.log("got inside controller");
-        if (!req.validateTransactionPin) {
+        if (!req.validateTransactionPin || !req.validateTransactionPin.status) {
             return res.json({
                 status: "Failed",
                 message: "Validate transaction pin to procced with transaction",
@@ -704,7 +704,7 @@ export const buyDataController = async (req: Request, res: Response) => {
         const { phoneNumber, amount, planCode } = req.body;
         const user = req.user as IUser;
         // check if user validate transaction pin
-        if (!req.validateTransactionPin.status) {
+        if (!req.validateTransactionPin || !req.validateTransactionPin.status) {
             return res.json({
                 status: "Failed",
                 message: "Validate transaction pin to procced with transaction",
@@ -790,7 +790,7 @@ export const payOutController = async (req: Request, res: Response) => {
         const { bankCode, accountNumber, accountName, amount } = req.body;
         const user = req.user as IUser;
         // check if user validate transaction pin
-        if (!req.validateTransactionPin.status) {
+        if (!req.validateTransactionPin || !req.validateTransactionPin.status) {
             return res.json({
                 status: "Failed",
                 message: "Validate transaction pin to procced with transaction",

@@ -38,3 +38,13 @@ export const hourlyScheduleJob = async () => {
         return err;
     }
 };
+
+export const transactionPinMiddleware = (req: any, res: any, next: any) => {
+    if (!req.validateTransactionPin) {
+        req.validateTransactionPin = {
+            pin: 0,
+            status: false,
+        };
+    }
+    next();
+};

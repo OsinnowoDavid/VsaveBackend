@@ -44,6 +44,7 @@ import {
     validateUserLoginInput,
 } from "../validate-input/user";
 import { verifyUserToken } from "../config/JWT";
+import { transactionPinMiddleware } from "../middleware";
 const router = express.Router();
 
 router.post("/register", validateUserRegitrationInput, registerUser);
@@ -75,6 +76,7 @@ router.post(
 router.post(
     "/validate-transaction-pin",
     verifyUserToken,
+    transactionPinMiddleware,
     validateTransactionPinController,
 );
 
