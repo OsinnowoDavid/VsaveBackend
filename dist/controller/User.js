@@ -315,6 +315,14 @@ const registerKYC1 = async (req, res) => {
     try {
         const { profession, accountNumber, bank, accountDetails, country, state, bvn, address, subRegion, } = req.body;
         const user = req.user;
+        // check if KYC record already exisyt
+        const foundKYC = await (0, User_1.getUserKyc1Record)(user._id.toString());
+        if (foundKYC) {
+            return res.json({
+                status: "Failed",
+                message: "KYC record already exist",
+            });
+        }
         // save KYC1
         const newKYC1 = await (0, User_1.createKYC1Record)(user, profession, accountNumber, bank, accountDetails, country, state, bvn, address, subRegion);
         if (!newKYC1) {
