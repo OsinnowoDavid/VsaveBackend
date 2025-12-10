@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.breakFixedSavings = exports.breakSavingsCircle = exports.getFixedSavingsByStatus = exports.getAllActiveFixedSavings = exports.getUserFixedSavings = exports.getUserCompletedFixedSavings = exports.getUserActiveFixedSavings = exports.disburseSavings = exports.havePendingLoanAndSaVingsStatus = exports.latePaymentDeduction = exports.getAllContributionStatus = exports.userSavingsRecords = exports.getSavingsContributionById = exports.allUserActiveSavingsRecord = exports.savingsDeductionSchedule = exports.checkForCircleById = exports.updateSavingsAutoRenewStatus = exports.restartSavingsCircle = exports.getUserSavingsRecordByStatus = exports.getAllUserActiveSavingsRecord = exports.getAllUserPausedSavingsRecord = exports.getUserPausedSavingsRecord = exports.getUserActiveSavingsRecord = exports.getAllUserSavingsCircle = exports.joinSavings = exports.getUserSavingsRecordById = exports.getUserSavingsCircleById = exports.createUserPersonalSavings = exports.getAllSavingsCircle = exports.getAllActiveSavingsCircle = exports.getCircleById = exports.initSavingsPlan = void 0;
+exports.getUserTotalSavingsBalance = exports.breakFixedSavings = exports.breakSavingsCircle = exports.getFixedSavingsByStatus = exports.getAllActiveFixedSavings = exports.getUserFixedSavings = exports.getUserCompletedFixedSavings = exports.getUserActiveFixedSavings = exports.disburseSavings = exports.havePendingLoanAndSaVingsStatus = exports.latePaymentDeduction = exports.getAllContributionStatus = exports.userSavingsRecords = exports.getSavingsContributionById = exports.allUserActiveSavingsRecord = exports.savingsDeductionSchedule = exports.checkForCircleById = exports.updateSavingsAutoRenewStatus = exports.restartSavingsCircle = exports.getUserSavingsRecordByStatus = exports.getAllUserActiveSavingsRecord = exports.getAllUserPausedSavingsRecord = exports.getUserPausedSavingsRecord = exports.getUserActiveSavingsRecord = exports.getAllUserSavingsCircle = exports.joinSavings = exports.getUserSavingsRecordById = exports.getUserSavingsCircleById = exports.createUserPersonalSavings = exports.getAllSavingsCircle = exports.getAllActiveSavingsCircle = exports.getCircleById = exports.initSavingsPlan = void 0;
 const Admin_config_1 = __importDefault(require("../model/Admin_config"));
 const Savings_circle_1 = __importDefault(require("../model/Savings_circle"));
 const User_savings_record_1 = __importDefault(require("../model/User_savings_record"));
@@ -625,3 +625,29 @@ const breakFixedSavings = async (user, recordId) => {
     }
 };
 exports.breakFixedSavings = breakFixedSavings;
+const getUserTotalSavingsBalance = async (user) => {
+    try {
+        const foundSavingsRecord = await User_savings_record_1.default.find({ user });
+        let result = {
+            totalBalance: 0,
+            activeSavingsBalance: 0,
+            settledSavingsBalance: 0
+        };
+        for (const record of foundSavingsRecord) {
+            const foundContribution = await SavingsContribution_1.default.findById(record.contributionId);
+            if (record.status === "ACTIVE") {
+                result.totalBalance += foundContribution.currentAmountSaved;
+                result.activeSavingsBalance += foundContribution.currentAmountSaved;
+            }
+            if (record.status === "ENDED") {
+                result.totalBalance += foundContribution.currentAmountSaved;
+                result.settledSavingsBalance += foundContribution.currentAmountSaved;
+            }
+        }
+        return result;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.getUserTotalSavingsBalance = getUserTotalSavingsBalance;

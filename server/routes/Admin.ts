@@ -9,7 +9,7 @@ import {
     getAllRegionalAdminController,
     getRegionalAdminByEmailController,
     setAdminConfigController,
-    getAdminSavingsConfigController,
+    getAdminConfigController,
 } from "../controller/Admin";
 import { verifySuperAdminToken } from "../config/JWT";
 import { validateAdminRegistrationInput } from "../validate-input/admin/index";
@@ -56,7 +56,7 @@ router.post(
 router.get(
     "/get-savings-config",
     verifySuperAdminToken,
-    getAdminSavingsConfigController,
+    getAdminConfigController,
 );
 // get all loan record
 // get  loan record by status

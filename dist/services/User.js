@@ -761,7 +761,7 @@ const getCircleById = async (circleId) => {
 exports.getCircleById = getCircleById;
 const createTransactionPin = async (user, pin) => {
     try {
-        const foundUser = await User_1.default.findByIdAndUpdate(user, { pin });
+        const foundUser = await User_1.default.findByIdAndUpdate(user, { pin: pin.toString() });
         return foundUser;
     }
     catch (err) {
@@ -773,7 +773,7 @@ const validateTransactionPin = async (user, enteredPin) => {
     try {
         const foundUser = await User_1.default.findById(user);
         let result = false;
-        if (foundUser.pin === enteredPin) {
+        if (foundUser.pin === enteredPin.toString()) {
             result = true;
         }
         return result;

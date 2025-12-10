@@ -872,9 +872,9 @@ export const getCircleById = async (circleId: string) => {
     }
 };
 
-export const createTransactionPin = async (user: string, pin: number) => {
+export const createTransactionPin = async (user: string, pin: string) => {
     try {
-        const foundUser = await User.findByIdAndUpdate(user, { pin });
+        const foundUser = await User.findByIdAndUpdate(user, { pin: pin.toString()}); 
         return foundUser;
     } catch (err: any) {
         throw err;
@@ -883,12 +883,12 @@ export const createTransactionPin = async (user: string, pin: number) => {
 
 export const validateTransactionPin = async (
     user: string,
-    enteredPin: number,
+    enteredPin: String,
 ) => {
     try {
         const foundUser = await User.findById(user);
         let result = false;
-        if (foundUser.pin === enteredPin) {
+        if (foundUser.pin === enteredPin.toString()) {
             result = true;
         }
         return result;

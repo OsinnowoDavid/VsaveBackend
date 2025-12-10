@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getFixedSavingsByStatusController = exports.getAllFixedSavingsController = exports.getCompletedFixedSavingsController = exports.getActiveFixedSavingsController = exports.createFixedSavingController = exports.getUserSavingsRecordsByStatusController = exports.getSavingsCircleByIdController = exports.getAllUserSavingsRecordController = exports.getUserActiveSavingsRecordController = exports.getAvaliableSavingsController = exports.createPersonalSavingsCircleController = exports.joinSavingsController = exports.userGetAllSubRegionController = exports.getUserTransactionByTypeController = exports.getUserTransactionByStatusController = exports.getUserSingleTransactionController = exports.getUserTransactionsController = exports.payOutController = exports.accountLookUpController = exports.getBankCodeController = exports.buyDataController = exports.buyAirtimeController = exports.getDataPlanController = exports.validateTransactionPinController = exports.updateTransactionPinController = exports.createTransactionPinController = exports.getUserKyc1RecordController = exports.updateKYC1RecordController = exports.registerKYC1 = exports.changePasswordController = exports.updateProfileController = exports.userProfile = exports.loginUser = exports.resendUserVerificationEmail = exports.verifyEmail = exports.registerUser = void 0;
+exports.getUserTotalSavingsBalanceController = exports.getFixedSavingsByStatusController = exports.getAllFixedSavingsController = exports.getCompletedFixedSavingsController = exports.getActiveFixedSavingsController = exports.createFixedSavingController = exports.getUserSavingsRecordsByStatusController = exports.getSavingsCircleByIdController = exports.getAllUserSavingsRecordController = exports.getUserActiveSavingsRecordController = exports.getAvaliableSavingsController = exports.createPersonalSavingsCircleController = exports.joinSavingsController = exports.userGetAllSubRegionController = exports.getUserTransactionByTypeController = exports.getUserTransactionByStatusController = exports.getUserSingleTransactionController = exports.getUserTransactionsController = exports.payOutController = exports.accountLookUpController = exports.getBankCodeController = exports.buyDataController = exports.buyAirtimeController = exports.getDataPlanController = exports.validateTransactionPinController = exports.updateTransactionPinController = exports.createTransactionPinController = exports.getUserKyc1RecordController = exports.updateKYC1RecordController = exports.registerKYC1 = exports.changePasswordController = exports.updateProfileController = exports.userProfile = exports.loginUser = exports.resendUserVerificationEmail = exports.verifyEmail = exports.registerUser = void 0;
 const argon2_1 = __importDefault(require("argon2"));
 const Agent_1 = require("../services/Agent");
 const User_1 = require("../services/User");
@@ -313,7 +313,7 @@ const changePasswordController = async (req, res) => {
 exports.changePasswordController = changePasswordController;
 const registerKYC1 = async (req, res) => {
     try {
-        const { profession, accountNumber, bank, accountDetails, country, state, bvn, address, subRegion, } = req.body;
+        const { profession, accountNumber, bank, accountDetails, country, state, bvn, address, subRegion, transactionPin, } = req.body;
         const user = req.user;
         // check if KYC record already exisyt
         const foundKYC = await (0, User_1.getUserKyc1Record)(user._id.toString());
@@ -323,24 +323,25 @@ const registerKYC1 = async (req, res) => {
                 message: "KYC record already exist",
             });
         }
+        // change KYC status
+        const virtualAccount = await (0, User_1.createVirtualAccountForPayment)(user, bvn, address);
+        if (virtualAccount.success === "false") {
+            return res.json({
+                status: "Failed",
+                message: "something went wrong, account number not created"
+            });
+        }
+        await (0, User_1.createVirtualAccountIndex)(user._id.toString(), virtualAccount.data.virtual_account_number);
         // save KYC1
         const newKYC1 = await (0, User_1.createKYC1Record)(user, profession, accountNumber, bank, accountDetails, country, state, bvn, address, subRegion);
+        // create transaction pin 
+        await (0, User_1.createTransactionPin)(user._id.toString(), transactionPin);
         if (!newKYC1) {
             return res.json({
                 status: "Failed",
                 message: "something went wrong, try again later",
             });
         }
-        // change KYC status
-        const virtualAccount = await (0, User_1.createVirtualAccountForPayment)(user, bvn, address);
-        if (virtualAccount.success === "false") {
-            return res.json({
-                status: "Failed",
-                message: "something went wrong, account number not created",
-                data: newKYC1,
-            });
-        }
-        await (0, User_1.createVirtualAccountIndex)(user._id.toString(), virtualAccount.data.virtual_account_number);
         return res.json({
             status: "Success",
             message: "KYC1 record created successfuly",
@@ -1051,3 +1052,21 @@ const getFixedSavingsByStatusController = async (req, res) => {
     }
 };
 exports.getFixedSavingsByStatusController = getFixedSavingsByStatusController;
+const getUserTotalSavingsBalanceController = async (req, res) => {
+    try {
+        const user = req.user;
+        const totalSavingsBalnce = await (0, Savings_1.getUserTotalSavingsBalance)(user._id.toString());
+        return res.json({
+            status: "Success",
+            message: "savings balance calculated",
+            data: totalSavingsBalnce
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.getUserTotalSavingsBalanceController = getUserTotalSavingsBalanceController;

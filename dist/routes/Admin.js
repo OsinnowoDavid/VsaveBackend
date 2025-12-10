@@ -18,7 +18,7 @@ router.get("/get-all-regional-admin", JWT_1.verifySuperAdminToken, Admin_1.getAl
 router.post("/get-all-region", JWT_1.verifySuperAdminToken, Admin_1.getAllRegionController);
 router.get("/get-regional-admin", JWT_1.verifySuperAdminToken, Admin_1.getRegionalAdminByEmailController);
 router.post("/set-saving-config", JWT_1.verifySuperAdminToken, Admin_1.setAdminConfigController);
-router.get("/get-savings-config", JWT_1.verifySuperAdminToken, Admin_1.getAdminSavingsConfigController);
+router.get("/get-savings-config", JWT_1.verifySuperAdminToken, Admin_1.getAdminConfigController);
 // get all loan record
 // get  loan record by status
 // aprovve pending loan
