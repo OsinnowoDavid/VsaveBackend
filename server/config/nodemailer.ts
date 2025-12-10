@@ -4,19 +4,6 @@
 // // Load environment variables from .env file
 // dotenv.config();
 
-<<<<<<< HEAD
-// Create transporter with proper TypeScript typing
-const transporter = nodemailer.createTransport({
-    service: "gmail",
-    host: "smtp.gmail.com",
-    port: 465,
-    secure: true,
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-    },
-} as nodemailer.TransportOptions);
-=======
 // console.log("Email User:", process.env.User ? "Exists" : "Missing");
 // console.log("Email Pass:", process.env.Pass ? "Exists" : "Missing");
 
@@ -32,7 +19,6 @@ const transporter = nodemailer.createTransport({
 //         pass: process.env.Pass, // Should be an App Password, not regular password
 //     },
 // });
->>>>>>> 4d31ccc4a9834af044bee067662078b34ce8f9ef
 
 // // Verify transporter configuration on startup
 // transporter.verify(function (error, success) {
