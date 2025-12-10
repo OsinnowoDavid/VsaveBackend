@@ -4,13 +4,14 @@ import bodyParser from "body-parser";
 import connectDB from "./config/mongodB";
 import userRouter from "./routes/User";
 import adminRouter from "./routes/Admin";
+import loanRouter from "./routes/Loan";
 import regionalAdminRouter from "./routes/RegionalAdmin";
 import savingsRouter from "./routes/Savings";
 import webhookRouter from "./routes/Webhook";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import nodeCron from "node-cron";
-import { deductSavingsFromUser } from "./middleware/SavingsJobs";
+import { firstMinsOfTheDayJob, hourlyScheduleJob } from "./middleware";
 dotenv.config();
 const port = process.env.PORT || 5000;
 const app = express();
@@ -30,13 +31,18 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 connectDB();
 // schedule node-cron job to deductSavings from users account
-nodeCron.schedule("0 0 * * *", deductSavingsFromUser, {
+nodeCron.schedule("0 6 * * *", firstMinsOfTheDayJob, {
+    timezone: "Africa/Lagos",
+});
+
+nodeCron.schedule("0 * * * *", hourlyScheduleJob, {
     timezone: "Africa/Lagos",
 });
 
 app.get("/", (req, res) => {
     res.send("Welcome to Vsave Backend");
 });
+//app.post("/deducte-savings", deductSavingsFromUser);
 //user route config
 app.use("/user", userRouter);
 
@@ -49,6 +55,8 @@ app.use("/regionaladmin", regionalAdminRouter);
 app.use("/savings", savingsRouter);
 
 app.use("/webhook", webhookRouter);
+
+app.use("/loan", loanRouter);
 
 app.listen(port, () => {
     console.log(`serve is running on ${port}`);

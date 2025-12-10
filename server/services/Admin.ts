@@ -1,7 +1,7 @@
 import Admin from "../model/Super_admin";
 import RegionalAdmin from "../model/Regionaladmin";
 import Region from "../model/Region";
-import { ISuperAdmin } from "../types";
+import { ISuperAdmin } from "../../types";
 import AdminConfig from "../model/Admin_config";
 export const CreateSuperAdmin = async (
     firstName: string,
@@ -28,7 +28,7 @@ export const CreateSuperAdmin = async (
 
 export const getSuperAdminById = async (id: string) => {
     try {
-        const foundAdmin = await Admin.findById(id);
+        const foundAdmin = await Admin.findById(id, { password: 0 });
         return foundAdmin;
     } catch (err: any) {
         throw err;
@@ -155,11 +155,17 @@ export const getRegionByName = async (regionName: string) => {
 export const setAdminSavingsConfig = async (
     defaultPenaltyFee: string,
     firstTimeAdminFee: string,
+    loanPenaltyFee: string,
+    fixedSavingsAnualInterest: string,
+    fixedSavingsPenaltyFee: string,
 ) => {
     try {
         const configSettings = await AdminConfig.getSettings();
         configSettings.defaultPenaltyFee = defaultPenaltyFee;
         configSettings.firstTimeAdminFee = firstTimeAdminFee;
+        configSettings.loanPenaltyFee = loanPenaltyFee;
+        configSettings.fixedSavingsAnualInterest = fixedSavingsAnualInterest;
+        configSettings.fixedSavingsPenaltyFee = fixedSavingsPenaltyFee;
         await configSettings.save();
         return configSettings;
     } catch (err: any) {
@@ -171,6 +177,18 @@ export const getAdminSavingsConfig = async () => {
     try {
         const configSettngs = await AdminConfig.getSettings();
         return configSettngs;
+    } catch (err: any) {
+        throw err;
+    }
+};
+type INotificationTo = "User" | "Regionaladmin" | "SubRegionalAdmin" | "Agent";
+export const sendNotification = async (
+    to: INotificationTo,
+    recipientId: string,
+    title: string,
+    message: string,
+) => {
+    try {
     } catch (err: any) {
         throw err;
     }

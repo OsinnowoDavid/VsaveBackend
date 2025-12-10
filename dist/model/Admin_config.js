@@ -11,13 +11,25 @@ const adminConfigSchema = new mongoose_1.default.Schema({
     firstTimeAdminFee: {
         type: String,
     },
+    loanPenaltyFee: {
+        type: String,
+    },
+    fixedSavingsAnualInterest: {
+        type: String,
+    },
+    fixedSavingsPenaltyFee: {
+        type: String,
+    },
 }, { collection: "settings" });
 adminConfigSchema.statics.getSettings = async function () {
     const settings = await this.findOne();
     if (!settings) {
         const defaultSettings = new this({
-            defaultPenaltyFee: "0",
-            firstTimeAdminFee: "0",
+            defaultPenaltyFee: "25",
+            firstTimeAdminFee: "50",
+            loanPenaltyFee: "2.0",
+            fixedSavingsAnualInterest: "28.0",
+            fixedSavingsPenaltyFee: "0.5",
         });
         await defaultSettings.save();
         return defaultSettings;

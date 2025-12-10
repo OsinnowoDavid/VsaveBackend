@@ -6,7 +6,7 @@ import {
     getUserById,
     createUserTransaction,
 } from "../services/User";
-import { IUser } from "../types";
+import { IUser } from "../../types";
 import crypto from "crypto";
 const generateHmacSHA512 = (input: any, key: any) => {
     const hmac = crypto.createHmac("sha512", key);

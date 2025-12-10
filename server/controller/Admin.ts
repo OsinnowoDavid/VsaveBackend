@@ -242,10 +242,19 @@ export const getRegionalAdminByEmailController = async (
 
 export const setAdminConfigController = async (req: Request, res: Response) => {
     try {
-        const { defaultPenaltyFee, firstTimeAdminFee } = req.body;
+        const {
+            defaultPenaltyFee,
+            firstTimeAdminFee,
+            loanPenaltyFee,
+            fixedSavingsAnualInterest,
+            fixedSavingsPenaltyFee,
+        } = req.body;
         const config = await setAdminSavingsConfig(
             defaultPenaltyFee,
             firstTimeAdminFee,
+            loanPenaltyFee,
+            fixedSavingsAnualInterest,
+            fixedSavingsPenaltyFee,
         );
         if (!config) {
             return res.json({
@@ -284,3 +293,24 @@ export const getAdminSavingsConfigController = async (
         });
     }
 };
+
+// get all loan record
+export const getAllLoanRecordController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        // const foundRecord = await
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+// get  loan record by status
+// aprovve pending loan
+// edit pending loan for approval
+// send general notification
+// send personal notification
+// suspend admin account

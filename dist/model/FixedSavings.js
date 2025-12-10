@@ -9,6 +9,10 @@ const fixedSavingsSchema = new mongoose_1.default.Schema({
         type: mongoose_1.default.Schema.Types.ObjectId,
         ref: "User",
     },
+    title: {
+        type: String,
+        required: true,
+    },
     amount: {
         type: Number,
         required: true,
@@ -17,8 +21,16 @@ const fixedSavingsSchema = new mongoose_1.default.Schema({
         type: String,
         default: "NG",
     },
+    interestPayoutType: {
+        type: String,
+        enum: ["MATURITY", "UPFRONT"],
+        required: true,
+    },
     interestRate: {
         type: String,
+    },
+    interestAmount: {
+        type: Number,
     },
     paymentAmount: {
         type: Number,
@@ -26,7 +38,7 @@ const fixedSavingsSchema = new mongoose_1.default.Schema({
     duration: { type: String },
     durationIndex: { type: Number },
     startDate: { type: Date },
-    endDate: { type: String },
+    endDate: { type: Date },
     status: {
         type: String,
         enum: ["pending", "rejected", "active", "completed"],

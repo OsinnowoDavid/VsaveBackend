@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { initSavingsPlan } from "../services/Savings";
 import { calculateMaturityAmount, calculateEndDate } from "../config/tools";
+import AdminSavingsConfig from "../model/Admin_config";
 
 export const createSavingPlanController = async (
     req: Request,
@@ -11,46 +12,34 @@ export const createSavingPlanController = async (
             subRegion,
             savingsTitle,
             frequency,
-            savingAmount,
-            startDate,
-            autoRestartEnabled,
+            savingsAmount,
             deductionPeriod,
             duration,
         } = req.body;
         const user = req.user as any;
-        let endDate = calculateEndDate(frequency, startDate, duration);
+        const { firstTimeAdminFee } = await AdminSavingsConfig.getSettings();
         let maturityAmount = calculateMaturityAmount(
             frequency,
             duration,
-            savingAmount,
-            startDate,
+            savingsAmount,
+            Number(firstTimeAdminFee),
         );
-        let status = "";
-        let currentDate = new Date().toLocaleDateString("en-US");
-        console.log("compare:", { startDate, currentDate });
-        if (currentDate == startDate) {
-            status = "ACTIVE";
-        } else {
-            status = "PENDING";
-        }
-        const newSavings = await initSavingsPlan(
+
+        const newSavingsPlan = await initSavingsPlan(
             user._id.toString(),
             subRegion,
             savingsTitle,
             frequency,
-            savingAmount,
-            startDate,
-            endDate,
-            status,
-            autoRestartEnabled,
+            savingsAmount,
+            "ACTIVE",
             deductionPeriod,
             duration,
             maturityAmount,
         );
         return res.json({
-            status: "success",
-            message: "plan created",
-            data: newSavings,
+            status: "Success",
+            message: "Savings created",
+            data: newSavingsPlan,
         });
     } catch (err: any) {
         return res.json({

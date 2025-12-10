@@ -11,7 +11,7 @@ const Admin_1 = require("../services/Admin");
 const RegionalAdmin_1 = require("../services/RegionalAdmin");
 const signUserToken = (user) => {
     const payload = {
-        user: user.id,
+        user: user,
         email: user.email,
         exp: Math.floor(Date.now() / 1000) + 60 * 60 * 2, // 2 hours expiry
     };
@@ -30,7 +30,7 @@ const verifyUserToken = async (req, res, next) => {
             });
         }
         const decoded = jsonwebtoken_1.default.verify(authorization, jwt_secret);
-        const foundId = decoded.user;
+        const foundId = decoded.user._id;
         // Find client by decoded user ID
         const currentClient = await (0, User_1.getUserById)(foundId);
         if (!currentClient) {
@@ -62,7 +62,7 @@ const verifySuperAdminToken = async (req, res, next) => {
             });
         }
         const decoded = jsonwebtoken_1.default.verify(authorization, jwt_secret);
-        const foundId = decoded.user;
+        const foundId = decoded.user._id;
         // find superadmin by decoded user id
         const currentAdmin = await (0, Admin_1.getSuperAdminById)(foundId);
         if (!currentAdmin) {
@@ -94,7 +94,7 @@ const verifyRegionalAdminToken = async (req, res, next) => {
             });
         }
         const decoded = jsonwebtoken_1.default.verify(authorization, jwt_secret);
-        const foundId = decoded.user;
+        const foundId = decoded.user._id;
         const foundSuperAdmin = (await (0, Admin_1.getSuperAdminById)(foundId));
         const foundRegionalAdmin = (await (0, RegionalAdmin_1.getRegionalAdminById)(foundId));
         if (!(foundSuperAdmin || foundRegionalAdmin)) {
@@ -126,7 +126,7 @@ const verifySubRegionalAdminToken = async (req, res, next) => {
             });
         }
         const decoded = jsonwebtoken_1.default.verify(authorization, jwt_secret);
-        const foundId = decoded.user;
+        const foundId = decoded.user._id;
         const foundSuperAdmin = (await (0, Admin_1.getSuperAdminById)(foundId));
         const foundRegionalAdmin = (await (0, RegionalAdmin_1.getRegionalAdminById)(foundId));
         const foundSubRegionalAdmin = (await (0, RegionalAdmin_1.getSubRegionalAdminById)(foundId));

@@ -4,11 +4,18 @@
         "module": "commonjs",
         "outDir": "./dist",
         "rootDir": "./server",
+
         "esModuleInterop": true,
         "skipLibCheck": true,
-        "strict": true, // disables all strict rules at once
-        "strictNullChecks": false, // disables null/undefined type checks
-        "noImplicitAny": true, // allows variables without explicit types
-        "useUnknownInCatchVariables": false
-    }
+
+        "strict": true,
+        "strictNullChecks": false,
+        "noImplicitAny": true,
+        "useUnknownInCatchVariables": false,
+
+        "typeRoots": ["./types", "./node_modules/@types"]
+    },
+
+    "include": ["server", "types"],
+    "exclude": ["node_modules", "dist"]
 }

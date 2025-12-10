@@ -3,9 +3,12 @@ import {
     registerUser,
     loginUser,
     userProfile,
+    updateProfileController,
+    changePasswordController,
     verifyEmail,
     resendUserVerificationEmail,
     registerKYC1,
+    updateKYC1RecordController,
     // verifyBankAccountController,
     getDataPlanController,
     buyAirtimeController,
@@ -20,9 +23,20 @@ import {
     getUserTransactionByTypeController,
     userGetAllSubRegionController,
     joinSavingsController,
+    createPersonalSavingsCircleController,
     getAvaliableSavingsController,
-    getUserActiveSavingsController,
-    getUserSavingsRecordsController,
+    getUserActiveSavingsRecordController,
+    getAllUserSavingsRecordController,
+    getSavingsCircleByIdController,
+    createFixedSavingController,
+    getActiveFixedSavingsController,
+    getCompletedFixedSavingsController,
+    getAllFixedSavingsController,
+    validateTransactionPinController,
+    updateTransactionPinController,
+    createTransactionPinController,
+    getFixedSavingsByStatusController,
+    getUserSavingsRecordsByStatusController,
 } from "../controller/User";
 import {
     validateUserRegitrationInput,
@@ -30,6 +44,7 @@ import {
     validateUserLoginInput,
 } from "../validate-input/user";
 import { verifyUserToken } from "../config/JWT";
+import { transactionPinMiddleware } from "../middleware";
 const router = express.Router();
 
 router.post("/register", validateUserRegitrationInput, registerUser);
@@ -37,16 +52,39 @@ router.post("/login", validateUserLoginInput, loginUser);
 router.post("/verify-email", verifyEmail);
 router.post("/resend-verification-token", resendUserVerificationEmail);
 router.get("/profile", verifyUserToken, userProfile);
+router.post("/update-profile", verifyUserToken, updateProfileController);
+router.post("/change-password", verifyUserToken, changePasswordController);
 // router.post(
 //   "/verify-bank-account",
 //   verifyUserToken,
 //   verifyBankAccountController
 // );
-router.get("/register-kyc1", verifyUserToken, registerKYC1);
+router.post("/register-kyc1", verifyUserToken, registerKYC1);
+
+router.post("/update-kyc1", verifyUserToken, updateKYC1RecordController);
 
 router.get("/kyc1", verifyUserToken, getUserKyc1RecordController);
 
 router.get("/get-data-plan/:network", verifyUserToken, getDataPlanController);
+
+router.post(
+    "/create-transaction-pin",
+    verifyUserToken,
+    createTransactionPinController,
+);
+
+router.post(
+    "/validate-transaction-pin",
+    verifyUserToken,
+    transactionPinMiddleware,
+    validateTransactionPinController,
+);
+
+router.post(
+    "/update-transaction-pin",
+    verifyUserToken,
+    updateTransactionPinController,
+);
 
 router.post("/buy-airtime", verifyUserToken, buyAirtimeController);
 
@@ -82,18 +120,64 @@ router.get("/subregions", verifyUserToken, userGetAllSubRegionController);
 
 router.post("/join-savings", verifyUserToken, joinSavingsController);
 
+router.post(
+    "/create-personal-savings",
+    verifyUserToken,
+    createPersonalSavingsCircleController,
+);
+
 router.get(
-    "/avaliable-savings",
+    "/avaliable-savings-plan",
     verifyUserToken,
     getAvaliableSavingsController,
 );
 
-router.get("/active-savings", verifyUserToken, getUserActiveSavingsController);
+router.get(
+    "/active-savings",
+    verifyUserToken,
+    getUserActiveSavingsRecordController,
+);
 
 router.get(
     "/all-savings-record",
     verifyUserToken,
-    getUserSavingsRecordsController,
+    getAllUserSavingsRecordController,
+);
+
+router.get(
+    "/get-savings-circle/:id",
+    verifyUserToken,
+    getSavingsCircleByIdController,
+);
+router.post(
+    "/create-fixed-deposit",
+    verifyUserToken,
+    createFixedSavingController,
+);
+router.get(
+    "/get-all-fixed-savings",
+    verifyUserToken,
+    getAllFixedSavingsController,
+);
+router.get(
+    "/get-completed-fixed-savings",
+    verifyUserToken,
+    getCompletedFixedSavingsController,
+);
+router.get(
+    "/get-active-fixed-savings",
+    verifyUserToken,
+    getActiveFixedSavingsController,
+);
+router.post(
+    "/get-saving-by-status",
+    verifyUserToken,
+    getFixedSavingsByStatusController,
+);
+router.post(
+    "/get-fixedsaving-by-status",
+    verifyUserToken,
+    getUserSavingsRecordsByStatusController,
 );
 
 export default router;

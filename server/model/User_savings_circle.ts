@@ -1,12 +1,14 @@
 import mongoose from "mongoose";
 
-const savingsCircleSchema = new mongoose.Schema(
+const userSavingsCircleSchema = new mongoose.Schema(
     {
-        savingsTitle: { type: String },
-        subRegion: {
+        user: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Region",
+            ref: "User", // Reference to your User model
             required: true,
+        },
+        savingsTitle: {
+            type: String,
         },
         frequency: {
             type: String,
@@ -22,18 +24,14 @@ const savingsCircleSchema = new mongoose.Schema(
         },
         savingsAmount: { type: Number, required: true },
         circleId: { type: String },
-        status: {
-            type: String,
-            enum: ["ACTIVE", "PAUSED", "ENDED"],
-            default: "ACTIVE",
-        },
         maturityAmount: { type: Number },
-        adminId: {
-            type: String,
-        },
     },
     { timestamps: true },
 );
 
-const savingsCircle = mongoose.model("Savings_circle", savingsCircleSchema);
-export default savingsCircle;
+const userSavingsCircle = mongoose.model(
+    "User_savings_circle",
+    userSavingsCircleSchema,
+);
+
+export default userSavingsCircle;

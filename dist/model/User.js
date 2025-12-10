@@ -57,23 +57,23 @@ const userSchema = new Schema({
     status: {
         type: String,
     },
-    address: {
-        type: String,
-    },
     gender: {
         type: String,
         enum: ["Male", "Female"],
-    },
-    bvn: {
-        type: String,
     },
     dateOfBirth: {
         type: Date,
     },
     virtualAccountNumber: {
         type: String,
-        unique: true,
     },
-});
+    pin: {
+        type: Number,
+    },
+    kycStatus: {
+        type: Boolean,
+        default: false,
+    },
+}, { timestamps: true });
 const User = mongoose_1.default.model("User", userSchema);
 exports.default = User;

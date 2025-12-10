@@ -3,14 +3,10 @@ import VerificationToken from "../model/VerificationToken";
 import KYC1 from "../model/KYC1";
 import KYC from "../model/KYC";
 import Transaction from "../model/Transaction";
-import { IUser, IUserSavingsRecord } from "../types";
+import { IUser, IUserSavingsRecord } from "../../types";
 import axios from "axios";
 import BankCode from "../model/Bank_code";
-import SavingsGroup from "../model/Savings_group";
-import UserSavingsRecord from "../model/User_savings_record";
-import SavingsCircle from "../model/Savings_circle";
 import { getAllSubRegion } from "./RegionalAdmin";
-import Loan from "../model/Loan";
 import FixedSavings from "../model/FixedSavings";
 import {
     getFiveMinutesAgo,
@@ -33,7 +29,7 @@ export const createNewUser = async (
         const newUser = await User.create({
             firstName,
             lastName,
-            email,
+            email: email.toLowerCase(),
             password,
             gender,
             dateOfBirth,
@@ -53,7 +49,14 @@ export const getUserById = async (id: string) => {
         throw err;
     }
 };
-
+export const getUserByIdPublicUse = async (id: string) => {
+    try {
+        const foundUser = await User.findById(id, { password: 0 });
+        return foundUser;
+    } catch (err: any) {
+        throw err;
+    }
+};
 export const getUserByEmail = async (email: string) => {
     try {
         const foundUser = await User.findOne({ email });
@@ -101,6 +104,35 @@ export const getUserVerificationToken = async (
         });
 
         return foundToken;
+    } catch (err: any) {
+        throw err;
+    }
+};
+
+export const updateProfile = async (
+    user: IUser,
+    firstName: string,
+    lastName: string,
+    phoneNumber: string,
+) => {
+    try {
+        const updatedUser = await User.findByIdAndUpdate(user._id, {
+            firstName,
+            lastName,
+            phoneNumber,
+        });
+        return updatedUser;
+    } catch (err: any) {
+        throw err;
+    }
+};
+
+export const changePassword = async (user: IUser, newPassword: string) => {
+    try {
+        const updatedPassword = await User.findByIdAndUpdate(user._id, {
+            password: newPassword,
+        });
+        return updatedPassword;
     } catch (err: any) {
         throw err;
     }
@@ -166,9 +198,30 @@ export const createKYC1Record = async (
         throw err;
     }
 };
-export const updateKYC1Record = async (user: IUser, bank: string) => {
+export const updateKYC1Record = async (
+    user: IUser,
+    profession: string,
+    bank: string,
+    accountNumber: Number,
+    accountDetails: string,
+    country: string,
+    state: string,
+    address: string,
+) => {
     try {
-        const foundUser = await KYC1.findOneAndUpdate({ user: user._id }, {});
+        const foundUser = await KYC1.findOneAndUpdate(
+            { user: user._id },
+            {
+                profession,
+                bank,
+                accountNumber,
+                accountDetails,
+                country,
+                state,
+                address,
+            },
+        );
+        return foundUser;
     } catch (err: any) {
         throw err;
     }
@@ -298,6 +351,7 @@ export const createVirtualAccountIndex = async (
     try {
         const foundUser = await User.findByIdAndUpdate(user, {
             virtualAccountNumber: account,
+            kycStatus: true,
         });
         return foundUser;
     } catch (err: any) {
@@ -311,6 +365,7 @@ export const buyAirtime = async (phoneNumber: string, amount: number) => {
             phone_number: phoneNumber,
             amount,
         };
+        console.log("got inside service");
         let config = {
             method: "post",
             maxBodyLength: Infinity,
@@ -322,6 +377,7 @@ export const buyAirtime = async (phoneNumber: string, amount: number) => {
             data: data,
         };
         const response = await axios.request(config);
+        console.log("response:", response.data);
         return response.data;
     } catch (err: any) {
         // If the request fails, we log the response from the provider
@@ -687,31 +743,6 @@ export const getUserTransactionByType = async (user: string, type: string) => {
         throw err;
     }
 };
-
-export const joinSavings = async (user: IUser, circleId: string) => {
-    try {
-        const savingsGroup = await SavingsGroup.findOne({
-            savingsCircleId: circleId,
-        });
-        let currentCircle = await SavingsCircle.findById(circleId);
-        if (!savingsGroup) {
-            throw { message: "No SavingsGroup found with this CircleID" };
-        }
-        savingsGroup.users.push(user._id);
-        await savingsGroup.save();
-        // create user savings record
-        const userSavingsRecord = await UserSavingsRecord.create({
-            user: user._id,
-            savingsId: savingsGroup.savingsId,
-            savingsCircleId: savingsGroup.savingsCircleId,
-            maturityAmount: currentCircle?.maturityAmount,
-        });
-        return userSavingsRecord;
-    } catch (err: any) {
-        throw err;
-    }
-};
-
 export const userGetAllSubRegion = async () => {
     try {
         const allSubRegion = await getAllSubRegion();
@@ -721,36 +752,9 @@ export const userGetAllSubRegion = async () => {
     }
 };
 
-export const createLoanRecord = async (
-    user: string,
-    amount: number,
-    interest: string,
-    status: string,
-    startDate: Date,
-    dueDate: Date,
-    duration: string,
-    repaymentAmount: number,
-    remark?: string,
-) => {
-    try {
-        const newLoan = await Loan.create({
-            user,
-            InitialAmount: amount,
-            interest,
-            status,
-            startDate,
-            dueDate,
-            repaymentAmount,
-            remark,
-        });
-        return newLoan;
-    } catch (err: any) {
-        throw err;
-    }
-};
-
 export const createFixedSaving = async (
     user: string,
+    title: string,
     amount: number,
     interestRate: string,
     paymentAmount: string,
@@ -758,10 +762,13 @@ export const createFixedSaving = async (
     startDate: Date,
     endDate: Date,
     status: string,
+    interestPayoutType: string,
+    interestAmount: number,
 ) => {
     try {
         const newFixedSavings = await FixedSavings.create({
             user,
+            title,
             amount,
             currency: "NG",
             interestRate,
@@ -771,42 +778,10 @@ export const createFixedSaving = async (
             startDate,
             endDate,
             status,
+            interestPayoutType,
+            interestAmount,
         });
         return newFixedSavings;
-    } catch (err: any) {
-        throw err;
-    }
-};
-
-export const avaliableSavings = async (user: IUser) => {
-    try {
-        const avaliableSavings = await SavingsCircle.find({
-            subRegion: user.subRegion,
-            status: "ACTIVE",
-        });
-
-        return avaliableSavings;
-    } catch (err: any) {
-        throw err;
-    }
-};
-
-export const userActiveSavingsRecord = async (user: IUser) => {
-    try {
-        const activeSavings = await UserSavingsRecord.find({
-            user: user._id,
-            status: "ACTIVE",
-        });
-        return activeSavings;
-    } catch (err: any) {
-        throw err;
-    }
-};
-
-export const userSavingsRecords = async (user: IUser) => {
-    try {
-        const userSavings = await UserSavingsRecord.find({ user: user._id });
-        return userSavings;
     } catch (err: any) {
         throw err;
     }
@@ -816,6 +791,8 @@ export const userWithdraw = async (
     user: string,
     amount: number,
     remark: string,
+    transactionRef?: string,
+    reciever?: string,
 ) => {
     try {
         const foundUser = (await User.findById(user)) as IUser;
@@ -825,48 +802,62 @@ export const userWithdraw = async (
         let balanceBefore = Number(foundUser.availableBalance);
         let balanceAfter = Number(foundUser.availableBalance) - Number(amount);
         // withdraw money
-        let sum = Number(foundUser.availableBalance) - Number(amount);
-        foundUser.availableBalance = sum;
+        let balance = Number(foundUser.availableBalance) - Number(amount);
+        foundUser.availableBalance = balance;
         await foundUser.save();
+        let ref = transactionRef || generateSavingsRefrenceCode();
+        let to = reciever || "";
         //create transaction record
         const transaction = await createUserTransaction(
             user,
-            "withdrwal",
-            generateSavingsRefrenceCode(),
+            "withdrawal",
+            ref,
             amount,
             balanceBefore,
             balanceAfter,
             remark,
             "success",
             new Date(),
+            "",
+            to,
         );
         return transaction;
     } catch (err: any) {
         throw err;
     }
 };
-export const updateUserSavingsRecords = async (
+export const userDeposit = async (
     user: string,
-    circleId: string,
     amount: number,
-    period: number,
-    status: string,
+    transactionRef: string,
+    date: Date,
+    senderName: string,
+    remark: string,
+    fee_charged?: number,
 ) => {
     try {
-        const foundUser = (await UserSavingsRecord.findOne({
-            user,
-            savingsCircleId: circleId,
-            status: "ACTIVE",
-        })) as IUserSavingsRecord;
-        let record: any = {
-            period,
-            periodIndex: Number(period),
-            amount,
-            status,
-        };
-        foundUser.records.push(record);
+        const foundUser = (await User.findById(user)) as IUser;
+        let balanceBefore = Number(foundUser.availableBalance);
+        let balanceAfter = Number(foundUser.availableBalance) - Number(amount);
+        let balance = Number(foundUser.availableBalance) + Number(amount);
+        foundUser.availableBalance = balance;
         await foundUser.save();
-        return foundUser;
+        //create transaction record
+        const transaction = await createUserTransaction(
+            user,
+            "deposit",
+            transactionRef,
+            amount,
+            balanceBefore,
+            balanceAfter,
+            remark,
+            "success",
+            date,
+            senderName,
+            "",
+            fee_charged,
+        );
+        return transaction;
     } catch (err: any) {
         throw err;
     }
@@ -876,6 +867,40 @@ export const getCircleById = async (circleId: string) => {
     try {
         const SavingsCircle = await savingsCircle.findById(circleId);
         return SavingsCircle;
+    } catch (err: any) {
+        throw err;
+    }
+};
+
+export const createTransactionPin = async (user: string, pin: number) => {
+    try {
+        const foundUser = await User.findByIdAndUpdate(user, { pin });
+        return foundUser;
+    } catch (err: any) {
+        throw err;
+    }
+};
+
+export const validateTransactionPin = async (
+    user: string,
+    enteredPin: number,
+) => {
+    try {
+        const foundUser = await User.findById(user);
+        let result = false;
+        if (foundUser.pin === enteredPin) {
+            result = true;
+        }
+        return result;
+    } catch (err: any) {
+        throw err;
+    }
+};
+
+export const getAllUser = async () => {
+    try {
+        const allUser = await User.find();
+        return allUser;
     } catch (err: any) {
         throw err;
     }

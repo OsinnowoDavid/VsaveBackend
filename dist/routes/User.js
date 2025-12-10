@@ -7,20 +7,27 @@ const express_1 = __importDefault(require("express"));
 const User_1 = require("../controller/User");
 const user_1 = require("../validate-input/user");
 const JWT_1 = require("../config/JWT");
+const middleware_1 = require("../middleware");
 const router = express_1.default.Router();
 router.post("/register", user_1.validateUserRegitrationInput, User_1.registerUser);
 router.post("/login", user_1.validateUserLoginInput, User_1.loginUser);
 router.post("/verify-email", User_1.verifyEmail);
 router.post("/resend-verification-token", User_1.resendUserVerificationEmail);
 router.get("/profile", JWT_1.verifyUserToken, User_1.userProfile);
+router.post("/update-profile", JWT_1.verifyUserToken, User_1.updateProfileController);
+router.post("/change-password", JWT_1.verifyUserToken, User_1.changePasswordController);
 // router.post(
 //   "/verify-bank-account",
 //   verifyUserToken,
 //   verifyBankAccountController
 // );
-router.get("/register-kyc1", JWT_1.verifyUserToken, User_1.registerKYC1);
+router.post("/register-kyc1", JWT_1.verifyUserToken, User_1.registerKYC1);
+router.post("/update-kyc1", JWT_1.verifyUserToken, User_1.updateKYC1RecordController);
 router.get("/kyc1", JWT_1.verifyUserToken, User_1.getUserKyc1RecordController);
 router.get("/get-data-plan/:network", JWT_1.verifyUserToken, User_1.getDataPlanController);
+router.post("/create-transaction-pin", JWT_1.verifyUserToken, User_1.createTransactionPinController);
+router.post("/validate-transaction-pin", JWT_1.verifyUserToken, middleware_1.transactionPinMiddleware, User_1.validateTransactionPinController);
+router.post("/update-transaction-pin", JWT_1.verifyUserToken, User_1.updateTransactionPinController);
 router.post("/buy-airtime", JWT_1.verifyUserToken, User_1.buyAirtimeController);
 router.post("/buy-data", JWT_1.verifyUserToken, User_1.buyDataController);
 router.get("/get-bank-code", JWT_1.verifyUserToken, User_1.getBankCodeController);
@@ -32,7 +39,15 @@ router.get("/transaction-by-status/:status", JWT_1.verifyUserToken, User_1.getUs
 router.get("/transaction-by-type/:type", JWT_1.verifyUserToken, User_1.getUserTransactionByTypeController);
 router.get("/subregions", JWT_1.verifyUserToken, User_1.userGetAllSubRegionController);
 router.post("/join-savings", JWT_1.verifyUserToken, User_1.joinSavingsController);
-router.get("/avaliable-savings", JWT_1.verifyUserToken, User_1.getAvaliableSavingsController);
-router.get("/active-savings", JWT_1.verifyUserToken, User_1.getUserActiveSavingsController);
-router.get("/all-savings-record", JWT_1.verifyUserToken, User_1.getUserSavingsRecordsController);
+router.post("/create-personal-savings", JWT_1.verifyUserToken, User_1.createPersonalSavingsCircleController);
+router.get("/avaliable-savings-plan", JWT_1.verifyUserToken, User_1.getAvaliableSavingsController);
+router.get("/active-savings", JWT_1.verifyUserToken, User_1.getUserActiveSavingsRecordController);
+router.get("/all-savings-record", JWT_1.verifyUserToken, User_1.getAllUserSavingsRecordController);
+router.get("/get-savings-circle/:id", JWT_1.verifyUserToken, User_1.getSavingsCircleByIdController);
+router.post("/create-fixed-deposit", JWT_1.verifyUserToken, User_1.createFixedSavingController);
+router.get("/get-all-fixed-savings", JWT_1.verifyUserToken, User_1.getAllFixedSavingsController);
+router.get("/get-completed-fixed-savings", JWT_1.verifyUserToken, User_1.getCompletedFixedSavingsController);
+router.get("/get-active-fixed-savings", JWT_1.verifyUserToken, User_1.getActiveFixedSavingsController);
+router.post("/get-saving-by-status", JWT_1.verifyUserToken, User_1.getFixedSavingsByStatusController);
+router.post("/get-fixedsaving-by-status", JWT_1.verifyUserToken, User_1.getUserSavingsRecordsByStatusController);
 exports.default = router;

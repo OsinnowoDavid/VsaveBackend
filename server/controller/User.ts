@@ -7,9 +7,12 @@ import {
     getUserById,
     assignUserEmailVerificationToken,
     getUserVerificationToken,
+    updateProfile,
+    changePassword,
     createKYC1Record,
     createKYCRecord,
     kycStatusChange,
+    updateKYC1Record,
     getAllBanksAndCode,
     verifyBankaccount,
     createVirtualAccountForPayment,
@@ -18,7 +21,6 @@ import {
     getDataPlan,
     buyData,
     createVirtualAccountIndex,
-    deposit,
     withdraw,
     createUserTransaction,
     createUserAirtimeTransaction,
@@ -31,17 +33,42 @@ import {
     getUserTransactionByStatus,
     getUserTransactionByType,
     userGetAllSubRegion,
-    joinSavings,
-    avaliableSavings,
-    userActiveSavingsRecord,
-    userSavingsRecords,
+    // userActiveSavingsRecord,
+    // userSavingsRecords,
+    getCircleById,
+    createFixedSaving,
+    userWithdraw,
+    userDeposit,
+    createTransactionPin,
+    validateTransactionPin,
+    getUserByIdPublicUse,
 } from "../services/User";
-import { IUser, IVerificationToken, IKYC1 } from "../types";
+import { IUser, IVerificationToken, IKYC1 } from "../../types";
+import {
+    getFixedSavingsByStatus,
+    getUserActiveFixedSavings,
+    getUserCompletedFixedSavings,
+    getUserFixedSavings,
+    getUserSavingsRecordByStatus,
+} from "../services/Savings";
 import { signUserToken } from "../config/JWT";
 import SGMail from "@sendgrid/mail";
-import MailTransporter from "../config/mailer";
-import axios from "axios";
-import { format } from "path";
+import {
+    createUserPersonalSavings,
+    joinSavings,
+    getAllActiveSavingsCircle,
+    checkForCircleById,
+    getUserActiveSavingsRecord,
+    userSavingsRecords,
+} from "../services/Savings";
+import {
+    calculateEndDate,
+    calculateMaturityAmount,
+    calculateProportionalInterest,
+    generateSavingsRefrenceCode,
+    getCurrentDateWithClosestHour,
+} from "../config/tools";
+import AdminSavingsConfig from "../model/Admin_config";
 const QOREID_API_KEY = process.env.QOREID_SECRET_KEY as string;
 const QOREID_BASE_URL = process.env.QOREID_BASE_URL as string;
 
@@ -64,7 +91,6 @@ export const registerUser = async (req: Request, res: Response) => {
             phoneNumber,
             referralCode,
         } = req.body;
-
         let hashPassword = await argon.hash(password);
         const newUser = await createNewUser(
             firstName,
@@ -75,7 +101,6 @@ export const registerUser = async (req: Request, res: Response) => {
             dateOfBirth,
             phoneNumber,
         );
-
         if (!newUser) {
             return res.status(500).json({
                 status: "Failed",
@@ -251,7 +276,7 @@ export const resendUserVerificationEmail = async (
 export const loginUser = async (req: Request, res: Response) => {
     try {
         const { email, password } = req.body;
-        const user = (await getUserByEmail(email)) as IUser;
+        const user = (await getUserByEmail(email.toLowerCase())) as IUser;
         if (!user) {
             return res.json({
                 status: "Failed",
@@ -296,11 +321,12 @@ export const loginUser = async (req: Request, res: Response) => {
                 message: "incorrect password ",
             });
         }
+        const signedUser = await getUserByIdPublicUse(user._id.toString());
         // Return success with JWT token
         return res.json({
             status: "Success",
             message: "login successfuly",
-            token: signUserToken(user),
+            token: signUserToken(signedUser),
         });
     } catch (err: any) {
         res.json({
@@ -337,6 +363,54 @@ export const userProfile = async (req: Request, res: Response) => {
     }
 };
 
+export const updateProfileController = async (req: Request, res: Response) => {
+    try {
+        const { firstName, lastName, phoneNumber } = req.body;
+        const user = req.user as IUser;
+        const updatedProfile = await updateProfile(
+            user,
+            firstName,
+            lastName,
+            phoneNumber,
+        );
+        return res.json({
+            status: "Success",
+            message: "profile updated successfuly",
+            data: updatedProfile,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+export const changePasswordController = async (req: Request, res: Response) => {
+    try {
+        const { oldPassword, newPassword, confirmPassword } = req.body;
+        const user = req.body as IUser;
+        const verifyPassword = await argon.verify(user.password, oldPassword);
+        if (!verifyPassword) {
+            return res.json({
+                status: "Failed",
+                message: "incorrect old Password",
+            });
+        }
+        let hashPassword = await argon.hash(newPassword);
+        const changedPassword = await changePassword(user, hashPassword);
+        return res.json({
+            status: "Success",
+            message: "password changed successfuly",
+            data: changedPassword,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+
 export const registerKYC1 = async (req: Request, res: Response) => {
     try {
         const {
@@ -351,6 +425,14 @@ export const registerKYC1 = async (req: Request, res: Response) => {
             subRegion,
         } = req.body;
         const user = req.user as IUser;
+        // check if KYC record already exisyt
+        const foundKYC = await getUserKyc1Record(user._id.toString());
+        if (foundKYC) {
+            return res.json({
+                status: "Failed",
+                message: "KYC record already exist",
+            });
+        }
         // save KYC1
         const newKYC1 = await createKYC1Record(
             user,
@@ -371,7 +453,7 @@ export const registerKYC1 = async (req: Request, res: Response) => {
             });
         }
         // change KYC status
-        await kycStatusChange(user, "verified", 1);
+
         const virtualAccount = await createVirtualAccountForPayment(
             user,
             bvn,
@@ -388,6 +470,7 @@ export const registerKYC1 = async (req: Request, res: Response) => {
             user._id.toString(),
             virtualAccount.data.virtual_account_number,
         );
+
         return res.json({
             status: "Success",
             message: "KYC1 record created successfuly",
@@ -401,7 +484,43 @@ export const registerKYC1 = async (req: Request, res: Response) => {
         });
     }
 };
-
+export const updateKYC1RecordController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const {
+            profession,
+            bank,
+            accountNumber,
+            accountDetails,
+            country,
+            state,
+            address,
+        } = req.body;
+        const user = req.user as IUser;
+        const updatedKYC1 = await updateKYC1Record(
+            user,
+            profession,
+            bank,
+            accountNumber,
+            accountDetails,
+            country,
+            state,
+            address,
+        );
+        return res.json({
+            status: "Success",
+            message: "KYC updated successfuly",
+            data: updatedKYC1,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
 export const getUserKyc1RecordController = async (
     req: Request,
     res: Response,
@@ -424,6 +543,84 @@ export const getUserKyc1RecordController = async (
         return res.json({
             status: "Failed",
             message: err.message,
+        });
+    }
+};
+
+export const createTransactionPinController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const user = req.user as IUser;
+        const { pin } = req.body;
+        const newRecord = await createTransactionPin(user._id.toString(), pin);
+        return res.json({
+            status: "Success",
+            message: "transaction pin updated successfuly",
+            data: newRecord,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+export const updateTransactionPinController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const user = req.user as IUser;
+        const { oldPin, newPin } = req.body;
+        if (oldPin !== user.pin) {
+            return res.json({
+                status: "Failed",
+                message: "Incorrect old pin",
+            });
+        }
+        const updateRecord = await createTransactionPin(
+            user._id.toString(),
+            newPin,
+        );
+        return res.json({
+            status: "Success",
+            message: "Pin updated successfuly",
+            data: updateRecord,
+        });
+    } catch (err: any) {
+        throw err;
+    }
+};
+export const validateTransactionPinController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const { pin } = req.body;
+        const user = req.user as IUser;
+        const isValid = await validateTransactionPin(user._id.toString(), pin);
+        if (isValid) {
+            req.validateTransactionPin.pin = pin;
+            req.validateTransactionPin.status = true;
+            return res.json({
+                status: "Success",
+                message: "Transaction pin Validation successful",
+            });
+        }
+
+        req.validateTransactionPin.pin = 0;
+        req.validateTransactionPin.status = false;
+        return res.json({
+            status: "Failed",
+            message: "Incorrect pin",
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+            err,
         });
     }
 };
@@ -454,15 +651,27 @@ export const getDataPlanController = async (req: Request, res: Response) => {
 export const buyAirtimeController = async (req: Request, res: Response) => {
     try {
         const { phoneNumber, amount } = req.body;
+        // check if user validate transaction pin
+        console.log("got inside controller");
+        if (!req.validateTransactionPin || !req.validateTransactionPin.status) {
+            return res.json({
+                status: "Failed",
+                message: "Validate transaction pin to procced with transaction",
+            });
+        }
         const user = req.user as IUser;
+        console.log("got inside controller");
         // check if avaliablebalance is greater than the purchased amount
         if (amount > user.availableBalance) {
+            console.log("insuficient");
             return res.json({
                 status: "Failed",
                 message: "Insufficient Fund Topup your account and try again",
             });
         }
+        console.log("start buy airtime process");
         const airtime = await buyAirtime(phoneNumber, amount);
+        console.log("finish buy airtime process");
         if (!airtime) {
             return res.json({
                 status: "Failed",
@@ -493,6 +702,7 @@ export const buyAirtimeController = async (req: Request, res: Response) => {
         return res.json({
             status: "Failed",
             message: err.message,
+            err,
         });
     }
 };
@@ -501,6 +711,13 @@ export const buyDataController = async (req: Request, res: Response) => {
     try {
         const { phoneNumber, amount, planCode } = req.body;
         const user = req.user as IUser;
+        // check if user validate transaction pin
+        if (!req.validateTransactionPin || !req.validateTransactionPin.status) {
+            return res.json({
+                status: "Failed",
+                message: "Validate transaction pin to procced with transaction",
+            });
+        }
         // check if avaliablebalance is greater than the purchased amount
         if (amount > user.availableBalance) {
             return res.json({
@@ -580,6 +797,13 @@ export const payOutController = async (req: Request, res: Response) => {
     try {
         const { bankCode, accountNumber, accountName, amount } = req.body;
         const user = req.user as IUser;
+        // check if user validate transaction pin
+        if (!req.validateTransactionPin || !req.validateTransactionPin.status) {
+            return res.json({
+                status: "Failed",
+                message: "Validate transaction pin to procced with transaction",
+            });
+        }
         //check if user avaliableBalance is greater than the amount
         if (amount > user.availableBalance) {
             return res.json({
@@ -733,16 +957,86 @@ export const userGetAllSubRegionController = async (
         });
     }
 };
-
+function getTomorrowDate(): Date {
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+    return tomorrow;
+}
 export const joinSavingsController = async (req: Request, res: Response) => {
     try {
         const user = req.user as IUser;
-        const { circleId } = req.body;
-        const jointSavings = await joinSavings(user, circleId);
+        const { circleId, autoRestartEnabled } = req.body;
+        const foundSavingsCircle = await getCircleById(circleId);
+        let startDate = getTomorrowDate();
+        let endDate = calculateEndDate(
+            foundSavingsCircle.frequency,
+            startDate,
+            foundSavingsCircle.duration,
+        );
+        const jointSavings = await joinSavings(
+            user,
+            circleId,
+            autoRestartEnabled,
+            startDate,
+            endDate,
+            "PAUSED",
+        );
         return res.json({
             status: "Success",
             message: "joined savings group successfuly",
             data: jointSavings,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+export const createPersonalSavingsCircleController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const {
+            savingsTitle,
+            frequency,
+            duration,
+            deductionPeriod,
+            savingsAmount,
+            startDate,
+            autoRestartEnabled,
+        } = req.body;
+        let user = req.user as IUser;
+        const { firstTimeAdminFee } = await AdminSavingsConfig.getSettings();
+        // Parse the startDate in the local time zone
+        const localStartDate = new Date(startDate);
+        localStartDate.setHours(0, 0, 0, 0); // Normalize to the start of the day in local time ;
+        let endDate = calculateEndDate(frequency, localStartDate, duration);
+        let maturityAmount = calculateMaturityAmount(
+            frequency,
+            duration,
+            savingsAmount,
+            Number(firstTimeAdminFee),
+        );
+        console.log("maturity amount:", maturityAmount);
+        const newSavingsCircle = await createUserPersonalSavings(
+            user,
+            savingsTitle,
+            frequency,
+            duration,
+            deductionPeriod,
+            savingsAmount,
+            maturityAmount,
+            localStartDate,
+            endDate,
+            autoRestartEnabled,
+        );
+        return res.json({
+            status: "Success",
+            message: "savings created successfuly",
+            data: newSavingsCircle,
         });
     } catch (err: any) {
         return res.json({
@@ -757,7 +1051,9 @@ export const getAvaliableSavingsController = async (
 ) => {
     try {
         const user = req.user as IUser;
-        const allAvaliableSavings = await avaliableSavings(user);
+        const allAvaliableSavings = await getAllActiveSavingsCircle(
+            user.subRegion.toString(),
+        );
         return res.json({
             status: "Success",
             message: "found savings",
@@ -771,17 +1067,220 @@ export const getAvaliableSavingsController = async (
     }
 };
 
-export const getUserActiveSavingsController = async (
+export const getUserActiveSavingsRecordController = async (
     req: Request,
     res: Response,
 ) => {
     try {
         const user = req.user as IUser;
-        const activeSavings = await userActiveSavingsRecord(user);
+        const record = await getUserActiveSavingsRecord(user);
+        let result = [] as any;
+        for (const rec of record) {
+            let savingsCircle = await checkForCircleById(
+                rec.savingsCircleId.toString(),
+            );
+            let miniResult = [] as any;
+            miniResult.push(savingsCircle);
+            miniResult.push(rec);
+            result.push(miniResult);
+        }
+
         return res.json({
             status: "Success",
-            message: "found savings",
-            data: activeSavings,
+            message: "found savings plan",
+            data: result,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+export const getAllUserSavingsRecordController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const user = req.user as IUser;
+        const record = await userSavingsRecords(user);
+        let result = [] as any;
+        for (const rec of record) {
+            let savingsCircle = await checkForCircleById(
+                rec.savingsCircleId.toString(),
+            );
+            let miniResult = [] as any;
+            miniResult.push(savingsCircle);
+            miniResult.push(rec);
+            result.push(miniResult);
+        }
+
+        return res.json({
+            status: "Success",
+            message: "found savings plan",
+            data: result,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+export const getSavingsCircleByIdController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const { id } = req.params;
+        const foundCircle = await checkForCircleById(id.toString());
+        if (!foundCircle) {
+            return res.json({
+                status: "Failed",
+                message: "no savings circle found",
+            });
+        }
+        return res.json({
+            status: "Success",
+            message: "found savings ",
+            data: foundCircle,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+export const getUserSavingsRecordsByStatusController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const user = req.user as IUser;
+        const { status } = req.body;
+        const foundRecords = await getUserSavingsRecordByStatus(
+            user._id.toString(),
+            status,
+        );
+        return res.json({
+            status: "Success",
+            message: "foundRecord",
+            data: foundRecords,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+function getFixedEndDate(startDate: Date, durationInDays: number): Date {
+    const year = startDate.getFullYear();
+    const month = startDate.getMonth();
+    const day = startDate.getDate() + durationInDays;
+    const hour = startDate.getHours();
+    return new Date(year, month, day, hour, 0, 0, 0);
+}
+export const createFixedSavingController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const user = req.user as IUser;
+        const { amount, title, interestPayoutType, duration } = req.body;
+        const { fixedSavingsAnualInterest } =
+            await AdminSavingsConfig.getSettings();
+
+        // withdaw money from user account
+        let remark = `deposit of ${amount} to your fixed savings account`;
+        const withdrawal = await userWithdraw(
+            user._id.toString(),
+            amount,
+            remark,
+        );
+        if (withdrawal === "Insufficient Funds") {
+            return res.json({
+                status: "Failed",
+                message: "Insufficient funds to initiate fixed savings",
+            });
+        }
+        const { interestAmount, interestPercentage } =
+            calculateProportionalInterest(
+                amount,
+                Number(fixedSavingsAnualInterest),
+                duration,
+            );
+        let sender = `${user.firstName} ${user.lastName}`;
+        let depositRemark = `interest deposit on fixed savings`;
+        let startDate = getCurrentDateWithClosestHour();
+        let endDate = getFixedEndDate(startDate, Number(duration));
+
+        if (interestPayoutType === "UPFRONT") {
+            const deposit = await userDeposit(
+                user._id.toString(),
+                interestAmount,
+                generateSavingsRefrenceCode(),
+                new Date(),
+                sender,
+                depositRemark,
+            );
+            const newSavingsRecord = await createFixedSaving(
+                user._id.toString(),
+                title,
+                amount,
+                interestPercentage.toString(),
+                amount,
+                Number(duration),
+                startDate,
+                endDate,
+                "active",
+                "UPFRONT",
+                interestAmount,
+            );
+            return res.json({
+                status: "Success",
+                message: "fixed savings created successfully",
+                data: newSavingsRecord,
+            });
+        }
+        let payout = amount + interestAmount;
+        const newSavingsRecord = await createFixedSaving(
+            user._id.toString(),
+            title,
+            amount,
+            interestPercentage.toString(),
+            payout,
+            Number(duration),
+            startDate,
+            endDate,
+            "active",
+            "MATURITY",
+            interestAmount,
+        );
+        return res.json({
+            status: "Success",
+            message: "fixed savings created successfully",
+            data: newSavingsRecord,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+export const getActiveFixedSavingsController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const user = req.user as IUser;
+        const allRecord = await getUserActiveFixedSavings(user);
+        return res.json({
+            status: "Success",
+            message: "all record found",
+            data: allRecord,
         });
     } catch (err: any) {
         return res.json({
@@ -791,17 +1290,60 @@ export const getUserActiveSavingsController = async (
     }
 };
 
-export const getUserSavingsRecordsController = async (
+export const getCompletedFixedSavingsController = async (
     req: Request,
     res: Response,
 ) => {
     try {
         const user = req.user as IUser;
-        const foundRecords = await userSavingsRecords(user);
+        const allRecord = await getUserCompletedFixedSavings(user);
         return res.json({
             status: "Success",
-            message: "found savings",
-            data: foundRecords,
+            message: "all record found",
+            data: allRecord,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+
+export const getAllFixedSavingsController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const user = req.user as IUser;
+        const allRecord = await getUserFixedSavings(user);
+        return res.json({
+            status: "Success",
+            message: "all record found",
+            data: allRecord,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+export const getFixedSavingsByStatusController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const user = req.user as IUser;
+        const { status } = req.body;
+        const foundRecord = await getFixedSavingsByStatus(
+            user._id.toString(),
+            status,
+        );
+        return res.json({
+            status: "Success",
+            message: "found record",
+            data: foundRecord,
         });
     } catch (err: any) {
         return res.json({

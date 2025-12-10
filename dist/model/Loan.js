@@ -10,11 +10,12 @@ const loanSchema = new Schema({
         type: mongoose_1.default.Schema.Types.ObjectId,
         ref: "User",
     },
-    InitialAmount: { type: Number, required: true },
-    interest: { type: String },
+    amount: { type: Number, required: true },
+    interest: { type: Number },
+    interestPercentage: { type: Number },
     status: {
         type: String,
-        enum: ["pending", "approved", "rejected", "active", "completed"],
+        enum: ["pending", "approved", "rejected", "completed"],
         default: "pending",
     },
     startDate: { type: Date },
@@ -30,6 +31,11 @@ const loanSchema = new Schema({
     remark: {
         type: String,
     },
+    isSettled: {
+        type: Boolean,
+        default: false,
+    },
+    repaymentCompletedDate: { type: Date },
 }, { timestamps: true });
 const Loan = mongoose_1.default.model("Loan", loanSchema);
 exports.default = Loan;

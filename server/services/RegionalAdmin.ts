@@ -3,11 +3,11 @@ import SubRegion from "../model/SubRegion";
 import Region from "../model/Region";
 import subRegionalAdmin from "../model/SubRegionalAdmin";
 import SubRegionalAdmin from "../model/SubRegionalAdmin";
-import { ISuperAdmin, ISubRegion } from "../types";
+import { ISuperAdmin, ISubRegion } from "../../types";
 
 export const getRegionalAdminById = async (id: string) => {
     try {
-        const foundAdmin = await RegionalAdmin.findById(id);
+        const foundAdmin = await RegionalAdmin.findById(id, { password: 0 });
         return foundAdmin;
     } catch (err: any) {
         throw err;
@@ -91,7 +91,9 @@ export const createSubRegionalAdmin = async (
 
 export const getSubRegionalAdminById = async (id: string) => {
     try {
-        const foundSubRegionAdmin = await SubRegionalAdmin.findById(id);
+        const foundSubRegionAdmin = await SubRegionalAdmin.findById(id, {
+            password: 0,
+        });
         return foundSubRegionAdmin;
     } catch (err: any) {
         throw err;

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAdminSavingsConfigController = exports.setAdminConfigController = exports.getRegionalAdminByEmailController = exports.getAllRegionalAdminController = exports.getAllRegionController = exports.createNewRegionController = exports.createRegionalAdminController = exports.superAdminProfileController = exports.LoginSuperAdminController = exports.registerAdminController = void 0;
+exports.getAllLoanRecordController = exports.getAdminSavingsConfigController = exports.setAdminConfigController = exports.getRegionalAdminByEmailController = exports.getAllRegionalAdminController = exports.getAllRegionController = exports.createNewRegionController = exports.createRegionalAdminController = exports.superAdminProfileController = exports.LoginSuperAdminController = exports.registerAdminController = void 0;
 const argon2_1 = __importDefault(require("argon2"));
 const Admin_1 = require("../services/Admin");
 const JWT_1 = require("../config/JWT");
@@ -199,8 +199,8 @@ const getRegionalAdminByEmailController = async (req, res) => {
 exports.getRegionalAdminByEmailController = getRegionalAdminByEmailController;
 const setAdminConfigController = async (req, res) => {
     try {
-        const { defaultPenaltyFee, firstTimeAdminFee } = req.body;
-        const config = await (0, Admin_1.setAdminSavingsConfig)(defaultPenaltyFee, firstTimeAdminFee);
+        const { defaultPenaltyFee, firstTimeAdminFee, loanPenaltyFee, fixedSavingsAnualInterest, fixedSavingsPenaltyFee, } = req.body;
+        const config = await (0, Admin_1.setAdminSavingsConfig)(defaultPenaltyFee, firstTimeAdminFee, loanPenaltyFee, fixedSavingsAnualInterest, fixedSavingsPenaltyFee);
         if (!config) {
             return res.json({
                 status: "Failed",
@@ -238,3 +238,22 @@ const getAdminSavingsConfigController = async (req, res) => {
     }
 };
 exports.getAdminSavingsConfigController = getAdminSavingsConfigController;
+// get all loan record
+const getAllLoanRecordController = async (req, res) => {
+    try {
+        // const foundRecord = await
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.getAllLoanRecordController = getAllLoanRecordController;
+// get  loan record by status
+// aprovve pending loan
+// edit pending loan for approval
+// send general notification
+// send personal notification
+// suspend admin account

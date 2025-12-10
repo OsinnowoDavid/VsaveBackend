@@ -9,7 +9,7 @@ const KYC1Schema = new mongoose.Schema(
             type: String,
             required: true,
             enum: [
-                "Lottory Agent",
+                "Lottery Agent",
                 "Student",
                 "Self Employed",
                 "Unemployed",
