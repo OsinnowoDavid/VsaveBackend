@@ -595,37 +595,37 @@ export const updateTransactionPinController = async (
         throw err;
     }
 };
-export const validateTransactionPinController = async (
-    req: Request,
-    res: Response,
-) => {
-    try {
-        const { pin } = req.body;
-        const user = req.user as IUser;
-        const isValid = await validateTransactionPin(user._id.toString(), pin);
-        if (isValid) {
-            req.validateTransactionPin.pin = pin;
-            req.validateTransactionPin.status = true;
-            return res.json({
-                status: "Success",
-                message: "Transaction pin Validation successful",
-            });
-        }
+// export const validateTransactionPinController = async (
+//     req: Request,
+//     res: Response,
+// ) => {
+//     try {
+//         const { pin } = req.body;
+//         const user = req.user as IUser;
+//         const isValid = await validateTransactionPin(user._id.toString(), pin);
+//         if (isValid) {
+//             req.validateTransactionPin.pin = pin;
+//             req.validateTransactionPin.status = true;
+//             return res.json({
+//                 status: "Success",
+//                 message: "Transaction pin Validation successful",
+//             });
+//         }
 
-        req.validateTransactionPin.pin = 0;
-        req.validateTransactionPin.status = false;
-        return res.json({
-            status: "Failed",
-            message: "Incorrect pin",
-        });
-    } catch (err: any) {
-        return res.json({
-            status: "Failed",
-            message: err.message,
-            err,
-        });
-    }
-};
+//         req.validateTransactionPin.pin = 0;
+//         req.validateTransactionPin.status = false;
+//         return res.json({
+//             status: "Failed",
+//             message: "Incorrect pin",
+//         });
+//     } catch (err: any) {
+//         return res.json({
+//             status: "Failed",
+//             message: err.message,
+//             err,
+//         });
+//     }
+// };
 
 export const getDataPlanController = async (req: Request, res: Response) => {
     try {
@@ -652,10 +652,10 @@ export const getDataPlanController = async (req: Request, res: Response) => {
 
 export const buyAirtimeController = async (req: Request, res: Response) => {
     try {
-        const {transactionPin, phoneNumber, amount } = req.body;
+        const {pin, phoneNumber, amount } = req.body;
         const user = req.user as IUser;
         // validate transaction pin to procced
-        if(transactionPin.toString() !== user.pin.toString()){
+        if(pin.toString() !== user.pin.toString()){
             return res.json({
                 status: "Failed",
                 message: "Transaction pin is incorrect enter the correct pin",
@@ -709,10 +709,10 @@ export const buyAirtimeController = async (req: Request, res: Response) => {
 
 export const buyDataController = async (req: Request, res: Response) => {
     try {
-        const { transactionPin,phoneNumber, amount, planCode } = req.body;
+        const { pin,phoneNumber, amount, planCode } = req.body;
         const user = req.user as IUser;
         // validate transaction pin to procced
-        if(transactionPin.toString() !== user.pin.toString()){
+        if(pin.toString() !== user.pin.toString()){
             return res.json({
                 status: "Failed",
                 message: "Transaction pin is incorrect enter the correct pin",
@@ -795,10 +795,10 @@ export const accountLookUpController = async (req: Request, res: Response) => {
 };
 export const payOutController = async (req: Request, res: Response) => {
     try {
-        const { transactionPin,bankCode, accountNumber, accountName, amount } = req.body;
+        const { pin,bankCode, accountNumber, accountName, amount } = req.body;
         const user = req.user as IUser;
         // validate transaction pin to procced
-        if(transactionPin.toString() !== user.pin.toString()){
+        if(pin.toString() !== user.pin.toString()){
             return res.json({
                 status: "Failed",
                 message: "Transaction pin is incorrect enter the correct pin",
