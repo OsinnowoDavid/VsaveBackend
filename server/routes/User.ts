@@ -37,6 +37,7 @@ import {
     createTransactionPinController,
     getFixedSavingsByStatusController,
     getUserSavingsRecordsByStatusController,
+    getUserTotalSavingsBalanceController,
 } from "../controller/User";
 import {
     validateUserRegitrationInput,
@@ -180,4 +181,5 @@ router.post(
     getUserSavingsRecordsByStatusController,
 );
 
+router.get("/totalSavingsBalance", verifyUserToken, getUserTotalSavingsBalanceController)
 export default router;

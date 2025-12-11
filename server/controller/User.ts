@@ -50,6 +50,7 @@ import {
     getUserCompletedFixedSavings,
     getUserFixedSavings,
     getUserSavingsRecordByStatus,
+    getUserTotalSavingsBalance ,
 } from "../services/Savings";
 import { signUserToken } from "../config/JWT";
 import SGMail from "@sendgrid/mail";
@@ -423,6 +424,7 @@ export const registerKYC1 = async (req: Request, res: Response) => {
             bvn,
             address,
             subRegion,
+            transactionPin,
         } = req.body;
         const user = req.user as IUser;
         // check if KYC record already exisyt
@@ -433,6 +435,23 @@ export const registerKYC1 = async (req: Request, res: Response) => {
                 message: "KYC record already exist",
             });
         }
+        // change KYC status
+
+        const virtualAccount = await createVirtualAccountForPayment(
+            user,
+            bvn,
+            address,
+        );
+        if (virtualAccount.success === "false") {
+            return res.json({
+                status: "Failed",
+                message: "something went wrong, account number not created"
+            });
+        }
+        await createVirtualAccountIndex(
+            user._id.toString(),
+            virtualAccount.data.virtual_account_number,
+        );
         // save KYC1
         const newKYC1 = await createKYC1Record(
             user,
@@ -446,31 +465,14 @@ export const registerKYC1 = async (req: Request, res: Response) => {
             address,
             subRegion,
         );
+        // create transaction pin 
+        await createTransactionPin(user._id.toString(),transactionPin) ;
         if (!newKYC1) {
             return res.json({
                 status: "Failed",
                 message: "something went wrong, try again later",
             });
         }
-        // change KYC status
-
-        const virtualAccount = await createVirtualAccountForPayment(
-            user,
-            bvn,
-            address,
-        );
-        if (virtualAccount.success === "false") {
-            return res.json({
-                status: "Failed",
-                message: "something went wrong, account number not created",
-                data: newKYC1,
-            });
-        }
-        await createVirtualAccountIndex(
-            user._id.toString(),
-            virtualAccount.data.virtual_account_number,
-        );
-
         return res.json({
             status: "Success",
             message: "KYC1 record created successfuly",
@@ -1352,3 +1354,19 @@ export const getFixedSavingsByStatusController = async (
         });
     }
 };
+export const getUserTotalSavingsBalanceController = async (req: Request, res: Response) =>{
+    try{
+        const user = req.user as IUser;
+        const totalSavingsBalnce = await getUserTotalSavingsBalance(user._id.toString())  ;
+        return res.json({
+            status:"Success",
+            message:"savings balance calculated",
+            data: totalSavingsBalnce
+        })
+    }catch(err:any){
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+}

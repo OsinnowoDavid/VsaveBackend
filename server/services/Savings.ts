@@ -674,3 +674,28 @@ export const breakFixedSavings = async (user: string, recordId: string) => {
         throw err;
     }
 };
+export const getUserTotalSavingsBalance = async (user:string) =>{
+    try{
+         const foundSavingsRecord = await UserSavingsRecord.find({user}) 
+         let result ={
+            totalBalance: 0,
+            activeSavingsBalance: 0,
+            settledSavingsBalance: 0
+         } ;
+         for(const record of foundSavingsRecord){
+            const foundContribution = await SavingsContribution.findById(record.contributionId) ;
+            if(record.status === "ACTIVE"){
+                result.totalBalance += foundContribution.currentAmountSaved ;
+                result.activeSavingsBalance += foundContribution.currentAmountSaved ;
+            } 
+
+             if(record.status === "ENDED"){
+                result.totalBalance += foundContribution.currentAmountSaved ;
+                result.settledSavingsBalance += foundContribution.currentAmountSaved ;
+            } 
+    } 
+    return result 
+}catch(err:any){
+    throw err
+}
+}

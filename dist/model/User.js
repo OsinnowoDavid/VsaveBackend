@@ -68,7 +68,7 @@ const userSchema = new Schema({
         type: String,
     },
     pin: {
-        type: Number,
+        type: String,
     },
     kycStatus: {
         type: Boolean,

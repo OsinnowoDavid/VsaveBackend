@@ -50,4 +50,5 @@ router.get("/get-completed-fixed-savings", JWT_1.verifyUserToken, User_1.getComp
 router.get("/get-active-fixed-savings", JWT_1.verifyUserToken, User_1.getActiveFixedSavingsController);
 router.post("/get-saving-by-status", JWT_1.verifyUserToken, User_1.getFixedSavingsByStatusController);
 router.post("/get-fixedsaving-by-status", JWT_1.verifyUserToken, User_1.getUserSavingsRecordsByStatusController);
+router.get("/totalSavingsBalance", JWT_1.verifyUserToken, User_1.getUserTotalSavingsBalanceController);
 exports.default = router;

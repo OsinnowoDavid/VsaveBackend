@@ -164,7 +164,7 @@ export const approveOrRejectLoan = async (
     id: string,
     status: "approved" | "rejected",
     duration: string,
-    dueDate: Date,
+    dueDate?: Date,
 ) => {
     try {
         const foundRecord = await Loan.findById(id);

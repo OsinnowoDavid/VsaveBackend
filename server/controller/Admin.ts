@@ -15,6 +15,7 @@ import {
     getAdminSavingsConfig,
 } from "../services/Admin";
 import { signUserToken } from "../config/JWT";
+import {getAllLoanRecord,getLoanRecordByStatus,approveOrRejectLoan} from "../services/Loan" ;
 
 export const registerAdminController = async (req: Request, res: Response) => {
     try {
@@ -275,7 +276,7 @@ export const setAdminConfigController = async (req: Request, res: Response) => {
     }
 };
 
-export const getAdminSavingsConfigController = async (
+export const getAdminConfigController = async (
     req: Request,
     res: Response,
 ) => {
@@ -300,7 +301,12 @@ export const getAllLoanRecordController = async (
     res: Response,
 ) => {
     try {
-        // const foundRecord = await
+         const foundRecord = await getAllLoanRecord() ;
+         return res.json({
+            status:"Success",
+            message: "found Record",
+            data: foundRecord
+         })
     } catch (err: any) {
         return res.json({
             status: "Failed",
@@ -309,7 +315,47 @@ export const getAllLoanRecordController = async (
     }
 };
 // get  loan record by status
+export const getLoanRecordByStatusController = async (
+    req: Request,
+    res: Response,
+) => {
+    try{
+        const {status} = req.body ;
+        const foundRecords = await getLoanRecordByStatus(status);
+        return res.json({
+            status:"Success",
+            message: "found record",
+            data: foundRecords
+        })
+    }catch(err:any){
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        }); 
+    }
+}
 // aprovve pending loan
+export const approveOrRejectLoanController =  async (
+    req: Request,
+    res: Response,
+) => {
+    try{
+        const {id, status, duration} = req.body ;
+        const dueDate = new Date() ;
+         dueDate.setDate(dueDate.getDate() + duration);
+        const record = await approveOrRejectLoan(id,status,duration,dueDate) ;
+        return res.json({
+            status: "Success",
+            message: "record updated",
+            data: record 
+        })
+    }catch(err:any){
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        }); 
+    }
+}
 // edit pending loan for approval
 // send general notification
 // send personal notification
