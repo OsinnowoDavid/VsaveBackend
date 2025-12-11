@@ -25,7 +25,7 @@ const registerUser = async (req, res) => {
     try {
         const { firstName, lastName, email, password, gender, dateOfBirth, phoneNumber, referralCode, } = req.body;
         let hashPassword = await argon2_1.default.hash(password);
-        const newUser = await (0, User_1.createNewUser)(firstName, lastName, email, hashPassword, gender, dateOfBirth, phoneNumber);
+        const newUser = await (0, User_1.createNewUser)(firstName, lastName, email.toLowerCase(), hashPassword, gender, dateOfBirth, phoneNumber);
         if (!newUser) {
             return res.status(500).json({
                 status: "Failed",
@@ -496,17 +496,15 @@ const getDataPlanController = async (req, res) => {
 exports.getDataPlanController = getDataPlanController;
 const buyAirtimeController = async (req, res) => {
     try {
-        const { phoneNumber, amount } = req.body;
-        // check if user validate transaction pin
-        console.log("got inside controller");
-        if (!req.validateTransactionPin || !req.validateTransactionPin.status) {
+        const { transactionPin, phoneNumber, amount } = req.body;
+        const user = req.user;
+        // validate transaction pin to procced
+        if (transactionPin.toString() !== user.pin.toString()) {
             return res.json({
                 status: "Failed",
-                message: "Validate transaction pin to procced with transaction",
+                message: "Transaction pin is incorrect enter the correct pin",
             });
         }
-        const user = req.user;
-        console.log("got inside controller");
         // check if avaliablebalance is greater than the purchased amount
         if (amount > user.availableBalance) {
             console.log("insuficient");
@@ -548,13 +546,13 @@ const buyAirtimeController = async (req, res) => {
 exports.buyAirtimeController = buyAirtimeController;
 const buyDataController = async (req, res) => {
     try {
-        const { phoneNumber, amount, planCode } = req.body;
+        const { transactionPin, phoneNumber, amount, planCode } = req.body;
         const user = req.user;
-        // check if user validate transaction pin
-        if (!req.validateTransactionPin || !req.validateTransactionPin.status) {
+        // validate transaction pin to procced
+        if (transactionPin.toString() !== user.pin.toString()) {
             return res.json({
                 status: "Failed",
-                message: "Validate transaction pin to procced with transaction",
+                message: "Transaction pin is incorrect enter the correct pin",
             });
         }
         // check if avaliablebalance is greater than the purchased amount
@@ -631,13 +629,13 @@ const accountLookUpController = async (req, res) => {
 exports.accountLookUpController = accountLookUpController;
 const payOutController = async (req, res) => {
     try {
-        const { bankCode, accountNumber, accountName, amount } = req.body;
+        const { transactionPin, bankCode, accountNumber, accountName, amount } = req.body;
         const user = req.user;
-        // check if user validate transaction pin
-        if (!req.validateTransactionPin || !req.validateTransactionPin.status) {
+        // validate transaction pin to procced
+        if (transactionPin.toString() !== user.pin.toString()) {
             return res.json({
                 status: "Failed",
-                message: "Validate transaction pin to procced with transaction",
+                message: "Transaction pin is incorrect enter the correct pin",
             });
         }
         //check if user avaliableBalance is greater than the amount

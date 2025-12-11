@@ -32,7 +32,6 @@ import {
     getActiveFixedSavingsController,
     getCompletedFixedSavingsController,
     getAllFixedSavingsController,
-    validateTransactionPinController,
     updateTransactionPinController,
     createTransactionPinController,
     getFixedSavingsByStatusController,
@@ -72,13 +71,6 @@ router.post(
     "/create-transaction-pin",
     verifyUserToken,
     createTransactionPinController,
-);
-
-router.post(
-    "/validate-transaction-pin",
-    verifyUserToken,
-    transactionPinMiddleware,
-    validateTransactionPinController,
 );
 
 router.post(

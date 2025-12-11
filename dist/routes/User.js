@@ -7,7 +7,6 @@ const express_1 = __importDefault(require("express"));
 const User_1 = require("../controller/User");
 const user_1 = require("../validate-input/user");
 const JWT_1 = require("../config/JWT");
-const middleware_1 = require("../middleware");
 const router = express_1.default.Router();
 router.post("/register", user_1.validateUserRegitrationInput, User_1.registerUser);
 router.post("/login", user_1.validateUserLoginInput, User_1.loginUser);
@@ -26,7 +25,6 @@ router.post("/update-kyc1", JWT_1.verifyUserToken, User_1.updateKYC1RecordContro
 router.get("/kyc1", JWT_1.verifyUserToken, User_1.getUserKyc1RecordController);
 router.get("/get-data-plan/:network", JWT_1.verifyUserToken, User_1.getDataPlanController);
 router.post("/create-transaction-pin", JWT_1.verifyUserToken, User_1.createTransactionPinController);
-router.post("/validate-transaction-pin", JWT_1.verifyUserToken, middleware_1.transactionPinMiddleware, User_1.validateTransactionPinController);
 router.post("/update-transaction-pin", JWT_1.verifyUserToken, User_1.updateTransactionPinController);
 router.post("/buy-airtime", JWT_1.verifyUserToken, User_1.buyAirtimeController);
 router.post("/buy-data", JWT_1.verifyUserToken, User_1.buyDataController);
