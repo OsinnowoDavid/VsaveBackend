@@ -556,6 +556,7 @@ export const createTransactionPinController = async (
     try {
         const user = req.user as IUser;
         const { pin } = req.body;
+        console.log("req.pin:",pin)
         const newRecord = await createTransactionPin(user._id.toString(), pin);
         return res.json({
             status: "Success",
@@ -640,7 +641,7 @@ export const getDataPlanController = async (req: Request, res: Response) => {
         return res.json({
             status: "Success",
             message: "Found Data Plan",
-            data: dataPlan,
+            data: dataPlan.data,
         });
     } catch (err: any) {
         return res.json({
@@ -655,12 +656,14 @@ export const buyAirtimeController = async (req: Request, res: Response) => {
         const {pin, phoneNumber, amount } = req.body;
         const user = req.user as IUser;
         // validate transaction pin to procced
+        console.log("validate:", pin.toString(),user.pin.toString())
         if(pin.toString() !== user.pin.toString()){
             return res.json({
                 status: "Failed",
                 message: "Transaction pin is incorrect enter the correct pin",
             });
         }
+        console.log("validation completed")
         // check if avaliablebalance is greater than the purchased amount
         if (amount > user.availableBalance) {
             console.log("insuficient");
