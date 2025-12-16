@@ -3,6 +3,7 @@ import Loan from "../model/Loan";
 import { IUser } from "../../types";
 export const createLoanRecord = async (
     user: IUser,
+    loanTitle:string,
     amount: number,
     interest: number,
     interestPercentage: number,
@@ -15,6 +16,7 @@ export const createLoanRecord = async (
     try {
         const newLoan = await Loan.create({
             user,
+            loanTitle,
             amount,
             interest,
             interestPercentage,
@@ -75,8 +77,7 @@ export const payUnsettledLoan = async (user: IUser, amount: number) => {
             await foundLoanRecord.save();
             return foundLoanRecord;
         }
-        let newRepaymentAmount =
-            Number(foundLoanRecord.repaymentAmount) - amount;
+        let newRepaymentAmount = Number(foundLoanRecord.repaymentAmount) - amount;
         foundLoanRecord.repaymentAmount = Number(newRepaymentAmount);
         foundLoanRecord.repayments.push({
             amount,

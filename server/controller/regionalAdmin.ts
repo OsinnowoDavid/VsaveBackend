@@ -11,7 +11,8 @@ import {
     assignSubRegionAdmin,
     getAllSubRegion,
     assignSubRegionToRegion,
-} from "../services/RegionalAdmin";
+} from "../services/RegionalAdmin"; 
+import {} from "../services/Admin"
 
 export const LoginRegionalAdmin = async (req: Request, res: Response) => {
     try {

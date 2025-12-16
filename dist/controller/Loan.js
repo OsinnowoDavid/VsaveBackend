@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.allUserUnsettledLoanRecord = exports.allUserSettledLoanRecord = exports.allUserLoanRecord = exports.createLoanController = exports.checkElegibilityController = void 0;
+exports.loanSettlementController = exports.allUserUnsettledLoanRecord = exports.allUserSettledLoanRecord = exports.allUserLoanRecord = exports.createLoanController = exports.checkElegibilityController = void 0;
 const Loan_1 = require("../services/Loan");
 const User_1 = require("../services/User");
 const Savings_1 = require("../services/Savings");
@@ -72,7 +72,7 @@ const addFourteenDays = (startDate) => {
 };
 const createLoanController = async (req, res) => {
     try {
-        const { amount } = req.body;
+        const { amount, loanTitle } = req.body;
         const user = req.user;
         const elegibility = req.loanElegibility;
         if (!elegibility.pass) {
@@ -94,7 +94,7 @@ const createLoanController = async (req, res) => {
         if (Number(amount) > 50000) {
             // craete Loan and put on pending
             let remark = "require admin approval for 50000N loan and above";
-            const createdLoan = await (0, Loan_1.createLoanRecord)(user, loanedAmount, interestAmount, interestPercent, "pending", new Date(), dueDate, amount, remark);
+            const createdLoan = await (0, Loan_1.createLoanRecord)(user, loanTitle, loanedAmount, interestAmount, interestPercent, "pending", new Date(), dueDate, amount, remark);
             return res.json({
                 status: "Pending",
                 message: "loan is been processed, needs admin approval",
@@ -102,7 +102,7 @@ const createLoanController = async (req, res) => {
             });
         }
         let remark = "loan approved and disbursed";
-        const createdLoan = await (0, Loan_1.createLoanRecord)(user, loanedAmount, interestAmount, interestPercent, "approved", new Date(), dueDate, amount, remark);
+        const createdLoan = await (0, Loan_1.createLoanRecord)(user, loanTitle, loanedAmount, interestAmount, interestPercent, "approved", new Date(), dueDate, amount, remark);
         await (0, User_1.userDeposit)(user._id.toString(), loanedAmount, (0, tools_1.generateLoanRefrenceCode)(), new Date(), "Vsave Loan", remark, interestAmount);
         return res.json({
             status: "Pending",
@@ -172,3 +172,24 @@ const allUserUnsettledLoanRecord = async (req, res) => {
     }
 };
 exports.allUserUnsettledLoanRecord = allUserUnsettledLoanRecord;
+const loanSettlementController = async (req, res) => {
+    try {
+        const { amount } = req.body;
+        const user = req.user;
+        const settledLoan = await (0, Loan_1.payUnsettledLoan)(user, amount);
+        if (!settledLoan.isSettled) {
+            return res.json({
+                status: "Success",
+                message: `loan almost completed , it remain ${settledLoan.repaymentAmount}N to be settled on or before ${settledLoan.dueDate}`,
+                data: settledLoan
+            });
+        }
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.loanSettlementController = loanSettlementController;

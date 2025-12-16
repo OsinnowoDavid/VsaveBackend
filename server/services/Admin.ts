@@ -1,4 +1,4 @@
-import Admin from "../model/Super_admin";
+import Admin from "../model/Admin";
 import RegionalAdmin from "../model/Regionaladmin";
 import Region from "../model/Region";
 import { ISuperAdmin } from "../../types";
@@ -12,12 +12,14 @@ export const CreateSuperAdmin = async (
     profilePicture?: string,
 ) => {
     try {
+        
         const newSuperAdmin = await Admin.create({
             firstName,
             lastName,
             email,
             phoneNumber,
             password,
+            role: "SUPER ADMIN",
             profilePicture,
         });
         return newSuperAdmin;
@@ -26,7 +28,7 @@ export const CreateSuperAdmin = async (
     }
 };
 
-export const getSuperAdminById = async (id: string) => {
+export const getAdminById = async (id: string) => {
     try {
         const foundAdmin = await Admin.findById(id, { password: 0 });
         return foundAdmin;
@@ -37,7 +39,7 @@ export const getSuperAdminById = async (id: string) => {
 
 export const getAllSuperAdminByEmail = async (email: string) => {
     try {
-        const foundAdmin = await Admin.findOne({ email });
+        const foundAdmin = await Admin.findOne({ email, role: "SUPER ADMIN" });
         return foundAdmin;
     } catch (err: any) {
         throw err;
@@ -76,6 +78,7 @@ export const createRegionalAdmin = async (
             phoneNumber,
             password,
             region,
+            role: "REGIONAL ADMIN",
             profilePicture,
         });
         return newRegionalAdmin;
@@ -84,7 +87,7 @@ export const createRegionalAdmin = async (
     }
 };
 export const assignRegionalAdmin = async (
-    admin: ISuperAdmin,
+    admin: any,
     region: string,
 ) => {
     try {
@@ -101,16 +104,25 @@ export const assignRegionalAdmin = async (
 };
 export const getAllRegionalAdmin = async () => {
     try {
-        const allRegionalAdmin = await RegionalAdmin.find();
+        const allRegionalAdmin = await Admin.find();
         return allRegionalAdmin;
     } catch (err: any) {
         throw err;
     }
 };
 
+export const getRegionalAdmins = async (region:string) =>{
+    try{
+        const foundRecord = await Admin.find({region}) ;
+        return foundRecord
+    }catch(err:any){
+        throw err
+    }
+}
+
 export const getRegionalAdminById = async (id: string) => {
     try {
-        const foundAdmin = await RegionalAdmin.findById(id);
+        const foundAdmin = await Admin.findOne({id,role:"REGIONAL ADMIN"});
         return foundAdmin;
     } catch (err: any) {
         throw err;
@@ -119,7 +131,7 @@ export const getRegionalAdminById = async (id: string) => {
 
 export const getRegionalAdminByEmail = async (email: string) => {
     try {
-        const foundAdmin = await RegionalAdmin.findOne({ email });
+        const foundAdmin = await Admin.findOne({ email });
         return foundAdmin;
     } catch (err: any) {
         throw err;
@@ -193,3 +205,48 @@ export const sendNotification = async (
         throw err;
     }
 };
+export const createSubRegionalAdmin = async (  firstName: string,
+    lastName: string,
+    email: string,
+    phoneNumber: string,
+    password: string,
+    region: string,
+    subRegion:string,
+    profilePicture?: string) =>{
+        try{
+            const newSubRegionalAdmin = await Admin.create({
+            firstName,
+            lastName,
+            email,
+            phoneNumber,
+            password,
+            region,
+            subRegion,
+            role: "SUBREGIONAL ADMIN",
+            profilePicture,
+            }) 
+            return newSubRegionalAdmin 
+        }catch(err:any){
+            throw err
+        }
+    } ;
+
+    export const getAllSubRegionalAdmin = async (subRegion:string) =>{
+        try{
+            const foundRecord = await Admin.find({subRegion}) ;
+            return foundRecord 
+        }catch(err:any){
+            throw err
+        }
+    } 
+
+    export const getSubRegionaladminByEmail = async (email:string, subRegion?:string) =>{
+        try{
+            const foundAdmin = await Admin.findOne({
+                email,
+                subRegion
+            })
+        }catch(err:any){
+            throw err
+        }
+    }

@@ -4,6 +4,7 @@ import {
     getUserSettledLoan,
     createLoanRecord,
     getUserLoanRecord,
+    payUnsettledLoan
 } from "../services/Loan";
 import { IUser } from "../../types";
 import { userDeposit } from "../services/User";
@@ -90,7 +91,7 @@ const addFourteenDays = (startDate: Date) => {
 
 export const createLoanController = async (req: Request, res: Response) => {
     try {
-        const { amount } = req.body;
+        const { amount, loanTitle } = req.body;
         const user = req.user as IUser;
         const elegibility = req.loanElegibility;
         if (!elegibility.pass) {
@@ -115,6 +116,7 @@ export const createLoanController = async (req: Request, res: Response) => {
             let remark = "require admin approval for 50000N loan and above";
             const createdLoan = await createLoanRecord(
                 user,
+                loanTitle,
                 loanedAmount,
                 interestAmount,
                 interestPercent,
@@ -133,6 +135,7 @@ export const createLoanController = async (req: Request, res: Response) => {
         let remark = "loan approved and disbursed";
         const createdLoan = await createLoanRecord(
             user,
+            loanTitle,
             loanedAmount,
             interestAmount,
             interestPercent,
@@ -217,3 +220,27 @@ export const allUserUnsettledLoanRecord = async (
         });
     }
 };
+
+export const loanSettlementController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const {amount} = req.body ;
+        const user = req.user as IUser ;
+        
+        const settledLoan = await payUnsettledLoan(user,amount) ;
+        if(!settledLoan.isSettled){
+            return res.json({
+                status:"Success",
+                message:`loan almost completed , it remain ${settledLoan.repaymentAmount}N to be settled on or before ${settledLoan.dueDate}` ,
+                data:settledLoan
+            })
+        }
+    }catch(err:any){
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    } 
+}

@@ -5,10 +5,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.approveOrRejectLoan = exports.editLoanRecord = exports.getLoanRecordByStatus = exports.getAllLoanRecord = exports.getUserLoanByStatus = exports.allUnsettledRecord = exports.payUnsettledLoan = exports.getUserUnsettledLoan = exports.getUserSettledLoan = exports.getUserLoanRecord = exports.createLoanRecord = void 0;
 const Loan_1 = __importDefault(require("../model/Loan"));
-const createLoanRecord = async (user, amount, interest, interestPercentage, status, startDate, dueDate, repaymentAmount, remark) => {
+const createLoanRecord = async (user, loanTitle, amount, interest, interestPercentage, status, startDate, dueDate, repaymentAmount, remark) => {
     try {
         const newLoan = await Loan_1.default.create({
             user,
+            loanTitle,
             amount,
             interest,
             interestPercentage,

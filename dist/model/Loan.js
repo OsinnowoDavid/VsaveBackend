@@ -11,6 +11,7 @@ const loanSchema = new Schema({
         ref: "User",
     },
     amount: { type: Number, required: true },
+    loanTitle: { type: String, required: true },
     interest: { type: Number },
     interestPercentage: { type: Number },
     status: {

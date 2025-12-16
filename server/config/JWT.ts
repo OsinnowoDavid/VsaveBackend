@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 const jwt_secret: any = process.env.jwt_secret;
 import { NextFunction, Request, Response } from "express";
 import { getUserById } from "../services/User";
-import { getSuperAdminById } from "../services/Admin";
+import { getAdminById } from "../services/Admin";
 import {
     ISuperAdmin,
     IRegionalAdmin,
@@ -81,8 +81,8 @@ export const verifySuperAdminToken = async (
         const decoded: any = jwt.verify(authorization, jwt_secret);
         const foundId = decoded.user._id;
         // find superadmin by decoded user id
-        const currentAdmin = await getSuperAdminById(foundId);
-        if (!currentAdmin) {
+        const currentAdmin = await getAdminById(foundId);
+        if (!currentAdmin && currentAdmin.role !== "SUPER ADMIN") {
             return res.json({
                 status: "failed!",
                 msg: "user not authorized!!",
@@ -98,6 +98,20 @@ export const verifySuperAdminToken = async (
         });
     }
 };
+const regionalAdminPass = (admin: any) =>{
+try{
+    let result = false
+    if(admin.role === "SUPER ADMIN"){
+        result = true
+    } 
+    if(admin.role === "REGIONAL ADMIN"){
+        result = true
+    } 
+    return result
+}catch(err:any){
+    throw err
+}
+}
 
 export const verifyRegionalAdminToken = async (
     req: Request,
@@ -115,20 +129,18 @@ export const verifyRegionalAdminToken = async (
         }
         const decoded: any = jwt.verify(authorization, jwt_secret);
         const foundId = decoded.user._id;
-        const foundSuperAdmin = (await getSuperAdminById(
+        const foundAdmin = await getAdminById(
             foundId,
-        )) as ISuperAdmin;
-        const foundRegionalAdmin = (await getRegionalAdminById(
-            foundId,
-        )) as IRegionalAdmin;
-        if (!(foundSuperAdmin || foundRegionalAdmin)) {
-            return res.json({
+        )
+       
+        if(!foundAdmin || !regionalAdminPass(foundAdmin)){
+               return res.json({
                 status: "failed!",
                 msg: "user not authorized!!",
             });
         }
         // Attach user to request object
-        req.user = foundSuperAdmin || foundRegionalAdmin;
+        req.user = foundAdmin 
         return next();
     } catch (err: any) {
         res.json({
@@ -154,22 +166,10 @@ export const verifySubRegionalAdminToken = async (
         }
         const decoded: any = jwt.verify(authorization, jwt_secret);
         const foundId = decoded.user._id;
-        const foundSuperAdmin = (await getSuperAdminById(
+        const foundAdmin = await getAdminById(
             foundId,
-        )) as ISuperAdmin;
-        const foundRegionalAdmin = (await getRegionalAdminById(
-            foundId,
-        )) as IRegionalAdmin;
-        const foundSubRegionalAdmin = (await getSubRegionalAdminById(
-            foundId,
-        )) as ISubRegionalAdmin;
-        console.log("user", {
-            superAdmin: foundSuperAdmin,
-            regionalAdmin: foundRegionalAdmin,
-            subRegionalAdmin: foundSubRegionalAdmin,
-        });
-        if (!(foundSuperAdmin || foundRegionalAdmin || foundSubRegionalAdmin)) {
-            console.log("got to superadmin");
+        )
+        if (!foundAdmin) {
             return res.json({
                 status: "failed!",
                 msg: "user not authorized!!",
@@ -177,7 +177,7 @@ export const verifySubRegionalAdminToken = async (
         }
         // Attach user to request object
         req.user =
-            foundSuperAdmin || foundRegionalAdmin || foundSubRegionalAdmin;
+            foundAdmin 
         return next();
     } catch (err: any) {
         res.json({

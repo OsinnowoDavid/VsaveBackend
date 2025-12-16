@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.approveOrRejectLoanController = exports.getLoanRecordByStatusController = exports.getAllLoanRecordController = exports.getAdminConfigController = exports.setAdminConfigController = exports.getRegionalAdminByEmailController = exports.getAllRegionalAdminController = exports.getAllRegionController = exports.createNewRegionController = exports.createRegionalAdminController = exports.superAdminProfileController = exports.LoginSuperAdminController = exports.registerAdminController = void 0;
+exports.approveOrRejectLoanController = exports.getLoanRecordByStatusController = exports.getAllLoanRecordController = exports.getAdminConfigController = exports.setAdminConfigController = exports.getRegionalAdminByEmailController = exports.getRegionalAdminsController = exports.getAllRegionalAdminController = exports.getAllRegionController = exports.createNewRegionController = exports.createRegionalAdminController = exports.superAdminProfileController = exports.LoginSuperAdminController = exports.registerAdminController = void 0;
 const argon2_1 = __importDefault(require("argon2"));
 const Admin_1 = require("../services/Admin");
 const JWT_1 = require("../config/JWT");
@@ -185,10 +185,39 @@ const getAllRegionalAdminController = async (req, res) => {
     }
 };
 exports.getAllRegionalAdminController = getAllRegionalAdminController;
+const getRegionalAdminsController = async (req, res) => {
+    try {
+        const { region } = req.body;
+        const allRegionalAdmin = await (0, Admin_1.getRegionalAdmins)(region);
+        if (!allRegionalAdmin) {
+            return res.json({
+                status: "Failed",
+                message: "No Region Found",
+            });
+        }
+        return res.json({
+            status: "Success",
+            message: "Region Found",
+            data: allRegionalAdmin,
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.getRegionalAdminsController = getRegionalAdminsController;
 const getRegionalAdminByEmailController = async (req, res) => {
     try {
         const { email } = req.params;
         const foundRegionalAdmin = await (0, Admin_1.getRegionalAdminByEmail)(email);
+        return res.json({
+            status: "Success",
+            message: "Regional admin Found",
+            data: foundRegionalAdmin,
+        });
     }
     catch (err) {
         return res.json({

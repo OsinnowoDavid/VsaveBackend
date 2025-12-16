@@ -13,6 +13,7 @@ import {
     assignRegionalAdmin,
     setAdminSavingsConfig,
     getAdminSavingsConfig,
+    getRegionalAdmins,
 } from "../services/Admin";
 import { signUserToken } from "../config/JWT";
 import {getAllLoanRecord,getLoanRecordByStatus,approveOrRejectLoan} from "../services/Loan" ;
@@ -226,13 +227,46 @@ export const getAllRegionalAdminController = async (
     }
 };
 
+export const getRegionalAdminsController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const {region} = req.body
+        const allRegionalAdmin = await getRegionalAdmins(region);
+        if (!allRegionalAdmin) {
+            return res.json({
+                status: "Failed",
+                message: "No Region Found",
+            });
+        }
+
+        return res.json({
+            status: "Success",
+            message: "Region Found",
+            data: allRegionalAdmin,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+
+
 export const getRegionalAdminByEmailController = async (
     req: Request,
     res: Response,
 ) => {
     try {
         const { email } = req.params;
-        const foundRegionalAdmin = await getRegionalAdminByEmail(email);
+        const foundRegionalAdmin = await getRegionalAdminByEmail(email); 
+          return res.json({
+            status: "Success",
+            message: "Regional admin Found",
+            data: foundRegionalAdmin,
+        });
     } catch (err: any) {
         return res.json({
             status: "Failed",
