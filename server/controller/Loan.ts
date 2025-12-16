@@ -7,7 +7,7 @@ import {
     payUnsettledLoan
 } from "../services/Loan";
 import { IUser } from "../../types";
-import { userDeposit } from "../services/User";
+import { userDeposit ,userWithdraw} from "../services/User";
 import {
     getSavingsContributionById,
     allUserActiveSavingsRecord,
@@ -207,7 +207,7 @@ export const allUserUnsettledLoanRecord = async (
 ) => {
     try {
         const user = req.user as IUser;
-        const allLoanRecord = await getUserUnsettledLoan(user);
+        const allLoanRecord = await getUserUnsettledLoan(user); 
         return res.json({
             status: "Success",
             message: "all record found",
@@ -231,12 +231,23 @@ export const loanSettlementController = async (
         
         const settledLoan = await payUnsettledLoan(user,amount) ;
         if(!settledLoan.isSettled){
+              // create transaction record 
+               let remark = "loan settlement";
+            await userWithdraw(user._id.toString(),amount,remark, generateLoanRefrenceCode()) ;
             return res.json({
                 status:"Success",
                 message:`loan almost completed , it remain ${settledLoan.repaymentAmount}N to be settled on or before ${settledLoan.dueDate}` ,
                 data:settledLoan
             })
         }
+        // create transaction record 
+         let remark = "loan settlement";
+        await userWithdraw(user._id.toString(),amount,remark, generateLoanRefrenceCode()) ;
+         return res.json({
+                status:"Success",
+                message:`loan completed` ,
+                data:settledLoan
+            })
     }catch(err:any){
         return res.json({
             status: "Failed",

@@ -178,12 +178,23 @@ const loanSettlementController = async (req, res) => {
         const user = req.user;
         const settledLoan = await (0, Loan_1.payUnsettledLoan)(user, amount);
         if (!settledLoan.isSettled) {
+            // create transaction record 
+            let remark = "loan settlement";
+            await (0, User_1.userWithdraw)(user._id.toString(), amount, remark, (0, tools_1.generateLoanRefrenceCode)());
             return res.json({
                 status: "Success",
                 message: `loan almost completed , it remain ${settledLoan.repaymentAmount}N to be settled on or before ${settledLoan.dueDate}`,
                 data: settledLoan
             });
         }
+        // create transaction record 
+        let remark = "loan settlement";
+        await (0, User_1.userWithdraw)(user._id.toString(), amount, remark, (0, tools_1.generateLoanRefrenceCode)());
+        return res.json({
+            status: "Success",
+            message: `loan completed`,
+            data: settledLoan
+        });
     }
     catch (err) {
         return res.json({
