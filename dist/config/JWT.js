@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifySubRegionalAdminToken = exports.verifyRegionalAdminToken = exports.verifySuperAdminToken = exports.verifyUserToken = exports.signUserToken = void 0;
+exports.attachToToken = exports.verifySubRegionalAdminToken = exports.verifyRegionalAdminToken = exports.verifySuperAdminToken = exports.verifyUserToken = exports.signUserToken = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const jwt_secret = process.env.jwt_secret;
 const User_1 = require("../services/User");
@@ -40,6 +40,10 @@ const verifyUserToken = async (req, res, next) => {
         }
         // Attach user to request object
         req.user = currentClient;
+        // check if there is loanelegibility object so as to add to req.elegibility 
+        if (decoded.loanEligibility) {
+            req.loanElegibility = decoded.loanEligibility;
+        }
         return next();
     }
     catch (err) {
@@ -160,3 +164,17 @@ const verifySubRegionalAdminToken = async (req, res, next) => {
     }
 };
 exports.verifySubRegionalAdminToken = verifySubRegionalAdminToken;
+const attachToToken = (token, loanElegibility) => {
+    try {
+        const decoded = jsonwebtoken_1.default.verify(token, process.env.jwt_secret);
+        // Add the new claims
+        decoded.loanEligibility = loanElegibility;
+        // Sign a new token with the updated payload
+        const updatedToken = jsonwebtoken_1.default.sign(decoded, process.env.jwt_secret);
+        return updatedToken;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.attachToToken = attachToToken;

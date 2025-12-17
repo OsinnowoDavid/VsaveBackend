@@ -1,4 +1,4 @@
-import jwt from "jsonwebtoken";
+import jwt,{ JwtPayload } from "jsonwebtoken";
 const jwt_secret: any = process.env.jwt_secret;
 import { NextFunction, Request, Response } from "express";
 import { getUserById } from "../services/User";
@@ -13,6 +13,12 @@ import {
     getRegionalAdminById,
     getSubRegionalAdminById,
 } from "../services/RegionalAdmin";
+
+interface attachJwtPayload extends JwtPayload {
+  user:any ;
+  email: string ;
+  loanEligibility?: any ;
+}
 
 export const signUserToken = (user: any) => {
     const payload = {
@@ -54,7 +60,11 @@ export const verifyUserToken = async (
         }
 
         // Attach user to request object
-        req.user = currentClient;
+        req.user = currentClient; 
+        // check if there is loanelegibility object so as to add to req.elegibility 
+        if(decoded.loanEligibility){
+            req.loanElegibility = decoded.loanEligibility;
+        }
         return next();
     } catch (err: any) {
         res.json({
@@ -186,3 +196,20 @@ export const verifySubRegionalAdminToken = async (
         });
     }
 };
+
+export const attachToToken = (token:string, loanElegibility:any) =>{
+    try{
+const decoded = jwt.verify(
+  token,
+  process.env.jwt_secret as string
+) as attachJwtPayload;
+        // Add the new claims
+         decoded.loanEligibility = loanElegibility
+
+// Sign a new token with the updated payload
+const updatedToken = jwt.sign(decoded, process.env.jwt_secret); 
+        return updatedToken
+    }catch(err:any){
+       throw err
+    }
+}

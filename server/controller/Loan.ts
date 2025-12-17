@@ -18,7 +18,7 @@ import {
     getUserRating,
     generateLoanRefrenceCode,
 } from "../config/tools";
-
+import {attachToToken} from "../config/JWT"
 export const checkElegibilityController = async (
     req: Request,
     res: Response,
@@ -66,7 +66,9 @@ export const checkElegibilityController = async (
         elegibility.ratingStatus = userRateing.ratingStatus;
         elegibility.interestRate = userRateing.interestRate;
         elegibility.pass = true;
-        req.loanElegibility = elegibility;
+        let token = req.headers.authorization
+        const newToken = attachToToken(token,elegibility) 
+        res.setHeader("authorization", `${newToken}`);
         return res.json({
             status: "Success",
             message: "elegibility calculated",
@@ -91,13 +93,14 @@ const addFourteenDays = (startDate: Date) => {
 
 export const createLoanController = async (req: Request, res: Response) => {
     try {
-        const { amount, loanTitle } = req.body;
+        const { amount, loanTitle, loanElegibilityPass } = req.body;
         const user = req.user as IUser;
         const elegibility = req.loanElegibility;
-        if (!elegibility.pass) {
+        console.log('elegibility:',elegibility)
+        if (!loanElegibilityPass) {
             return res.json({
                 status: "Failed",
-                message: "user not elegible for loan",
+                message: "user not eligible for loan",
             });
         }
         if (Number(amount) > elegibility.maxAmount) {
@@ -111,7 +114,7 @@ export const createLoanController = async (req: Request, res: Response) => {
         let loanedAmount = Number(amount) - Number(interestAmount);
         let dueDate = addFourteenDays(new Date());
 
-        if (Number(amount) > 50000) {
+        if (amount > 50000) {
             // craete Loan and put on pending
             let remark = "require admin approval for 50000N loan and above";
             const createdLoan = await createLoanRecord(
@@ -155,8 +158,8 @@ export const createLoanController = async (req: Request, res: Response) => {
             interestAmount,
         );
         return res.json({
-            status: "Pending",
-            message: "loan is been processed, needs admin approval",
+            status: "Success",
+            message: "loan approved and disbursed",
             data: createdLoan,
         });
     } catch (err: any) {
