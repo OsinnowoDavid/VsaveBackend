@@ -20,6 +20,6 @@ router.get("/settled-loan", verifyUserToken, allUserSettledLoanRecord);
 
 router.get("/unsettled-loan", verifyUserToken, allUserUnsettledLoanRecord);
 
-router.get("/loan-Settlement", verifyUserToken, loanSettlementController)
+router.post("/loan-Settlement", verifyUserToken, loanSettlementController);
 
 export default router;

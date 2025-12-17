@@ -12,5 +12,5 @@ router.post("/loan-payout", JWT_1.verifyUserToken, Loan_1.createLoanController);
 router.get("/all-loan-record", JWT_1.verifyUserToken, Loan_1.allUserLoanRecord);
 router.get("/settled-loan", JWT_1.verifyUserToken, Loan_1.allUserSettledLoanRecord);
 router.get("/unsettled-loan", JWT_1.verifyUserToken, Loan_1.allUserUnsettledLoanRecord);
-router.get("/loan-Settlement", JWT_1.verifyUserToken, Loan_1.loanSettlementController);
+router.post("/loan-Settlement", JWT_1.verifyUserToken, Loan_1.loanSettlementController);
 exports.default = router;
