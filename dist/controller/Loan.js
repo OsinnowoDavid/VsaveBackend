@@ -74,11 +74,11 @@ const addFourteenDays = (startDate) => {
 };
 const createLoanController = async (req, res) => {
     try {
-        const { amount, loanTitle, loanElegibilityPass } = req.body;
+        const { amount, loanTitle, loanElegibility } = req.body;
         const user = req.user;
-        const elegibility = req.loanElegibility;
+        const elegibility = loanElegibility;
         console.log('elegibility:', elegibility);
-        if (!loanElegibilityPass) {
+        if (!loanElegibility?.pass) {
             return res.json({
                 status: "Failed",
                 message: "user not eligible for loan",
