@@ -66,9 +66,9 @@ export const checkElegibilityController = async (
         elegibility.ratingStatus = userRateing.ratingStatus;
         elegibility.interestRate = userRateing.interestRate;
         elegibility.pass = true;
-        let token = req.headers.authorization
-        const newToken = attachToToken(token,elegibility) 
-        res.setHeader("authorization", `${newToken}`);
+        // let token = req.headers.authorization
+        // const newToken = attachToToken(token,elegibility) 
+        // res.setHeader("authorization", `${newToken}`);
         return res.json({
             status: "Success",
             message: "elegibility calculated",

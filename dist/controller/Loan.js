@@ -5,7 +5,6 @@ const Loan_1 = require("../services/Loan");
 const User_1 = require("../services/User");
 const Savings_1 = require("../services/Savings");
 const tools_1 = require("../config/tools");
-const JWT_1 = require("../config/JWT");
 const checkElegibilityController = async (req, res) => {
     try {
         const user = req.user;
@@ -47,9 +46,9 @@ const checkElegibilityController = async (req, res) => {
         elegibility.ratingStatus = userRateing.ratingStatus;
         elegibility.interestRate = userRateing.interestRate;
         elegibility.pass = true;
-        let token = req.headers.authorization;
-        const newToken = (0, JWT_1.attachToToken)(token, elegibility);
-        res.setHeader("authorization", `${newToken}`);
+        // let token = req.headers.authorization
+        // const newToken = attachToToken(token,elegibility) 
+        // res.setHeader("authorization", `${newToken}`);
         return res.json({
             status: "Success",
             message: "elegibility calculated",
