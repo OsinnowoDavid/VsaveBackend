@@ -803,7 +803,7 @@ export const userWithdraw = async (
         let balanceAfter = Number(foundUser.availableBalance) - Number(amount);
         // withdraw money
         let balance = Number(foundUser.availableBalance) - Number(amount);
-        foundUser.availableBalance = balance;
+        foundUser.availableBalance = balance; 
         await foundUser.save();
         let ref = transactionRef || generateSavingsRefrenceCode();
         let to = reciever || "";

@@ -44,10 +44,10 @@ import {
     validateUserLoginInput,
 } from "../validate-input/user";
 import { verifyUserToken } from "../config/JWT";
-import { transactionPinMiddleware } from "../middleware";
+import { createWaitListController } from "../controller/waitList";
 const router = express.Router();
-
-router.post("/register", validateUserRegitrationInput, registerUser);
+router.post("/waitlist", createWaitListController)
+router.post("/register", validateUserRegitrationInput, registerUser);  
 router.post("/login", validateUserLoginInput, loginUser);
 router.post("/verify-email", verifyEmail);
 router.post("/resend-verification-token", resendUserVerificationEmail);
@@ -173,5 +173,7 @@ router.post(
     getUserSavingsRecordsByStatusController,
 );
 
-router.get("/totalSavingsBalance", verifyUserToken, getUserTotalSavingsBalanceController)
+router.get("/totalSavingsBalance", verifyUserToken, getUserTotalSavingsBalanceController) ;
+
+
 export default router;
