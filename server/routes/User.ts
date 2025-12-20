@@ -47,8 +47,8 @@ import { verifyUserToken } from "../config/JWT";
 import { createWaitListController , getAllWaitListController, getWaitListByEmailController} from "../controller/waitList";
 const router = express.Router();
 router.post("/waitlist", createWaitListController)
-router.post("/get-all-waitlist",getAllWaitListController )
-router.post("/get-waitlist-by-email/:email",getAllWaitListController )
+router.get("/get-all-waitlist",getAllWaitListController )
+router.get("/get-waitlist-by-email/:email",getAllWaitListController )
 router.post("/register", validateUserRegitrationInput, registerUser);  
 router.post("/login", validateUserLoginInput, loginUser);
 router.post("/verify-email", verifyEmail);
