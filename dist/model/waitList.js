@@ -11,7 +11,8 @@ const waitListSchema = new mongoose_1.default.Schema({
     },
     email: {
         type: String,
-        required: true
+        required: true,
+        unique: true,
     },
     phoneNumber: {
         type: String,

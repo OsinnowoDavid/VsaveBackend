@@ -22,3 +22,21 @@ export const getAllWaitList = async () =>{
         throw err
     }
 }
+
+export const getWaitListById = async (id:string) =>{
+    try{
+        const singleList = await WaitList.findById(id) ;
+        return singleList
+    }catch(err:any){
+        throw err
+    }
+}
+
+export const getWaitListByemail = async (email:string) =>{
+    try{
+        const singleList = await WaitList.findOne({email}) ;
+        return singleList
+    }catch(err:any){
+        throw err
+    }
+}

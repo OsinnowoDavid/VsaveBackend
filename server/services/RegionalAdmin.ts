@@ -74,9 +74,10 @@ export const createSubRegionalAdmin = async (
     password: string,
     phoneNumber: string,
     subRegion: string,
-    region?:string,
 ) => {
     try {
+        const foundRegion = await SubRegion.findById(subRegion) ;
+                let region = foundRegion.region
         const newSubRegionalAdmin = await Admin.create({
             firstName,
             lastName,

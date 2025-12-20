@@ -25,6 +25,13 @@ const registerUser = async (req, res) => {
     try {
         const { firstName, lastName, email, password, gender, dateOfBirth, phoneNumber, referralCode, } = req.body;
         let hashPassword = await argon2_1.default.hash(password);
+        const foundUser = await (0, User_1.getUserByEmail)(email);
+        if (foundUser) {
+            return res.json({
+                status: "Failed",
+                message: "user already found with this email"
+            });
+        }
         const newUser = await (0, User_1.createNewUser)(firstName, lastName, email.toLowerCase(), hashPassword, gender, dateOfBirth, phoneNumber);
         if (!newUser) {
             return res.status(500).json({

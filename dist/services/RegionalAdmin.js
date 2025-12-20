@@ -71,8 +71,10 @@ const getAllSubRegion = async () => {
     }
 };
 exports.getAllSubRegion = getAllSubRegion;
-const createSubRegionalAdmin = async (firstName, lastName, email, password, phoneNumber, subRegion, region) => {
+const createSubRegionalAdmin = async (firstName, lastName, email, password, phoneNumber, subRegion) => {
     try {
+        const foundRegion = await SubRegion_1.default.findById(subRegion);
+        let region = foundRegion.region;
         const newSubRegionalAdmin = await Admin_1.default.create({
             firstName,
             lastName,

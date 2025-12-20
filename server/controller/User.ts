@@ -93,6 +93,13 @@ export const registerUser = async (req: Request, res: Response) => {
             referralCode,
         } = req.body;
         let hashPassword = await argon.hash(password);
+         const foundUser = await getUserByEmail(email) ;
+                if(foundUser){
+                    return res.json({
+                        status:"Failed",
+                        message:"user already found with this email"
+                    })
+                }
         const newUser = await createNewUser(
             firstName,
             lastName,

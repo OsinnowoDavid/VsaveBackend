@@ -38,7 +38,7 @@ export const createAgent = async (
 ) => {
     try {
         let code = await generateReferralCode();
-
+        
         const newAgent = await Agent.create({
             firstName,
             lastName,
