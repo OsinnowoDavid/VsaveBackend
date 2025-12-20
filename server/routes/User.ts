@@ -44,9 +44,11 @@ import {
     validateUserLoginInput,
 } from "../validate-input/user";
 import { verifyUserToken } from "../config/JWT";
-import { createWaitListController } from "../controller/waitList";
+import { createWaitListController , getAllWaitListController, getWaitListByEmailController} from "../controller/waitList";
 const router = express.Router();
 router.post("/waitlist", createWaitListController)
+router.post("/get-all-waitlist",getAllWaitListController )
+router.post("/get-waitlist-by-email/:email",getAllWaitListController )
 router.post("/register", validateUserRegitrationInput, registerUser);  
 router.post("/login", validateUserLoginInput, loginUser);
 router.post("/verify-email", verifyEmail);

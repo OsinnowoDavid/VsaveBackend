@@ -10,6 +10,8 @@ const JWT_1 = require("../config/JWT");
 const waitList_1 = require("../controller/waitList");
 const router = express_1.default.Router();
 router.post("/waitlist", waitList_1.createWaitListController);
+router.post("/get-all-waitlist", waitList_1.getAllWaitListController);
+router.post("/get-waitlist-by-email/:email", waitList_1.getAllWaitListController);
 router.post("/register", user_1.validateUserRegitrationInput, User_1.registerUser);
 router.post("/login", user_1.validateUserLoginInput, User_1.loginUser);
 router.post("/verify-email", User_1.verifyEmail);

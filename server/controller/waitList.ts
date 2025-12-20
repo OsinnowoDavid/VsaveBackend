@@ -31,7 +31,7 @@ export const getAllWaitListController = async (req:Request,res:Response) =>{
         const foundRecord = await getAllWaitList();
         return res.status(200).json({
             response_code: 200,
-            message: "wait list created",
+            message: "wait list found",
             data: foundRecord
         }); 
     }catch(err:any){
@@ -41,4 +41,19 @@ export const getAllWaitListController = async (req:Request,res:Response) =>{
         });
     }
 }
-
+export const getWaitListByEmailController = async (req:Request,res:Response) =>{
+    try{
+        const {email} = req.params
+        const foundRecord = await getWaitListByemail(email);
+        return res.status(200).json({
+            response_code: 200,
+            message: "wait list found",
+            data: foundRecord
+        }); 
+    }catch(err:any){
+         return res.status(500).json({
+            response_code: 500,
+            message: err.message,
+        });
+    }
+}
