@@ -28,6 +28,9 @@ const KYC1Schema = new mongoose.Schema(
             type: String,
             required: true,
         },
+        bankCode:{
+            type:String,
+        },
         country: {
             type: String,
             required: true,

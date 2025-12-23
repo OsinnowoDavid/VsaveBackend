@@ -70,6 +70,8 @@ import {
     getCurrentDateWithClosestHour,
 } from "../config/tools";
 import AdminSavingsConfig from "../model/Admin_config";
+import {getAllLoanRecordBalance} from "../services/Loan"
+import {generateAndAsignLottoryId, createTerminalRecord, depositToTerminalAccount} from "../services/Terminal"
 const QOREID_API_KEY = process.env.QOREID_SECRET_KEY as string;
 const QOREID_BASE_URL = process.env.QOREID_BASE_URL as string;
 
@@ -426,6 +428,7 @@ export const registerKYC1 = async (req: Request, res: Response) => {
             accountNumber,
             bank,
             accountDetails,
+            bankCode,
             country,
             state,
             bvn,
@@ -466,12 +469,16 @@ export const registerKYC1 = async (req: Request, res: Response) => {
             accountNumber,
             bank,
             accountDetails,
+            bankCode,
             country,
             state,
             bvn,
             address,
             subRegion,
         );
+        if(profession === "Lottery Agent" ){
+             await generateAndAsignLottoryId(user._id.toString()) ;
+        }
         // create transaction pin 
         await createTransactionPin(user._id.toString(),transactionPin) ;
         if (!newKYC1) {
@@ -503,17 +510,43 @@ export const updateKYC1RecordController = async (
             bank,
             accountNumber,
             accountDetails,
+            bankCode,
             country,
             state,
             address,
         } = req.body;
         const user = req.user as IUser;
+        const foundKYC1 = await getUserKyc1Record(user._id.toString()) ;
+        let isLottoUserBefore = false
+        if(foundKYC1.profession ==="Lottery Agent"){
+            isLottoUserBefore = true
+        } 
+        if(profession ==="Lottery Agent"){
+            let newLottoId = await generateAndAsignLottoryId(user._id.toString()) ; 
+            const updatedKYC1 = await updateKYC1Record(
+            user,
+            profession,
+            bank,
+            accountNumber,
+            accountDetails,
+            bankCode,
+            country,
+            state,
+            address,
+        );
+        return res.json({
+            status: "Success",
+            message: "KYC updated successfuly",
+            data: updatedKYC1,
+        });
+        }
         const updatedKYC1 = await updateKYC1Record(
             user,
             profession,
             bank,
             accountNumber,
             accountDetails,
+            bankCode,
             country,
             state,
             address,
@@ -805,7 +838,7 @@ export const accountLookUpController = async (req: Request, res: Response) => {
 };
 export const payOutController = async (req: Request, res: Response) => {
     try {
-        const { pin,bankCode, accountNumber, accountName, amount } = req.body;
+        const { pin,bankCode, accountNumber, accountName, amount, remark } = req.body;
         const user = req.user as IUser;
         // validate transaction pin to procced
         if(pin.toString() !== user.pin.toString()){
@@ -830,7 +863,6 @@ export const payOutController = async (req: Request, res: Response) => {
         );
         let balanceBefore = user.availableBalance;
         let balanceAfter = user.availableBalance - Number(amount);
-        let remark = `${user.firstName} ${user.lastName} payout to ${accountName}`;
         //withdraw money fro  user availiable
         await withdraw(user, amount);
         //save transaction record
@@ -1362,15 +1394,74 @@ export const getFixedSavingsByStatusController = async (
         });
     }
 };
-export const getUserTotalSavingsBalanceController = async (req: Request, res: Response) =>{
+export const getUserTotalSavingsAndLoanBalanceController = async (req: Request, res: Response) =>{
     try{
         const user = req.user as IUser;
-        const totalSavingsBalnce = await getUserTotalSavingsBalance(user._id.toString())  ;
+        const totalSavingsBalnce = await getUserTotalSavingsBalance(user._id.toString())  ; 
+        const totalLoanBalance = await getAllLoanRecordBalance(user._id.toString())
         return res.json({
             status:"Success",
             message:"savings balance calculated",
-            data: totalSavingsBalnce
+            data: {
+                totalSavingsBalnce,
+                totalLoanBalance
+            }
         })
+    }catch(err:any){
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+}
+
+export const topUpLottryAccountController = async (req: Request, res: Response) =>{
+    try{
+        const {amount,pin, remark} = req.body ;
+         const user = req.user as IUser;
+        // validate transaction pin to procced
+        if(pin.toString() !== user.pin.toString()){
+            return res.json({
+                status: "Failed",
+                message: "Transaction pin is incorrect enter the correct pin",
+            });
+        }
+        //check if user avaliableBalance is greater than the amount
+        if (amount > user.availableBalance) {
+            return res.json({
+                status: "Failed",
+                message: "insufficient fund",
+            });
+        }
+        const foundKYC = await getUserKyc1Record(user._id.toString()) ;
+        let bankCode = foundKYC.bankCode ;
+        let accountNumber = foundKYC.accountNumber.toString() ;
+        let accountName = foundKYC.accountDetails
+        const payment = await payOut(
+            user,
+            bankCode,
+            amount,
+            accountNumber,
+            accountName,
+        );
+        
+        //withdraw money from  user availiable
+        await userWithdraw(user._id.toString(), amount,remark, payment.data.transaction_reference,)
+        // also create TerminalTransaction record 
+        const terminalRecord = await createTerminalRecord(user._id.toString(), amount,payment.data.transaction_reference,remark) ;
+        await depositToTerminalAccount(user._id.toString(),amount) ;
+        return terminalRecord
+    }catch(err:any){
+         return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+}
+
+export const getTerminalDetailsController = async (req: Request, res: Response) =>{
+    try{
+
     }catch(err:any){
         return res.json({
             status: "Failed",

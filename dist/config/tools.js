@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.checkIfContributionIsCompleted = exports.isPastTomorrow = exports.isPastYesterday = exports.generateLoanRefrenceCode = exports.generateSavingsRefrenceCode = exports.generateRefrenceCode = void 0;
+exports.checkIfContributionIsCompleted = exports.isPastTomorrow = exports.isPastYesterday = exports.generateLoanRefrenceCode = exports.generateSavingsRefrenceCode = exports.generateLottoryRefrenceCode = exports.generateRefrenceCode = void 0;
 exports.calculateEndDate = calculateEndDate;
 exports.calculateMaturityAmount = calculateMaturityAmount;
 exports.getDayName = getDayName;
@@ -10,6 +10,8 @@ exports.getStageAndMaxAmount = getStageAndMaxAmount;
 exports.getUserRating = getUserRating;
 exports.calculateProportionalInterest = calculateProportionalInterest;
 exports.getCurrentDateWithClosestHour = getCurrentDateWithClosestHour;
+exports.getEndTimeFromSeconds = getEndTimeFromSeconds;
+exports.getEndTimeFromSecondsLive = getEndTimeFromSecondsLive;
 function calculateEndDate(frequency, startDate, duration) {
     if (typeof duration !== "number" ||
         !Number.isFinite(duration) ||
@@ -95,6 +97,17 @@ const generateRefrenceCode = () => {
     return `${marchantId}_${code}`;
 };
 exports.generateRefrenceCode = generateRefrenceCode;
+const generateLottoryRefrenceCode = () => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let code = "";
+    let marchantId = process.env.MARCHANT_ID;
+    for (let i = 0; i < 7; i++) {
+        const randomIndex = Math.floor(Math.random() * chars.length);
+        code += chars[randomIndex];
+    }
+    return `Lotto_${code}`;
+};
+exports.generateLottoryRefrenceCode = generateLottoryRefrenceCode;
 const generateSavingsRefrenceCode = () => {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     let code = "";
@@ -233,3 +246,15 @@ const checkIfContributionIsCompleted = (recordStatus) => {
     return isContributionComplete;
 };
 exports.checkIfContributionIsCompleted = checkIfContributionIsCompleted;
+function getEndTimeFromSeconds(seconds) {
+    const now = new Date(); // current time
+    const endTime = new Date(now.getTime() + seconds * 1000);
+    return endTime;
+}
+function getEndTimeFromSecondsLive(seconds) {
+    const now = new Date();
+    // Deduct 20 minutes (1200 seconds)
+    const adjustedSeconds = seconds - 1200;
+    const endTime = new Date(now.getTime() + adjustedSeconds * 1000);
+    return endTime;
+}

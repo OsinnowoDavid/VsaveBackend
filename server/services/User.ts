@@ -172,6 +172,7 @@ export const createKYC1Record = async (
     accountNumber: number,
     bank: string,
     accountDetails: string,
+    bankCode:string,
     country: string,
     state: string,
     bvn: string,
@@ -185,6 +186,7 @@ export const createKYC1Record = async (
             accountNumber,
             bank,
             accountDetails,
+            bankCode,
             country,
             state,
             bvn,
@@ -204,9 +206,10 @@ export const updateKYC1Record = async (
     bank: string,
     accountNumber: Number,
     accountDetails: string,
-    country: string,
-    state: string,
-    address: string,
+    bankCode:string,
+    country?: string,
+    state?: string,
+    address?: string,
 ) => {
     try {
         const foundUser = await KYC1.findOneAndUpdate(
@@ -216,6 +219,7 @@ export const updateKYC1Record = async (
                 bank,
                 accountNumber,
                 accountDetails,
+                bankCode,
                 country,
                 state,
                 address,

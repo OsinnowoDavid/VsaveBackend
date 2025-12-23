@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getUserTotalSavingsBalanceController = exports.getFixedSavingsByStatusController = exports.getAllFixedSavingsController = exports.getCompletedFixedSavingsController = exports.getActiveFixedSavingsController = exports.createFixedSavingController = exports.getUserSavingsRecordsByStatusController = exports.getSavingsCircleByIdController = exports.getAllUserSavingsRecordController = exports.getUserActiveSavingsRecordController = exports.getAvaliableSavingsController = exports.createPersonalSavingsCircleController = exports.joinSavingsController = exports.userGetAllSubRegionController = exports.getUserTransactionByTypeController = exports.getUserTransactionByStatusController = exports.getUserSingleTransactionController = exports.getUserTransactionsController = exports.payOutController = exports.accountLookUpController = exports.getBankCodeController = exports.buyDataController = exports.buyAirtimeController = exports.getDataPlanController = exports.updateTransactionPinController = exports.createTransactionPinController = exports.getUserKyc1RecordController = exports.updateKYC1RecordController = exports.registerKYC1 = exports.changePasswordController = exports.updateProfileController = exports.userProfile = exports.loginUser = exports.resendUserVerificationEmail = exports.verifyEmail = exports.registerUser = void 0;
+exports.getTerminalDetailsController = exports.topUpLottryAccountController = exports.getUserTotalSavingsAndLoanBalanceController = exports.getFixedSavingsByStatusController = exports.getAllFixedSavingsController = exports.getCompletedFixedSavingsController = exports.getActiveFixedSavingsController = exports.createFixedSavingController = exports.getUserSavingsRecordsByStatusController = exports.getSavingsCircleByIdController = exports.getAllUserSavingsRecordController = exports.getUserActiveSavingsRecordController = exports.getAvaliableSavingsController = exports.createPersonalSavingsCircleController = exports.joinSavingsController = exports.userGetAllSubRegionController = exports.getUserTransactionByTypeController = exports.getUserTransactionByStatusController = exports.getUserSingleTransactionController = exports.getUserTransactionsController = exports.payOutController = exports.accountLookUpController = exports.getBankCodeController = exports.buyDataController = exports.buyAirtimeController = exports.getDataPlanController = exports.updateTransactionPinController = exports.createTransactionPinController = exports.getUserKyc1RecordController = exports.updateKYC1RecordController = exports.registerKYC1 = exports.changePasswordController = exports.updateProfileController = exports.userProfile = exports.loginUser = exports.resendUserVerificationEmail = exports.verifyEmail = exports.registerUser = void 0;
 const argon2_1 = __importDefault(require("argon2"));
 const Agent_1 = require("../services/Agent");
 const User_1 = require("../services/User");
@@ -13,6 +13,8 @@ const mail_1 = __importDefault(require("@sendgrid/mail"));
 const Savings_2 = require("../services/Savings");
 const tools_1 = require("../config/tools");
 const Admin_config_1 = __importDefault(require("../model/Admin_config"));
+const Loan_1 = require("../services/Loan");
+const Terminal_1 = require("../services/Terminal");
 const QOREID_API_KEY = process.env.QOREID_SECRET_KEY;
 const QOREID_BASE_URL = process.env.QOREID_BASE_URL;
 mail_1.default.setApiKey(process.env.SENDGRID_API_KEY);
@@ -320,7 +322,7 @@ const changePasswordController = async (req, res) => {
 exports.changePasswordController = changePasswordController;
 const registerKYC1 = async (req, res) => {
     try {
-        const { profession, accountNumber, bank, accountDetails, country, state, bvn, address, subRegion, transactionPin, } = req.body;
+        const { profession, accountNumber, bank, accountDetails, bankCode, country, state, bvn, address, subRegion, transactionPin, } = req.body;
         const user = req.user;
         // check if KYC record already exisyt
         const foundKYC = await (0, User_1.getUserKyc1Record)(user._id.toString());
@@ -340,7 +342,10 @@ const registerKYC1 = async (req, res) => {
         }
         await (0, User_1.createVirtualAccountIndex)(user._id.toString(), virtualAccount.data.virtual_account_number);
         // save KYC1
-        const newKYC1 = await (0, User_1.createKYC1Record)(user, profession, accountNumber, bank, accountDetails, country, state, bvn, address, subRegion);
+        const newKYC1 = await (0, User_1.createKYC1Record)(user, profession, accountNumber, bank, accountDetails, bankCode, country, state, bvn, address, subRegion);
+        if (profession === "Lottery Agent") {
+            await (0, Terminal_1.generateAndAsignLottoryId)(user._id.toString());
+        }
         // create transaction pin 
         await (0, User_1.createTransactionPin)(user._id.toString(), transactionPin);
         if (!newKYC1) {
@@ -366,9 +371,23 @@ const registerKYC1 = async (req, res) => {
 exports.registerKYC1 = registerKYC1;
 const updateKYC1RecordController = async (req, res) => {
     try {
-        const { profession, bank, accountNumber, accountDetails, country, state, address, } = req.body;
+        const { profession, bank, accountNumber, accountDetails, bankCode, country, state, address, } = req.body;
         const user = req.user;
-        const updatedKYC1 = await (0, User_1.updateKYC1Record)(user, profession, bank, accountNumber, accountDetails, country, state, address);
+        const foundKYC1 = await (0, User_1.getUserKyc1Record)(user._id.toString());
+        let isLottoUserBefore = false;
+        if (foundKYC1.profession === "Lottery Agent") {
+            isLottoUserBefore = true;
+        }
+        if (profession === "Lottery Agent") {
+            let newLottoId = await (0, Terminal_1.generateAndAsignLottoryId)(user._id.toString());
+            const updatedKYC1 = await (0, User_1.updateKYC1Record)(user, profession, bank, accountNumber, accountDetails, bankCode, country, state, address);
+            return res.json({
+                status: "Success",
+                message: "KYC updated successfuly",
+                data: updatedKYC1,
+            });
+        }
+        const updatedKYC1 = await (0, User_1.updateKYC1Record)(user, profession, bank, accountNumber, accountDetails, bankCode, country, state, address);
         return res.json({
             status: "Success",
             message: "KYC updated successfuly",
@@ -640,7 +659,7 @@ const accountLookUpController = async (req, res) => {
 exports.accountLookUpController = accountLookUpController;
 const payOutController = async (req, res) => {
     try {
-        const { pin, bankCode, accountNumber, accountName, amount } = req.body;
+        const { pin, bankCode, accountNumber, accountName, amount, remark } = req.body;
         const user = req.user;
         // validate transaction pin to procced
         if (pin.toString() !== user.pin.toString()) {
@@ -659,7 +678,6 @@ const payOutController = async (req, res) => {
         const payment = await (0, User_1.payOut)(user, bankCode, amount, accountNumber, accountName);
         let balanceBefore = user.availableBalance;
         let balanceAfter = user.availableBalance - Number(amount);
-        let remark = `${user.firstName} ${user.lastName} payout to ${accountName}`;
         //withdraw money fro  user availiable
         await (0, User_1.withdraw)(user, amount);
         //save transaction record
@@ -1061,14 +1079,18 @@ const getFixedSavingsByStatusController = async (req, res) => {
     }
 };
 exports.getFixedSavingsByStatusController = getFixedSavingsByStatusController;
-const getUserTotalSavingsBalanceController = async (req, res) => {
+const getUserTotalSavingsAndLoanBalanceController = async (req, res) => {
     try {
         const user = req.user;
         const totalSavingsBalnce = await (0, Savings_1.getUserTotalSavingsBalance)(user._id.toString());
+        const totalLoanBalance = await (0, Loan_1.getAllLoanRecordBalance)(user._id.toString());
         return res.json({
             status: "Success",
             message: "savings balance calculated",
-            data: totalSavingsBalnce
+            data: {
+                totalSavingsBalnce,
+                totalLoanBalance
+            }
         });
     }
     catch (err) {
@@ -1078,4 +1100,53 @@ const getUserTotalSavingsBalanceController = async (req, res) => {
         });
     }
 };
-exports.getUserTotalSavingsBalanceController = getUserTotalSavingsBalanceController;
+exports.getUserTotalSavingsAndLoanBalanceController = getUserTotalSavingsAndLoanBalanceController;
+const topUpLottryAccountController = async (req, res) => {
+    try {
+        const { amount, pin, remark } = req.body;
+        const user = req.user;
+        // validate transaction pin to procced
+        if (pin.toString() !== user.pin.toString()) {
+            return res.json({
+                status: "Failed",
+                message: "Transaction pin is incorrect enter the correct pin",
+            });
+        }
+        //check if user avaliableBalance is greater than the amount
+        if (amount > user.availableBalance) {
+            return res.json({
+                status: "Failed",
+                message: "insufficient fund",
+            });
+        }
+        const foundKYC = await (0, User_1.getUserKyc1Record)(user._id.toString());
+        let bankCode = foundKYC.bankCode;
+        let accountNumber = foundKYC.accountNumber.toString();
+        let accountName = foundKYC.accountDetails;
+        const payment = await (0, User_1.payOut)(user, bankCode, amount, accountNumber, accountName);
+        //withdraw money from  user availiable
+        await (0, User_1.userWithdraw)(user._id.toString(), amount, remark, payment.data.transaction_reference);
+        // also create TerminalTransaction record 
+        const terminalRecord = await (0, Terminal_1.createTerminalRecord)(user._id.toString(), amount, payment.data.transaction_reference, remark);
+        await (0, Terminal_1.depositToTerminalAccount)(user._id.toString(), amount);
+        return terminalRecord;
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.topUpLottryAccountController = topUpLottryAccountController;
+const getTerminalDetailsController = async (req, res) => {
+    try {
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.getTerminalDetailsController = getTerminalDetailsController;

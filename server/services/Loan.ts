@@ -184,3 +184,33 @@ export const approveOrRejectLoan = async (
         throw err;
     }
 };
+
+export const getAllLoanRecordBalance = async (user:string) =>{
+    try{
+        const foundRecords = await Loan.find({user}) ;
+        let result = {
+            completedLoanTotal:0,
+            pendingLoanTotal:0
+        }
+        for(const record of foundRecords){
+            if(record.status === "completed"){
+                let balance = 0
+                for(const repaymentRecord of record.repayments){
+                    balance += repaymentRecord.amount
+                } 
+                result.completedLoanTotal += balance
+            }
+             if(record.status === "pending"){
+                let balance = 0
+                for(const repaymentRecord of record.repayments){
+                    balance += repaymentRecord.amount
+                } 
+                result.pendingLoanTotal += balance
+            }
+        }
+
+        return result 
+    }catch(err:any){
+        throw err
+    }
+}
