@@ -1442,7 +1442,7 @@ export const topUpLottryAccountController = async (req: Request, res: Response) 
         const payment = await payOut(
             user,
             bankCode,
-            amount,
+            amount.toString(),
             accountNumber,
             accountName,
         );

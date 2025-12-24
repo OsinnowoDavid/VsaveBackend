@@ -1118,7 +1118,7 @@ const topUpLottryAccountController = async (req, res) => {
         let bankCode = foundKYC.bankCode;
         let accountNumber = foundKYC.accountNumber.toString();
         let accountName = foundKYC.accountDetails;
-        const payment = await (0, User_1.payOut)(user, bankCode, amount, accountNumber, accountName);
+        const payment = await (0, User_1.payOut)(user, bankCode, amount.toString(), accountNumber, accountName);
         //withdraw money from  user availiable
         await (0, User_1.userWithdraw)(user._id.toString(), amount, remark, payment.data.transaction_reference);
         // also create TerminalTransaction record 
