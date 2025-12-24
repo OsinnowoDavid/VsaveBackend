@@ -55,3 +55,29 @@ export const depositToTerminalAccount = async (user:string, amount:number) =>{
         throw err
     }
 }
+
+export const getTerminalDetails = async (user:string) =>{
+    try{
+        const foundRecord = await TerminalDetails.findOne({userId:user}) ;
+        return foundRecord
+    }catch(err:any){
+        throw err
+    }
+}
+
+export const getTerminalTransaction = async (user:string) =>{
+    try{
+        const foundRecords = await TerminalTransaction.find({userId:user})
+        return foundRecords
+    }catch(err:any){
+        throw err
+    }
+}
+export const getSingleTerminalTransaction = async (id:string) =>{
+    try{
+        const foundRecord = await TerminalTransaction.findById(id) ;
+        return foundRecord
+    }catch(err:any){
+        throw err
+    }
+}

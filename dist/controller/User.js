@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getTerminalDetailsController = exports.topUpLottryAccountController = exports.getUserTotalSavingsAndLoanBalanceController = exports.getFixedSavingsByStatusController = exports.getAllFixedSavingsController = exports.getCompletedFixedSavingsController = exports.getActiveFixedSavingsController = exports.createFixedSavingController = exports.getUserSavingsRecordsByStatusController = exports.getSavingsCircleByIdController = exports.getAllUserSavingsRecordController = exports.getUserActiveSavingsRecordController = exports.getAvaliableSavingsController = exports.createPersonalSavingsCircleController = exports.joinSavingsController = exports.userGetAllSubRegionController = exports.getUserTransactionByTypeController = exports.getUserTransactionByStatusController = exports.getUserSingleTransactionController = exports.getUserTransactionsController = exports.payOutController = exports.accountLookUpController = exports.getBankCodeController = exports.buyDataController = exports.buyAirtimeController = exports.getDataPlanController = exports.updateTransactionPinController = exports.createTransactionPinController = exports.getUserKyc1RecordController = exports.updateKYC1RecordController = exports.registerKYC1 = exports.changePasswordController = exports.updateProfileController = exports.userProfile = exports.loginUser = exports.resendUserVerificationEmail = exports.verifyEmail = exports.registerUser = void 0;
+exports.getSingleTerminalTransactionController = exports.getTerminalTransactionController = exports.getTerminalDetailsController = exports.topUpLottryAccountController = exports.getUserTotalSavingsAndLoanBalanceController = exports.getFixedSavingsByStatusController = exports.getAllFixedSavingsController = exports.getCompletedFixedSavingsController = exports.getActiveFixedSavingsController = exports.createFixedSavingController = exports.getUserSavingsRecordsByStatusController = exports.getSavingsCircleByIdController = exports.getAllUserSavingsRecordController = exports.getUserActiveSavingsRecordController = exports.getAvaliableSavingsController = exports.createPersonalSavingsCircleController = exports.joinSavingsController = exports.userGetAllSubRegionController = exports.getUserTransactionByTypeController = exports.getUserTransactionByStatusController = exports.getUserSingleTransactionController = exports.getUserTransactionsController = exports.payOutController = exports.accountLookUpController = exports.getBankCodeController = exports.buyDataController = exports.buyAirtimeController = exports.getDataPlanController = exports.updateTransactionPinController = exports.createTransactionPinController = exports.getUserKyc1RecordController = exports.updateKYC1RecordController = exports.registerKYC1 = exports.changePasswordController = exports.updateProfileController = exports.userProfile = exports.loginUser = exports.resendUserVerificationEmail = exports.verifyEmail = exports.registerUser = void 0;
 const argon2_1 = __importDefault(require("argon2"));
 const Agent_1 = require("../services/Agent");
 const User_1 = require("../services/User");
@@ -373,11 +373,6 @@ const updateKYC1RecordController = async (req, res) => {
     try {
         const { profession, bank, accountNumber, accountDetails, bankCode, country, state, address, } = req.body;
         const user = req.user;
-        const foundKYC1 = await (0, User_1.getUserKyc1Record)(user._id.toString());
-        let isLottoUserBefore = false;
-        if (foundKYC1.profession === "Lottery Agent") {
-            isLottoUserBefore = true;
-        }
         if (profession === "Lottery Agent") {
             let newLottoId = await (0, Terminal_1.generateAndAsignLottoryId)(user._id.toString());
             const updatedKYC1 = await (0, User_1.updateKYC1Record)(user, profession, bank, accountNumber, accountDetails, bankCode, country, state, address);
@@ -1141,6 +1136,13 @@ const topUpLottryAccountController = async (req, res) => {
 exports.topUpLottryAccountController = topUpLottryAccountController;
 const getTerminalDetailsController = async (req, res) => {
     try {
+        const user = req.user;
+        const details = await (0, Terminal_1.getTerminalDetails)(user._id.toString());
+        return res.json({
+            status: "Success",
+            message: "found details",
+            data: details
+        });
     }
     catch (err) {
         return res.json({
@@ -1150,3 +1152,39 @@ const getTerminalDetailsController = async (req, res) => {
     }
 };
 exports.getTerminalDetailsController = getTerminalDetailsController;
+const getTerminalTransactionController = async (req, res) => {
+    try {
+        const user = req.user;
+        const foundRecords = await (0, Terminal_1.getTerminalTransaction)(user._id.toString());
+        return res.json({
+            status: "Success",
+            message: "found records",
+            data: foundRecords
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.getTerminalTransactionController = getTerminalTransactionController;
+const getSingleTerminalTransactionController = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const foundRecord = await (0, Terminal_1.getSingleTerminalTransaction)(id);
+        return res.json({
+            status: "Success",
+            message: "found Transaction",
+            data: foundRecord
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.getSingleTerminalTransactionController = getSingleTerminalTransactionController;

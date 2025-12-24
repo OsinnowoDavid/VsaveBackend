@@ -38,6 +38,9 @@ import {
     getUserSavingsRecordsByStatusController,
     getUserTotalSavingsAndLoanBalanceController,
     topUpLottryAccountController,
+    getTerminalDetailsController,
+    getTerminalTransactionController,
+    getSingleTerminalTransactionController,
 } from "../controller/User";
 import {
     validateUserRegitrationInput,
@@ -178,5 +181,8 @@ router.post(
 
 router.get("/totalSavingsAndLoanBalance", verifyUserToken, getUserTotalSavingsAndLoanBalanceController) ;
 
-
+router.post("/deposit-to-terminal", verifyUserToken, topUpLottryAccountController) ;
+router.get("/get-terminal-details", verifyUserToken, getTerminalDetailsController);
+router.get("/get-terminal-transaction", verifyUserToken, getTerminalTransactionController) ; 
+router.get("/get-single-terminal-transaction",verifyUserToken,getSingleTerminalTransactionController) ;
 export default router;

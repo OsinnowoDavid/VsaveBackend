@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.depositToTerminalAccount = exports.createTerminalRecord = exports.generateAndAsignLottoryId = void 0;
+exports.getSingleTerminalTransaction = exports.getTerminalTransaction = exports.getTerminalDetails = exports.depositToTerminalAccount = exports.createTerminalRecord = exports.generateAndAsignLottoryId = void 0;
 const User_1 = __importDefault(require("../model/User"));
 const tools_1 = require("../config/tools");
 const TerminalTransaction_1 = __importDefault(require("../model/TerminalTransaction"));
@@ -63,3 +63,33 @@ const depositToTerminalAccount = async (user, amount) => {
     }
 };
 exports.depositToTerminalAccount = depositToTerminalAccount;
+const getTerminalDetails = async (user) => {
+    try {
+        const foundRecord = await TerminalDetails_1.default.findOne({ userId: user });
+        return foundRecord;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.getTerminalDetails = getTerminalDetails;
+const getTerminalTransaction = async (user) => {
+    try {
+        const foundRecords = await TerminalTransaction_1.default.find({ userId: user });
+        return foundRecords;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.getTerminalTransaction = getTerminalTransaction;
+const getSingleTerminalTransaction = async (id) => {
+    try {
+        const foundRecord = await TerminalTransaction_1.default.findById(id);
+        return foundRecord;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.getSingleTerminalTransaction = getSingleTerminalTransaction;

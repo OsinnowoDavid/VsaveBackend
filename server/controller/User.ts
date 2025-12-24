@@ -71,7 +71,14 @@ import {
 } from "../config/tools";
 import AdminSavingsConfig from "../model/Admin_config";
 import {getAllLoanRecordBalance} from "../services/Loan"
-import {generateAndAsignLottoryId, createTerminalRecord, depositToTerminalAccount} from "../services/Terminal"
+import {
+    generateAndAsignLottoryId, 
+    createTerminalRecord, 
+    depositToTerminalAccount,
+     getTerminalDetails,
+     getTerminalTransaction,
+     getSingleTerminalTransaction,
+    } from "../services/Terminal"
 const QOREID_API_KEY = process.env.QOREID_SECRET_KEY as string;
 const QOREID_BASE_URL = process.env.QOREID_BASE_URL as string;
 
@@ -516,11 +523,6 @@ export const updateKYC1RecordController = async (
             address,
         } = req.body;
         const user = req.user as IUser;
-        const foundKYC1 = await getUserKyc1Record(user._id.toString()) ;
-        let isLottoUserBefore = false
-        if(foundKYC1.profession ==="Lottery Agent"){
-            isLottoUserBefore = true
-        } 
         if(profession ==="Lottery Agent"){
             let newLottoId = await generateAndAsignLottoryId(user._id.toString()) ; 
             const updatedKYC1 = await updateKYC1Record(
@@ -1461,9 +1463,47 @@ export const topUpLottryAccountController = async (req: Request, res: Response) 
 
 export const getTerminalDetailsController = async (req: Request, res: Response) =>{
     try{
-
+        const user = req.user as IUser 
+        const details = await getTerminalDetails(user._id.toString());
+        return  res.json({
+            status:"Success",
+            message: "found details",
+            data: details 
+        })
     }catch(err:any){
         return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+}
+export const getTerminalTransactionController = async (req: Request, res: Response) =>{
+    try{
+        const user = req.user as IUser ;
+        const foundRecords = await getTerminalTransaction(user._id.toString()) ;
+        return res.json({
+            status:"Success",
+            message:"found records",
+            data: foundRecords
+        })
+    }catch(err:any){
+         return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+}
+export const getSingleTerminalTransactionController = async (req: Request, res: Response) =>{
+    try{
+        const {id} = req.params ;
+        const foundRecord = await getSingleTerminalTransaction(id) ;
+        return res.json({
+            status:"Success",
+            message:"found Transaction",
+            data: foundRecord
+        })
+    }catch(err:any){
+       return res.json({
             status: "Failed",
             message: err.message,
         });

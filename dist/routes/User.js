@@ -53,4 +53,8 @@ router.get("/get-active-fixed-savings", JWT_1.verifyUserToken, User_1.getActiveF
 router.post("/get-saving-by-status", JWT_1.verifyUserToken, User_1.getFixedSavingsByStatusController);
 router.post("/get-fixedsaving-by-status", JWT_1.verifyUserToken, User_1.getUserSavingsRecordsByStatusController);
 router.get("/totalSavingsAndLoanBalance", JWT_1.verifyUserToken, User_1.getUserTotalSavingsAndLoanBalanceController);
+router.post("/deposit-to-terminal", JWT_1.verifyUserToken, User_1.topUpLottryAccountController);
+router.get("/get-terminal-details", JWT_1.verifyUserToken, User_1.getTerminalDetailsController);
+router.get("/get-terminal-transaction", JWT_1.verifyUserToken, User_1.getTerminalTransactionController);
+router.get("/get-single-terminal-transaction", JWT_1.verifyUserToken, User_1.getSingleTerminalTransactionController);
 exports.default = router;
