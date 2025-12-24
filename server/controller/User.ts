@@ -1452,7 +1452,11 @@ export const topUpLottryAccountController = async (req: Request, res: Response) 
         // also create TerminalTransaction record 
         const terminalRecord = await createTerminalRecord(user._id.toString(), amount,payment.data.transaction_reference,remark) ;
         await depositToTerminalAccount(user._id.toString(),amount) ;
-        return terminalRecord
+        return res.json({
+            status:"Success",
+            message:"terminal credited successfully",
+            data:terminalRecord
+        })
     }catch(err:any){
          return res.json({
             status: "Failed",
