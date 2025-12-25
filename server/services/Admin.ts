@@ -71,7 +71,7 @@ export const createRegionalAdmin = async (
     profilePicture?: string,
 ) => {
     try {
-        const newRegionalAdmin = await RegionalAdmin.create({
+        const newRegionalAdmin = await Admin.create({
             firstName,
             lastName,
             email,

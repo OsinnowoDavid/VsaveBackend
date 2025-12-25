@@ -5,7 +5,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getSubRegionaladminByEmail = exports.getAllSubRegionalAdmin = exports.createSubRegionalAdmin = exports.sendNotification = exports.getAdminSavingsConfig = exports.setAdminSavingsConfig = exports.getRegionByName = exports.getAllRegion = exports.getRegionalAdminByEmail = exports.getRegionalAdminById = exports.getRegionalAdmins = exports.getAllRegionalAdmin = exports.assignRegionalAdmin = exports.createRegionalAdmin = exports.createNewRegion = exports.getAllSuperAdminByEmail = exports.getAdminById = exports.CreateSuperAdmin = void 0;
 const Admin_1 = __importDefault(require("../model/Admin"));
-const Regionaladmin_1 = __importDefault(require("../model/Regionaladmin"));
 const Region_1 = __importDefault(require("../model/Region"));
 const Admin_config_1 = __importDefault(require("../model/Admin_config"));
 const CreateSuperAdmin = async (firstName, lastName, email, phoneNumber, password, profilePicture) => {
@@ -61,7 +60,7 @@ const createNewRegion = async (regionName, shortCode) => {
 exports.createNewRegion = createNewRegion;
 const createRegionalAdmin = async (firstName, lastName, email, phoneNumber, password, region, profilePicture) => {
     try {
-        const newRegionalAdmin = await Regionaladmin_1.default.create({
+        const newRegionalAdmin = await Admin_1.default.create({
             firstName,
             lastName,
             email,
