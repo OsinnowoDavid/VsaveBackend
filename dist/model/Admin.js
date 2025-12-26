@@ -30,12 +30,8 @@ const AdminSchema = new mongoose_1.default.Schema({
         enum: ["SUPER ADMIN", "REGIONAL ADMIN", "SUBREGIONAL ADMIN"],
         required: true,
     },
-    region: {
-        type: String
-    },
-    subRegion: {
-        type: String
-    },
+    region: [String],
+    subRegion: [String],
     profilePicture: {
         type: String
     }

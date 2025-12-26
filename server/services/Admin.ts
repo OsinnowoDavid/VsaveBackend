@@ -67,7 +67,7 @@ export const createRegionalAdmin = async (
     email: string,
     phoneNumber: string,
     password: string,
-    region: string,
+    region: [string],
     profilePicture?: string,
 ) => {
     try {
@@ -88,20 +88,38 @@ export const createRegionalAdmin = async (
 };
 export const assignRegionalAdmin = async (
     admin: any,
-    region: string,
+    region: [string],
 ) => {
     try {
-        const foundRegion = await Region.findById(region);
+       for(const id of region){
+         const foundRegion = await Region.findById(id);
         if (!foundRegion) {
             throw "region not found !";
         }
         foundRegion.admin.push(admin._id);
-        await foundRegion.save();
-        return foundRegion;
+          await foundRegion.save();
+       }
+      
+        return 'Done'
     } catch (err: any) {
         throw err;
     }
 };
+export const assignRegionalAdminToRegions = async (region:[string], regionalAdmin:string)=>{
+    try{
+        const foundAdmin = await Admin.findById(regionalAdmin);
+        for(const id of region){
+             if(foundAdmin.region.length > 10){
+            throw {message:"Regional Admin already assigned to 10 region"}
+        }
+            foundAdmin.region.push(id) 
+        }
+       await foundAdmin.save() ;
+       return foundAdmin
+    }catch(err:any){
+        throw err
+    }
+}
 export const getAllRegionalAdmin = async () => {
     try {
         const allRegionalAdmin = await Admin.find();

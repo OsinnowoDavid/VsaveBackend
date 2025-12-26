@@ -10,6 +10,7 @@ import {
     getRegionalAdminByEmailController,
     setAdminConfigController,
     getAdminConfigController,
+    assignRegionalAdminToRegionController
 } from "../controller/Admin";
 import { verifySuperAdminToken } from "../config/JWT";
 import { validateAdminRegistrationInput } from "../validate-input/admin/index";
@@ -33,6 +34,8 @@ router.post(
     verifySuperAdminToken,
     createRegionalAdminController,
 );
+
+router.post("/assign-regionaladmin-to-region", verifySuperAdminToken,assignRegionalAdminToRegionController)
 
 router.get(
     "/get-all-regional-admin",

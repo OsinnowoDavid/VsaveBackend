@@ -3,11 +3,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.approveOrRejectLoanController = exports.getLoanRecordByStatusController = exports.getAllLoanRecordController = exports.getAdminConfigController = exports.setAdminConfigController = exports.getRegionalAdminByEmailController = exports.getRegionalAdminsController = exports.getAllRegionalAdminController = exports.getAllRegionController = exports.createNewRegionController = exports.createRegionalAdminController = exports.superAdminProfileController = exports.LoginSuperAdminController = exports.registerAdminController = void 0;
+exports.approveOrRejectLoanController = exports.getLoanRecordByStatusController = exports.getAllLoanRecordController = exports.getAdminConfigController = exports.setAdminConfigController = exports.getRegionalAdminByEmailController = exports.getRegionalAdminsController = exports.getAllRegionalAdminController = exports.getAllRegionController = exports.createNewRegionController = exports.assignRegionalAdminToRegionController = exports.createRegionalAdminController = exports.superAdminProfileController = exports.LoginSuperAdminController = exports.registerAdminController = void 0;
 const argon2_1 = __importDefault(require("argon2"));
 const Admin_1 = require("../services/Admin");
 const JWT_1 = require("../config/JWT");
 const Loan_1 = require("../services/Loan");
+const Regionaladmin_1 = __importDefault(require("../model/Regionaladmin"));
 const registerAdminController = async (req, res) => {
     try {
         const { firstName, lastName, email, phoneNumber, password } = req.body;
@@ -92,7 +93,7 @@ const createRegionalAdminController = async (req, res) => {
     try {
         const { firstName, lastName, email, phoneNumber, password, region, profilePicture, } = req.body;
         let hashPassword = await argon2_1.default.hash(password);
-        const newRegionalAdmin = await (0, Admin_1.createRegionalAdmin)(firstName, lastName, email, phoneNumber, hashPassword, region.toString(), profilePicture);
+        const newRegionalAdmin = await (0, Admin_1.createRegionalAdmin)(firstName, lastName, email, phoneNumber, hashPassword, region, profilePicture);
         if (!newRegionalAdmin) {
             return res.json({
                 status: "Failed",
@@ -115,6 +116,25 @@ const createRegionalAdminController = async (req, res) => {
     }
 };
 exports.createRegionalAdminController = createRegionalAdminController;
+const assignRegionalAdminToRegionController = async (req, res) => {
+    try {
+        const { regionalAdmin, region } = req.body;
+        const foundAdmin = await Regionaladmin_1.default.findById(regionalAdmin);
+        const assignRegion = await (0, Admin_1.assignRegionalAdmin)(regionalAdmin, region);
+        const assignRegionalAdminToRegion = await (0, Admin_1.assignRegionalAdminToRegions)(region, regionalAdmin);
+        return res.json({
+            status: "Success",
+            message: "admin assigned to region"
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.assignRegionalAdminToRegionController = assignRegionalAdminToRegionController;
 const createNewRegionController = async (req, res) => {
     try {
         const { regionName, shortCode } = req.body;

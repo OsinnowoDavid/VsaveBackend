@@ -14,9 +14,12 @@ import {
     setAdminSavingsConfig,
     getAdminSavingsConfig,
     getRegionalAdmins,
+    assignRegionalAdminToRegions,
 } from "../services/Admin";
 import { signUserToken } from "../config/JWT";
 import {getAllLoanRecord,getLoanRecordByStatus,approveOrRejectLoan} from "../services/Loan" ;
+import Admin from "../model/Regionaladmin";
+import { IAdmin } from "../../types";
 
 export const registerAdminController = async (req: Request, res: Response) => {
     try {
@@ -128,7 +131,7 @@ export const createRegionalAdminController = async (
             email,
             phoneNumber,
             hashPassword,
-            region.toString(),
+            region,
             profilePicture,
         );
         if (!newRegionalAdmin) {
@@ -151,6 +154,31 @@ export const createRegionalAdminController = async (
         });
     }
 };
+
+export const assignRegionalAdminToRegionController = async  (
+    req: Request,
+    res: Response,
+) => {
+    try{
+        const {regionalAdmin,region} = req.body ; 
+
+    const foundAdmin = await Admin.findById(regionalAdmin) as IAdmin
+    
+    const assignRegion = await assignRegionalAdmin(regionalAdmin, region); 
+     const assignRegionalAdminToRegion = await assignRegionalAdminToRegions(region,regionalAdmin) ;
+
+     return res.json({
+        status: "Success",
+        message: "admin assigned to region"
+     })
+
+    }catch(err:any){
+         return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+}
 
 export const createNewRegionController = async (
     req: Request,

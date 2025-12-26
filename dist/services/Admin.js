@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getSubRegionaladminByEmail = exports.getAllSubRegionalAdmin = exports.createSubRegionalAdmin = exports.sendNotification = exports.getAdminSavingsConfig = exports.setAdminSavingsConfig = exports.getRegionByName = exports.getAllRegion = exports.getRegionalAdminByEmail = exports.getRegionalAdminById = exports.getRegionalAdmins = exports.getAllRegionalAdmin = exports.assignRegionalAdmin = exports.createRegionalAdmin = exports.createNewRegion = exports.getAllSuperAdminByEmail = exports.getAdminById = exports.CreateSuperAdmin = void 0;
+exports.getSubRegionaladminByEmail = exports.getAllSubRegionalAdmin = exports.createSubRegionalAdmin = exports.sendNotification = exports.getAdminSavingsConfig = exports.setAdminSavingsConfig = exports.getRegionByName = exports.getAllRegion = exports.getRegionalAdminByEmail = exports.getRegionalAdminById = exports.getRegionalAdmins = exports.getAllRegionalAdmin = exports.assignRegionalAdminToRegions = exports.assignRegionalAdmin = exports.createRegionalAdmin = exports.createNewRegion = exports.getAllSuperAdminByEmail = exports.getAdminById = exports.CreateSuperAdmin = void 0;
 const Admin_1 = __importDefault(require("../model/Admin"));
 const Region_1 = __importDefault(require("../model/Region"));
 const Admin_config_1 = __importDefault(require("../model/Admin_config"));
@@ -79,19 +79,38 @@ const createRegionalAdmin = async (firstName, lastName, email, phoneNumber, pass
 exports.createRegionalAdmin = createRegionalAdmin;
 const assignRegionalAdmin = async (admin, region) => {
     try {
-        const foundRegion = await Region_1.default.findById(region);
-        if (!foundRegion) {
-            throw "region not found !";
+        for (const id of region) {
+            const foundRegion = await Region_1.default.findById(id);
+            if (!foundRegion) {
+                throw "region not found !";
+            }
+            foundRegion.admin.push(admin._id);
+            await foundRegion.save();
         }
-        foundRegion.admin.push(admin._id);
-        await foundRegion.save();
-        return foundRegion;
+        return 'Done';
     }
     catch (err) {
         throw err;
     }
 };
 exports.assignRegionalAdmin = assignRegionalAdmin;
+const assignRegionalAdminToRegions = async (region, regionalAdmin) => {
+    try {
+        const foundAdmin = await Admin_1.default.findById(regionalAdmin);
+        for (const id of region) {
+            if (foundAdmin.region.length > 10) {
+                throw { message: "Regional Admin already assigned to 10 region" };
+            }
+            foundAdmin.region.push(id);
+        }
+        await foundAdmin.save();
+        return foundAdmin;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.assignRegionalAdminToRegions = assignRegionalAdminToRegions;
 const getAllRegionalAdmin = async () => {
     try {
         const allRegionalAdmin = await Admin_1.default.find();
