@@ -43,7 +43,7 @@ router.get(
     getAllRegionalAdminController,
 );
 
-router.post("/get-all-region", verifySuperAdminToken, getAllRegionController);
+router.get("/get-all-region", verifySuperAdminToken, getAllRegionController);
 
 router.get(
     "/get-regional-admin",
