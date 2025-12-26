@@ -46,7 +46,7 @@ router.get(
 router.get("/get-all-region", verifySuperAdminToken, getAllRegionController);
 
 router.get(
-    "/get-regional-admin",
+    "/get-regional-admin/:email",
     verifySuperAdminToken,
     getRegionalAdminByEmailController,
 );
