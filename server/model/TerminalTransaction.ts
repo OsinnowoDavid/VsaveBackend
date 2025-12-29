@@ -39,7 +39,9 @@ const terminalTransactionSchema = new mongoose.Schema({
             date: {
                 type: Date,
             },
-})
+},
+{timestamps:true}
+)
 
 const terminalTransaction = mongoose.model("terminalTransaction", terminalTransactionSchema) ;
 

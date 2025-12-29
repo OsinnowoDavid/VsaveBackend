@@ -22,6 +22,6 @@ const terminalDetailsSchema = new mongoose_1.default.Schema({
         type: Number,
         default: 0
     }
-});
+}, { timestamps: true });
 const terminalDetails = mongoose_1.default.model("terminalDetails", terminalDetailsSchema);
 exports.default = terminalDetails;

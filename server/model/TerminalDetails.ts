@@ -18,7 +18,9 @@ const terminalDetailsSchema = new mongoose.Schema({
                     type:Number,
                     default:0
                 }
-})
+},
+{timestamps:true}
+)
 
 const terminalDetails = mongoose.model("terminalDetails", terminalDetailsSchema) ;
 

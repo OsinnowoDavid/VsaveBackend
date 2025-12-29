@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import argon from "argon2";
 import {
-    CreateSuperAdmin,
+    CreateAdmin,
     getAllSuperAdminByEmail,
     createRegionalAdmin,
     createNewRegion,
@@ -23,14 +23,16 @@ import { IAdmin } from "../../types";
 
 export const registerAdminController = async (req: Request, res: Response) => {
     try {
-        const { firstName, lastName, email, phoneNumber, password } = req.body;
+        const { firstName, lastName, email, phoneNumber, password, role , profilePicture} = req.body;
         let hashPassword = await argon.hash(password);
-        const newAdmin = await CreateSuperAdmin(
+        const newAdmin = await CreateAdmin(
             firstName,
             lastName,
             email,
             phoneNumber,
             hashPassword,
+            role,
+            profilePicture
         );
         if (!newAdmin) {
             return res.json({
@@ -311,6 +313,7 @@ export const setAdminConfigController = async (req: Request, res: Response) => {
             loanPenaltyFee,
             fixedSavingsAnualInterest,
             fixedSavingsPenaltyFee,
+            terminalBonus
         } = req.body;
         const config = await setAdminSavingsConfig(
             defaultPenaltyFee,
@@ -318,6 +321,7 @@ export const setAdminConfigController = async (req: Request, res: Response) => {
             loanPenaltyFee,
             fixedSavingsAnualInterest,
             fixedSavingsPenaltyFee,
+            terminalBonus
         );
         if (!config) {
             return res.json({

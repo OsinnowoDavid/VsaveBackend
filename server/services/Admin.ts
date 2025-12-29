@@ -3,12 +3,13 @@ import RegionalAdmin from "../model/Regionaladmin";
 import Region from "../model/Region";
 import { ISuperAdmin } from "../../types";
 import AdminConfig from "../model/Admin_config";
-export const CreateSuperAdmin = async (
+export const CreateAdmin = async (
     firstName: string,
     lastName: string,
     email: string,
     phoneNumber: string,
     password: string,
+    role: string,
     profilePicture?: string,
 ) => {
     try {
@@ -19,7 +20,7 @@ export const CreateSuperAdmin = async (
             email,
             phoneNumber,
             password,
-            role: "SUPER ADMIN",
+            role,
             profilePicture,
         });
         return newSuperAdmin;
@@ -188,6 +189,7 @@ export const setAdminSavingsConfig = async (
     loanPenaltyFee: string,
     fixedSavingsAnualInterest: string,
     fixedSavingsPenaltyFee: string,
+    terminalBonus:string
 ) => {
     try {
         const configSettings = await AdminConfig.getSettings();
@@ -196,6 +198,7 @@ export const setAdminSavingsConfig = async (
         configSettings.loanPenaltyFee = loanPenaltyFee;
         configSettings.fixedSavingsAnualInterest = fixedSavingsAnualInterest;
         configSettings.fixedSavingsPenaltyFee = fixedSavingsPenaltyFee;
+        configSettings.terminalBonus = terminalBonus
         await configSettings.save();
         return configSettings;
     } catch (err: any) {

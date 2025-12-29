@@ -3,11 +3,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getSubRegionaladminByEmail = exports.getAllSubRegionalAdmin = exports.createSubRegionalAdmin = exports.sendNotification = exports.getAdminSavingsConfig = exports.setAdminSavingsConfig = exports.getRegionByName = exports.getAllRegion = exports.getRegionalAdminByEmail = exports.getRegionalAdminById = exports.getRegionalAdmins = exports.getAllRegionalAdmin = exports.assignRegionalAdminToRegions = exports.assignRegionalAdmin = exports.createRegionalAdmin = exports.createNewRegion = exports.getAllSuperAdminByEmail = exports.getAdminById = exports.CreateSuperAdmin = void 0;
+exports.getSubRegionaladminByEmail = exports.getAllSubRegionalAdmin = exports.createSubRegionalAdmin = exports.sendNotification = exports.getAdminSavingsConfig = exports.setAdminSavingsConfig = exports.getRegionByName = exports.getAllRegion = exports.getRegionalAdminByEmail = exports.getRegionalAdminById = exports.getRegionalAdmins = exports.getAllRegionalAdmin = exports.assignRegionalAdminToRegions = exports.assignRegionalAdmin = exports.createRegionalAdmin = exports.createNewRegion = exports.getAllSuperAdminByEmail = exports.getAdminById = exports.CreateAdmin = void 0;
 const Admin_1 = __importDefault(require("../model/Admin"));
 const Region_1 = __importDefault(require("../model/Region"));
 const Admin_config_1 = __importDefault(require("../model/Admin_config"));
-const CreateSuperAdmin = async (firstName, lastName, email, phoneNumber, password, profilePicture) => {
+const CreateAdmin = async (firstName, lastName, email, phoneNumber, password, role, profilePicture) => {
     try {
         const newSuperAdmin = await Admin_1.default.create({
             firstName,
@@ -15,7 +15,7 @@ const CreateSuperAdmin = async (firstName, lastName, email, phoneNumber, passwor
             email,
             phoneNumber,
             password,
-            role: "SUPER ADMIN",
+            role,
             profilePicture,
         });
         return newSuperAdmin;
@@ -24,7 +24,7 @@ const CreateSuperAdmin = async (firstName, lastName, email, phoneNumber, passwor
         throw err;
     }
 };
-exports.CreateSuperAdmin = CreateSuperAdmin;
+exports.CreateAdmin = CreateAdmin;
 const getAdminById = async (id) => {
     try {
         const foundAdmin = await Admin_1.default.findById(id, { password: 0 });
@@ -179,7 +179,7 @@ const getRegionByName = async (regionName) => {
     }
 };
 exports.getRegionByName = getRegionByName;
-const setAdminSavingsConfig = async (defaultPenaltyFee, firstTimeAdminFee, loanPenaltyFee, fixedSavingsAnualInterest, fixedSavingsPenaltyFee) => {
+const setAdminSavingsConfig = async (defaultPenaltyFee, firstTimeAdminFee, loanPenaltyFee, fixedSavingsAnualInterest, fixedSavingsPenaltyFee, terminalBonus) => {
     try {
         const configSettings = await Admin_config_1.default.getSettings();
         configSettings.defaultPenaltyFee = defaultPenaltyFee;
@@ -187,6 +187,7 @@ const setAdminSavingsConfig = async (defaultPenaltyFee, firstTimeAdminFee, loanP
         configSettings.loanPenaltyFee = loanPenaltyFee;
         configSettings.fixedSavingsAnualInterest = fixedSavingsAnualInterest;
         configSettings.fixedSavingsPenaltyFee = fixedSavingsPenaltyFee;
+        configSettings.terminalBonus = terminalBonus;
         await configSettings.save();
         return configSettings;
     }

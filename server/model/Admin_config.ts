@@ -7,6 +7,7 @@ interface AdminConfigDocument extends Document {
     loanPenaltyFee: string;
     fixedSavingsAnualInterest: string;
     fixedSavingsPenaltyFee: string;
+     terminalBonus: string;
 }
 
 // 👇 define static methods on this interface
@@ -18,6 +19,7 @@ interface AdminConfigModel extends Model<AdminConfigDocument> {
         loanPenaltyFee: string,
         fixedSavingsAnualInterest: string,
         fixedSavingsPenaltyFee: string,
+        terminalBonus: string
     ): Promise<AdminConfigDocument>;
 }
 
@@ -38,6 +40,9 @@ const adminConfigSchema = new mongoose.Schema(
         fixedSavingsPenaltyFee: {
             type: String,
         },
+        terminalBonus:{
+            type:String
+        }
     },
     { collection: "settings" },
 );
@@ -51,6 +56,7 @@ adminConfigSchema.statics.getSettings = async function () {
             loanPenaltyFee: "2.0",
             fixedSavingsAnualInterest: "28.0",
             fixedSavingsPenaltyFee: "0.5",
+            terminalBonus:"2.0"
         });
         await defaultSettings.save();
         return defaultSettings;

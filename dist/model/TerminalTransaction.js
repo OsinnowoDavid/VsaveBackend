@@ -43,6 +43,6 @@ const terminalTransactionSchema = new mongoose_1.default.Schema({
     date: {
         type: Date,
     },
-});
+}, { timestamps: true });
 const terminalTransaction = mongoose_1.default.model("terminalTransaction", terminalTransactionSchema);
 exports.default = terminalTransaction;

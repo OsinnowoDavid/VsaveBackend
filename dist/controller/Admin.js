@@ -11,9 +11,9 @@ const Loan_1 = require("../services/Loan");
 const Regionaladmin_1 = __importDefault(require("../model/Regionaladmin"));
 const registerAdminController = async (req, res) => {
     try {
-        const { firstName, lastName, email, phoneNumber, password } = req.body;
+        const { firstName, lastName, email, phoneNumber, password, role, profilePicture } = req.body;
         let hashPassword = await argon2_1.default.hash(password);
-        const newAdmin = await (0, Admin_1.CreateSuperAdmin)(firstName, lastName, email, phoneNumber, hashPassword);
+        const newAdmin = await (0, Admin_1.CreateAdmin)(firstName, lastName, email, phoneNumber, hashPassword, role, profilePicture);
         if (!newAdmin) {
             return res.json({
                 status: "Failed",
@@ -249,8 +249,8 @@ const getRegionalAdminByEmailController = async (req, res) => {
 exports.getRegionalAdminByEmailController = getRegionalAdminByEmailController;
 const setAdminConfigController = async (req, res) => {
     try {
-        const { defaultPenaltyFee, firstTimeAdminFee, loanPenaltyFee, fixedSavingsAnualInterest, fixedSavingsPenaltyFee, } = req.body;
-        const config = await (0, Admin_1.setAdminSavingsConfig)(defaultPenaltyFee, firstTimeAdminFee, loanPenaltyFee, fixedSavingsAnualInterest, fixedSavingsPenaltyFee);
+        const { defaultPenaltyFee, firstTimeAdminFee, loanPenaltyFee, fixedSavingsAnualInterest, fixedSavingsPenaltyFee, terminalBonus } = req.body;
+        const config = await (0, Admin_1.setAdminSavingsConfig)(defaultPenaltyFee, firstTimeAdminFee, loanPenaltyFee, fixedSavingsAnualInterest, fixedSavingsPenaltyFee, terminalBonus);
         if (!config) {
             return res.json({
                 status: "Failed",

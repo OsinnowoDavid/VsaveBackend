@@ -23,7 +23,7 @@ const AdminSchema = new mongoose.Schema({
     },
     role:{
         type:String,
-        enum:["SUPER ADMIN","REGIONAL ADMIN","SUBREGIONAL ADMIN"],
+        enum:["SUPER ADMIN","REGIONAL ADMIN","SUBREGIONAL ADMIN", "AGENT"],
         required:true,
     },
     region:[String],
@@ -31,7 +31,9 @@ const AdminSchema = new mongoose.Schema({
     profilePicture: {
       type: String
     }
-})
+},
+{timestamps:true}
+)
 
 const Admin = mongoose.model("Admin", AdminSchema)
 

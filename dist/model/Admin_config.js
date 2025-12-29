@@ -20,6 +20,9 @@ const adminConfigSchema = new mongoose_1.default.Schema({
     fixedSavingsPenaltyFee: {
         type: String,
     },
+    terminalBonus: {
+        type: String
+    }
 }, { collection: "settings" });
 adminConfigSchema.statics.getSettings = async function () {
     const settings = await this.findOne();
@@ -30,6 +33,7 @@ adminConfigSchema.statics.getSettings = async function () {
             loanPenaltyFee: "2.0",
             fixedSavingsAnualInterest: "28.0",
             fixedSavingsPenaltyFee: "0.5",
+            terminalBonus: "2.0"
         });
         await defaultSettings.save();
         return defaultSettings;

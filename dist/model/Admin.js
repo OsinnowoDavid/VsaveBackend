@@ -27,7 +27,7 @@ const AdminSchema = new mongoose_1.default.Schema({
     },
     role: {
         type: String,
-        enum: ["SUPER ADMIN", "REGIONAL ADMIN", "SUBREGIONAL ADMIN"],
+        enum: ["SUPER ADMIN", "REGIONAL ADMIN", "SUBREGIONAL ADMIN", "AGENT"],
         required: true,
     },
     region: [String],
@@ -35,6 +35,6 @@ const AdminSchema = new mongoose_1.default.Schema({
     profilePicture: {
         type: String
     }
-});
+}, { timestamps: true });
 const Admin = mongoose_1.default.model("Admin", AdminSchema);
 exports.default = Admin;
