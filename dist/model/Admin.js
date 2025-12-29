@@ -27,7 +27,7 @@ const AdminSchema = new mongoose_1.default.Schema({
     },
     role: {
         type: String,
-        enum: ["SUPER ADMIN", "REGIONAL ADMIN", "SUBREGIONAL ADMIN", "AGENT"],
+        enum: ["SUPER ADMIN", "REGIONAL ADMIN", "SUBREGIONAL ADMIN"],
         required: true,
     },
     region: [String],

@@ -23,7 +23,6 @@ const app = (0, express_1.default)();
 app.use(express_1.default.json());
 // const allowedOrigin =[]
 app.use((0, cors_1.default)({
-    origin: "https://abattior-frontend.vercel.app",
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
     // allowedHeaders: ["Content-Type","Authorization"]
