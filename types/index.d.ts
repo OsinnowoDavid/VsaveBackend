@@ -15,6 +15,7 @@ declare interface IUser extends Document {
     pendingBalance: number;
     isEmailVerified: boolean;
     pin?: string;
+    lottoryId?:string;
     status?: string | null;
     gender?: "Male" | "Female" | string | null | undefined;
     dateOfBirth?: Date | string | null | undefined;
