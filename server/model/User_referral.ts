@@ -10,7 +10,8 @@ const userReferralSchema = new mongoose.Schema({
         type:Number ,
     },
     status:{
-        type:String
+        type:String,
+        enum:["pending","completed", "rejected"]
     },
     referredUser:{
          type: mongoose.Schema.Types.ObjectId,
@@ -34,3 +35,7 @@ const userReferralSchema = new mongoose.Schema({
 },
 {timestamps:true}
 )
+
+const userReferral = mongoose.model("user_referral", userReferralSchema) ;
+
+export default userReferral
