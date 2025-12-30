@@ -29,6 +29,7 @@ app.use(
     "X-Requested-With",
     "Accept",
     "Origin",
+    "Access-Control-Allow-Origin",
     "Access-Control-Allow-Headers",
     "Access-Control-Request-Headers"
   ],
