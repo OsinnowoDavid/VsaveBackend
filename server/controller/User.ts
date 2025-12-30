@@ -81,6 +81,10 @@ const getNextFiveMinutes = () => {
 };
 
 export const registerUser = async (req: Request, res: Response) => {
+    console.log("=== REGISTER REQUEST ===");
+    console.log("Headers:", req.headers);
+    console.log("Body received:", req.body);
+    
     try {
         const {
             firstName,
@@ -92,7 +96,33 @@ export const registerUser = async (req: Request, res: Response) => {
             phoneNumber,
             referralCode,
         } = req.body;
+
+        // Log each field
+        console.log("Parsed fields:", {
+            firstName,
+            lastName,
+            email,
+            password: password ? "[HIDDEN]" : "MISSING",
+            gender,
+            dateOfBirth,
+            phoneNumber,
+            referralCode,
+        });
+
+        // Validate required fields
+        if (!firstName || !lastName || !email || !password) {
+            console.log("Missing required fields");
+            return res.status(400).json({
+                status: "Failed",
+                message: "First name, last name, email, and password are required"
+            });
+        }
+
+        console.log("Hashing password...");
         let hashPassword = await argon.hash(password);
+        console.log("Password hashed successfully");
+
+        console.log("Creating user...");
         const newUser = await createNewUser(
             firstName,
             lastName,
@@ -102,31 +132,46 @@ export const registerUser = async (req: Request, res: Response) => {
             dateOfBirth,
             phoneNumber,
         );
+        
+        console.log("User creation result:", newUser ? "Success" : "Failed");
+        
         if (!newUser) {
+            console.log("User creation returned null/undefined");
             return res.status(500).json({
                 status: "Failed",
                 message: "Failed to create user, please try again later",
             });
         }
 
-        //send verification code to user email
+        console.log("Generated user ID:", newUser.id || newUser._id);
+
+        // Send verification code
         const tokenNumber = Math.floor(100000 + Math.random() * 900000);
+        console.log("Generated token:", tokenNumber);
 
         const expTime = getNextFiveMinutes();
+        console.log("Token expiry:", expTime);
 
+        console.log("Assigning verification token...");
         let token;
         token = await assignUserEmailVerificationToken(
             email,
             tokenNumber,
             expTime,
         );
+        
         if (!token) {
+            console.log("Failed to generate verification token");
             return res.status(500).json({
                 status: "Failed",
                 message: "Failed to generate verification token",
             });
         }
-        //  config mail option
+        
+        console.log("Verification token assigned");
+
+        // Send email
+        console.log("Preparing to send email to:", email);
         const msg = {
             to: newUser.email,
             from: `David <danyboy99official@gmail.com>`,
@@ -139,56 +184,34 @@ export const registerUser = async (req: Request, res: Response) => {
           — The VSave Team.`,
         };
 
+        console.log("Sending email via SendGrid...");
         const sentMail = await SGMail.send(msg);
-        // console.log(
-        //     " controller pass and user:",
-        //     process.env.User,
-        //     process.env.Pass,
-        // );
-        // const mailOptions = {
-        //     from: `<${process.env.User}>`, // sender
-        //     to: email, // recipient
-        //     subject: "Welcome to VSAVE 🎉",
-        //     text: `Hello ${newUser.firstName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans. To get started, please verify your email using the code below:
-        //   CODE : ${tokenNumber}
-        //   This code will expire in 5 minutes, so be sure to use it right away.
-        //   We're excited to have you on board!
+        console.log("Email sent successfully:", sentMail);
 
-        //   — The VSave Team.`,
-        // };
-        // console.log("got to the  mail option :", mailOptions);
-        // // Send email
-        // try {
-        //     console.log("transporter:", JSON.stringify(Transporter));
-        //     let sentMale = await Transporter.sendMail(mailOptions);
-        //     console.log("sentMale:", sentMale);
-        // } catch (err: any) {
-        //     return res.json({
-        //         status: "Failed",
-        //         message: err.message,
-        //         err,
-        //     });
-        // }
-        // console.log(
-        //     "transporter response:",
-        //     process.env.User,
-        //     process.env.Pass,
-        // );
-        //  assign referralCode
+        // Assign referral code
+        console.log("Assigning referral code...");
         await assignAgentReferral(referralCode, newUser);
+        console.log("Referral assigned");
+
+        console.log("=== REGISTRATION COMPLETE ===");
         return res.json({
             status: "Success",
             message: `User created successfully. Verify your email - verification code has been sent to ${newUser.email} (also check your spam meesage for the code )`,
             data: newUser,
         });
     } catch (err: any) {
-        console.error("Unexpected error in registerUser:", err);
+        console.error("=== UNEXPECTED ERROR ===");
+        console.error("Error name:", err.name);
+        console.error("Error message:", err.message);
+        console.error("Error stack:", err.stack);
+        console.error("Error code:", err.code);
+        console.error("Error details:", err);
+        console.error("=== END ERROR ===");
 
-        // Don't expose internal error details in production
-        const errorMessage =
-            process.env.NODE_ENV === "production"
-                ? "An unexpected error occurred. Please try again later."
-                : err.message;
+        // In development, return detailed error
+        const errorMessage = process.env.NODE_ENV === "production"
+            ? "An unexpected error occurred. Please try again later."
+            : `Error: ${err.message} - ${err.stack}`;
 
         return res.status(500).json({
             status: "Failed",
