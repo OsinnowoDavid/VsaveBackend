@@ -3,12 +3,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifySubRegionalAdminToken = exports.verifyRegionalAdminToken = exports.verifySuperAdminToken = exports.verifyUserToken = exports.signUserToken = void 0;
+exports.attachToToken = exports.verifySubRegionalAdminToken = exports.verifyRegionalAdminToken = exports.verifySuperAdminToken = exports.verifyUserToken = exports.signUserToken = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const jwt_secret = process.env.jwt_secret;
 const User_1 = require("../services/User");
 const Admin_1 = require("../services/Admin");
-const RegionalAdmin_1 = require("../services/RegionalAdmin");
 const signUserToken = (user) => {
     const payload = {
         user: user,
@@ -41,6 +40,10 @@ const verifyUserToken = async (req, res, next) => {
         }
         // Attach user to request object
         req.user = currentClient;
+        // check if there is loanelegibility object so as to add to req.elegibility 
+        if (decoded.loanEligibility) {
+            req.loanElegibility = decoded.loanEligibility;
+        }
         return next();
     }
     catch (err) {
@@ -64,8 +67,8 @@ const verifySuperAdminToken = async (req, res, next) => {
         const decoded = jsonwebtoken_1.default.verify(authorization, jwt_secret);
         const foundId = decoded.user._id;
         // find superadmin by decoded user id
-        const currentAdmin = await (0, Admin_1.getSuperAdminById)(foundId);
-        if (!currentAdmin) {
+        const currentAdmin = await (0, Admin_1.getAdminById)(foundId);
+        if (!currentAdmin && currentAdmin.role !== "SUPER ADMIN") {
             return res.json({
                 status: "failed!",
                 msg: "user not authorized!!",
@@ -83,6 +86,21 @@ const verifySuperAdminToken = async (req, res, next) => {
     }
 };
 exports.verifySuperAdminToken = verifySuperAdminToken;
+const regionalAdminPass = (admin) => {
+    try {
+        let result = false;
+        if (admin.role === "SUPER ADMIN") {
+            result = true;
+        }
+        if (admin.role === "REGIONAL ADMIN") {
+            result = true;
+        }
+        return result;
+    }
+    catch (err) {
+        throw err;
+    }
+};
 const verifyRegionalAdminToken = async (req, res, next) => {
     try {
         // Extract token from authorization header
@@ -95,16 +113,15 @@ const verifyRegionalAdminToken = async (req, res, next) => {
         }
         const decoded = jsonwebtoken_1.default.verify(authorization, jwt_secret);
         const foundId = decoded.user._id;
-        const foundSuperAdmin = (await (0, Admin_1.getSuperAdminById)(foundId));
-        const foundRegionalAdmin = (await (0, RegionalAdmin_1.getRegionalAdminById)(foundId));
-        if (!(foundSuperAdmin || foundRegionalAdmin)) {
+        const foundAdmin = await (0, Admin_1.getAdminById)(foundId);
+        if (!foundAdmin || !regionalAdminPass(foundAdmin)) {
             return res.json({
                 status: "failed!",
                 msg: "user not authorized!!",
             });
         }
         // Attach user to request object
-        req.user = foundSuperAdmin || foundRegionalAdmin;
+        req.user = foundAdmin;
         return next();
     }
     catch (err) {
@@ -127,16 +144,8 @@ const verifySubRegionalAdminToken = async (req, res, next) => {
         }
         const decoded = jsonwebtoken_1.default.verify(authorization, jwt_secret);
         const foundId = decoded.user._id;
-        const foundSuperAdmin = (await (0, Admin_1.getSuperAdminById)(foundId));
-        const foundRegionalAdmin = (await (0, RegionalAdmin_1.getRegionalAdminById)(foundId));
-        const foundSubRegionalAdmin = (await (0, RegionalAdmin_1.getSubRegionalAdminById)(foundId));
-        console.log("user", {
-            superAdmin: foundSuperAdmin,
-            regionalAdmin: foundRegionalAdmin,
-            subRegionalAdmin: foundSubRegionalAdmin,
-        });
-        if (!(foundSuperAdmin || foundRegionalAdmin || foundSubRegionalAdmin)) {
-            console.log("got to superadmin");
+        const foundAdmin = await (0, Admin_1.getAdminById)(foundId);
+        if (!foundAdmin) {
             return res.json({
                 status: "failed!",
                 msg: "user not authorized!!",
@@ -144,7 +153,7 @@ const verifySubRegionalAdminToken = async (req, res, next) => {
         }
         // Attach user to request object
         req.user =
-            foundSuperAdmin || foundRegionalAdmin || foundSubRegionalAdmin;
+            foundAdmin;
         return next();
     }
     catch (err) {
@@ -155,3 +164,17 @@ const verifySubRegionalAdminToken = async (req, res, next) => {
     }
 };
 exports.verifySubRegionalAdminToken = verifySubRegionalAdminToken;
+const attachToToken = (token, loanElegibility) => {
+    try {
+        const decoded = jsonwebtoken_1.default.verify(token, process.env.jwt_secret);
+        // Add the new claims
+        decoded.loanEligibility = loanElegibility;
+        // Sign a new token with the updated payload
+        const updatedToken = jsonwebtoken_1.default.sign(decoded, process.env.jwt_secret);
+        return updatedToken;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.attachToToken = attachToToken;

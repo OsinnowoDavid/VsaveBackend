@@ -119,7 +119,17 @@ export const generateRefrenceCode = () => {
 
     return `${marchantId}_${code}`;
 };
+export const generateLottoryRefrenceCode = () => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let code = "";
+    let marchantId = process.env.MARCHANT_ID;
+    for (let i = 0; i < 7; i++) {
+        const randomIndex = Math.floor(Math.random() * chars.length);
+        code += chars[randomIndex];
+    }
 
+    return `Lotto_${code}`;
+};
 export const generateSavingsRefrenceCode = () => {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     let code = "";
@@ -288,3 +298,17 @@ export const checkIfContributionIsCompleted = (recordStatus: [any]) => {
     }
     return isContributionComplete;
 };
+
+export function getEndTimeFromSeconds(seconds:number) {
+  const now = new Date(); // current time
+  const endTime = new Date(now.getTime() + seconds * 1000);
+  return endTime;
+}
+
+export function getEndTimeFromSecondsLive(seconds: number): Date {
+  const now = new Date();
+  // Deduct 20 minutes (1200 seconds)
+  const adjustedSeconds = seconds - 1200;
+  const endTime = new Date(now.getTime() + adjustedSeconds * 1000);
+  return endTime;
+}

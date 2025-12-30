@@ -32,12 +32,15 @@ import {
     getActiveFixedSavingsController,
     getCompletedFixedSavingsController,
     getAllFixedSavingsController,
-    validateTransactionPinController,
     updateTransactionPinController,
     createTransactionPinController,
     getFixedSavingsByStatusController,
     getUserSavingsRecordsByStatusController,
-    getUserTotalSavingsBalanceController,
+    getUserTotalSavingsAndLoanBalanceController,
+    topUpLottryAccountController,
+    getTerminalDetailsController,
+    getTerminalTransactionController,
+    getSingleTerminalTransactionController,
 } from "../controller/User";
 import {
     validateUserRegitrationInput,
@@ -45,10 +48,12 @@ import {
     validateUserLoginInput,
 } from "../validate-input/user";
 import { verifyUserToken } from "../config/JWT";
-import { transactionPinMiddleware } from "../middleware";
+import { createWaitListController , getAllWaitListController, getWaitListByEmailController} from "../controller/waitList";
 const router = express.Router();
-
-router.post("/register", validateUserRegitrationInput, registerUser);
+router.post("/waitlist", createWaitListController)
+router.get("/get-all-waitlist",getAllWaitListController )
+router.get("/get-waitlist-by-email/:email",getAllWaitListController )
+router.post("/register", validateUserRegitrationInput, registerUser);  
 router.post("/login", validateUserLoginInput, loginUser);
 router.post("/verify-email", verifyEmail);
 router.post("/resend-verification-token", resendUserVerificationEmail);
@@ -72,13 +77,6 @@ router.post(
     "/create-transaction-pin",
     verifyUserToken,
     createTransactionPinController,
-);
-
-router.post(
-    "/validate-transaction-pin",
-    verifyUserToken,
-    transactionPinMiddleware,
-    validateTransactionPinController,
 );
 
 router.post(
@@ -181,5 +179,10 @@ router.post(
     getUserSavingsRecordsByStatusController,
 );
 
-router.get("/totalSavingsBalance", verifyUserToken, getUserTotalSavingsBalanceController)
+router.get("/totalSavingsAndLoanBalance", verifyUserToken, getUserTotalSavingsAndLoanBalanceController) ;
+
+router.post("/deposit-to-terminal", verifyUserToken, topUpLottryAccountController) ;
+router.get("/get-terminal-details", verifyUserToken, getTerminalDetailsController);
+router.get("/get-terminal-transaction", verifyUserToken, getTerminalTransactionController) ; 
+router.get("/get-single-terminal-transaction",verifyUserToken,getSingleTerminalTransactionController) ;
 export default router;

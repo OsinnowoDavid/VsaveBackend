@@ -3,12 +3,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.approveOrRejectLoan = exports.editLoanRecord = exports.getLoanRecordByStatus = exports.getAllLoanRecord = exports.getUserLoanByStatus = exports.allUnsettledRecord = exports.payUnsettledLoan = exports.getUserUnsettledLoan = exports.getUserSettledLoan = exports.getUserLoanRecord = exports.createLoanRecord = void 0;
+exports.getAllLoanRecordBalance = exports.approveOrRejectLoan = exports.editLoanRecord = exports.getLoanRecordByStatus = exports.getAllLoanRecord = exports.getUserLoanByStatus = exports.allUnsettledRecord = exports.payUnsettledLoan = exports.getUserUnsettledLoan = exports.getUserSettledLoan = exports.getUserLoanRecord = exports.createLoanRecord = void 0;
 const Loan_1 = __importDefault(require("../model/Loan"));
-const createLoanRecord = async (user, amount, interest, interestPercentage, status, startDate, dueDate, repaymentAmount, remark) => {
+const createLoanRecord = async (user, loanTitle, amount, interest, interestPercentage, status, startDate, dueDate, repaymentAmount, remark) => {
     try {
         const newLoan = await Loan_1.default.create({
             user,
+            loanTitle,
             amount,
             interest,
             interestPercentage,
@@ -172,3 +173,33 @@ const approveOrRejectLoan = async (id, status, duration, dueDate) => {
     }
 };
 exports.approveOrRejectLoan = approveOrRejectLoan;
+const getAllLoanRecordBalance = async (user) => {
+    try {
+        const foundRecords = await Loan_1.default.find({ user });
+        let result = {
+            completedLoanTotal: 0,
+            pendingLoanTotal: 0
+        };
+        for (const record of foundRecords) {
+            if (record.status === "completed") {
+                let balance = 0;
+                for (const repaymentRecord of record.repayments) {
+                    balance += repaymentRecord.amount;
+                }
+                result.completedLoanTotal += balance;
+            }
+            if (record.status === "pending") {
+                let balance = 0;
+                for (const repaymentRecord of record.repayments) {
+                    balance += repaymentRecord.amount;
+                }
+                result.pendingLoanTotal += balance;
+            }
+        }
+        return result;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.getAllLoanRecordBalance = getAllLoanRecordBalance;

@@ -4,19 +4,20 @@ import Region from "../model/Region";
 import subRegionalAdmin from "../model/SubRegionalAdmin";
 import SubRegionalAdmin from "../model/SubRegionalAdmin";
 import { ISuperAdmin, ISubRegion } from "../../types";
+import Admin from "../model/Admin"
 
 export const getRegionalAdminById = async (id: string) => {
     try {
-        const foundAdmin = await RegionalAdmin.findById(id, { password: 0 });
+        const foundAdmin = await Admin.findById(id, { password: 0 });
         return foundAdmin;
     } catch (err: any) {
         throw err;
     }
 };
 
-export const getRegionalAdminByEmail = async (email: string) => {
+export const getRegionalAdminByEmail = async (email: string , region?:string) => {
     try {
-        const foundAdmin = await RegionalAdmin.findOne({ email });
+        const foundAdmin = await Admin.findOne({ email, region });
         return foundAdmin;
     } catch (err: any) {
         throw err;
@@ -75,13 +76,17 @@ export const createSubRegionalAdmin = async (
     subRegion: string,
 ) => {
     try {
-        const newSubRegionalAdmin = await SubRegionalAdmin.create({
+        const foundRegion = await SubRegion.findById(subRegion) ;
+                let region = foundRegion.region
+        const newSubRegionalAdmin = await Admin.create({
             firstName,
             lastName,
             email,
             password,
             phoneNumber,
             subRegion,
+            region,
+            role:"SUBREGIONAL ADMIN"
         });
         return newSubRegionalAdmin;
     } catch (err: any) {
@@ -91,7 +96,7 @@ export const createSubRegionalAdmin = async (
 
 export const getSubRegionalAdminById = async (id: string) => {
     try {
-        const foundSubRegionAdmin = await SubRegionalAdmin.findById(id, {
+        const foundSubRegionAdmin = await Admin.findById(id, {
             password: 0,
         });
         return foundSubRegionAdmin;
@@ -100,9 +105,9 @@ export const getSubRegionalAdminById = async (id: string) => {
     }
 };
 
-export const getSubRegionalAdminByEmail = async (email: string) => {
+export const getSubRegionalAdminByEmail = async (email: string, region?:string) => {
     try {
-        const foundSubRegionAdmin = await SubRegionalAdmin.findOne({ email });
+        const foundSubRegionAdmin = await Admin.findOne({ email , region });
         return foundSubRegionAdmin;
     } catch (err: any) {
         throw err;

@@ -70,6 +70,15 @@ import {
     getCurrentDateWithClosestHour,
 } from "../config/tools";
 import AdminSavingsConfig from "../model/Admin_config";
+import {getAllLoanRecordBalance} from "../services/Loan"
+import {
+    generateAndAsignLottoryId, 
+    createTerminalRecord, 
+    depositToTerminalAccount,
+     getTerminalDetails,
+     getTerminalTransaction,
+     getSingleTerminalTransaction,
+    } from "../services/Terminal"
 const QOREID_API_KEY = process.env.QOREID_SECRET_KEY as string;
 const QOREID_BASE_URL = process.env.QOREID_BASE_URL as string;
 
@@ -120,13 +129,17 @@ export const registerUser = async (req: Request, res: Response) => {
 
         console.log("Hashing password...");
         let hashPassword = await argon.hash(password);
-        console.log("Password hashed successfully");
-
-        console.log("Creating user...");
+         const foundUser = await getUserByEmail(email) ;
+                if(foundUser){
+                    return res.json({
+                        status:"Failed",
+                        message:"user already found with this email"
+                    })
+                }
         const newUser = await createNewUser(
             firstName,
             lastName,
-            email,
+            email.toLowerCase(),
             hashPassword,
             gender,
             dateOfBirth,
@@ -442,6 +455,7 @@ export const registerKYC1 = async (req: Request, res: Response) => {
             accountNumber,
             bank,
             accountDetails,
+            bankCode,
             country,
             state,
             bvn,
@@ -482,12 +496,16 @@ export const registerKYC1 = async (req: Request, res: Response) => {
             accountNumber,
             bank,
             accountDetails,
+            bankCode,
             country,
             state,
             bvn,
             address,
             subRegion,
         );
+        if(profession === "Lottery Agent" ){
+             await generateAndAsignLottoryId(user._id.toString()) ;
+        }
         // create transaction pin 
         await createTransactionPin(user._id.toString(),transactionPin) ;
         if (!newKYC1) {
@@ -519,17 +537,38 @@ export const updateKYC1RecordController = async (
             bank,
             accountNumber,
             accountDetails,
+            bankCode,
             country,
             state,
             address,
         } = req.body;
         const user = req.user as IUser;
+        if(profession ==="Lottery Agent"){
+            let newLottoId = await generateAndAsignLottoryId(user._id.toString()) ; 
+            const updatedKYC1 = await updateKYC1Record(
+            user,
+            profession,
+            bank,
+            accountNumber,
+            accountDetails,
+            bankCode,
+            country,
+            state,
+            address,
+        );
+        return res.json({
+            status: "Success",
+            message: "KYC updated successfuly",
+            data: updatedKYC1,
+        });
+        }
         const updatedKYC1 = await updateKYC1Record(
             user,
             profession,
             bank,
             accountNumber,
             accountDetails,
+            bankCode,
             country,
             state,
             address,
@@ -579,6 +618,7 @@ export const createTransactionPinController = async (
     try {
         const user = req.user as IUser;
         const { pin } = req.body;
+        console.log("req.pin:",pin)
         const newRecord = await createTransactionPin(user._id.toString(), pin);
         return res.json({
             status: "Success",
@@ -618,37 +658,37 @@ export const updateTransactionPinController = async (
         throw err;
     }
 };
-export const validateTransactionPinController = async (
-    req: Request,
-    res: Response,
-) => {
-    try {
-        const { pin } = req.body;
-        const user = req.user as IUser;
-        const isValid = await validateTransactionPin(user._id.toString(), pin);
-        if (isValid) {
-            req.validateTransactionPin.pin = pin;
-            req.validateTransactionPin.status = true;
-            return res.json({
-                status: "Success",
-                message: "Transaction pin Validation successful",
-            });
-        }
+// export const validateTransactionPinController = async (
+//     req: Request,
+//     res: Response,
+// ) => {
+//     try {
+//         const { pin } = req.body;
+//         const user = req.user as IUser;
+//         const isValid = await validateTransactionPin(user._id.toString(), pin);
+//         if (isValid) {
+//             req.validateTransactionPin.pin = pin;
+//             req.validateTransactionPin.status = true;
+//             return res.json({
+//                 status: "Success",
+//                 message: "Transaction pin Validation successful",
+//             });
+//         }
 
-        req.validateTransactionPin.pin = 0;
-        req.validateTransactionPin.status = false;
-        return res.json({
-            status: "Failed",
-            message: "Incorrect pin",
-        });
-    } catch (err: any) {
-        return res.json({
-            status: "Failed",
-            message: err.message,
-            err,
-        });
-    }
-};
+//         req.validateTransactionPin.pin = 0;
+//         req.validateTransactionPin.status = false;
+//         return res.json({
+//             status: "Failed",
+//             message: "Incorrect pin",
+//         });
+//     } catch (err: any) {
+//         return res.json({
+//             status: "Failed",
+//             message: err.message,
+//             err,
+//         });
+//     }
+// };
 
 export const getDataPlanController = async (req: Request, res: Response) => {
     try {
@@ -663,7 +703,7 @@ export const getDataPlanController = async (req: Request, res: Response) => {
         return res.json({
             status: "Success",
             message: "Found Data Plan",
-            data: dataPlan,
+            data: dataPlan.data,
         });
     } catch (err: any) {
         return res.json({
@@ -675,17 +715,17 @@ export const getDataPlanController = async (req: Request, res: Response) => {
 
 export const buyAirtimeController = async (req: Request, res: Response) => {
     try {
-        const { phoneNumber, amount } = req.body;
-        // check if user validate transaction pin
-        console.log("got inside controller");
-        if (!req.validateTransactionPin || !req.validateTransactionPin.status) {
+        const {pin, phoneNumber, amount } = req.body;
+        const user = req.user as IUser;
+        // validate transaction pin to procced
+        console.log("validate:", pin.toString(),user.pin.toString())
+        if(pin.toString() !== user.pin.toString()){
             return res.json({
                 status: "Failed",
-                message: "Validate transaction pin to procced with transaction",
+                message: "Transaction pin is incorrect enter the correct pin",
             });
         }
-        const user = req.user as IUser;
-        console.log("got inside controller");
+        console.log("validation completed")
         // check if avaliablebalance is greater than the purchased amount
         if (amount > user.availableBalance) {
             console.log("insuficient");
@@ -734,13 +774,13 @@ export const buyAirtimeController = async (req: Request, res: Response) => {
 
 export const buyDataController = async (req: Request, res: Response) => {
     try {
-        const { phoneNumber, amount, planCode } = req.body;
+        const { pin,phoneNumber, amount, planCode } = req.body;
         const user = req.user as IUser;
-        // check if user validate transaction pin
-        if (!req.validateTransactionPin || !req.validateTransactionPin.status) {
+        // validate transaction pin to procced
+        if(pin.toString() !== user.pin.toString()){
             return res.json({
                 status: "Failed",
-                message: "Validate transaction pin to procced with transaction",
+                message: "Transaction pin is incorrect enter the correct pin",
             });
         }
         // check if avaliablebalance is greater than the purchased amount
@@ -820,13 +860,13 @@ export const accountLookUpController = async (req: Request, res: Response) => {
 };
 export const payOutController = async (req: Request, res: Response) => {
     try {
-        const { bankCode, accountNumber, accountName, amount } = req.body;
+        const { pin,bankCode, accountNumber, accountName, amount, remark } = req.body;
         const user = req.user as IUser;
-        // check if user validate transaction pin
-        if (!req.validateTransactionPin || !req.validateTransactionPin.status) {
+        // validate transaction pin to procced
+        if(pin.toString() !== user.pin.toString()){
             return res.json({
                 status: "Failed",
-                message: "Validate transaction pin to procced with transaction",
+                message: "Transaction pin is incorrect enter the correct pin",
             });
         }
         //check if user avaliableBalance is greater than the amount
@@ -845,7 +885,6 @@ export const payOutController = async (req: Request, res: Response) => {
         );
         let balanceBefore = user.availableBalance;
         let balanceAfter = user.availableBalance - Number(amount);
-        let remark = `${user.firstName} ${user.lastName} payout to ${accountName}`;
         //withdraw money fro  user availiable
         await withdraw(user, amount);
         //save transaction record
@@ -1377,17 +1416,118 @@ export const getFixedSavingsByStatusController = async (
         });
     }
 };
-export const getUserTotalSavingsBalanceController = async (req: Request, res: Response) =>{
+export const getUserTotalSavingsAndLoanBalanceController = async (req: Request, res: Response) =>{
     try{
         const user = req.user as IUser;
-        const totalSavingsBalnce = await getUserTotalSavingsBalance(user._id.toString())  ;
+        const totalSavingsBalnce = await getUserTotalSavingsBalance(user._id.toString())  ; 
+        const totalLoanBalance = await getAllLoanRecordBalance(user._id.toString())
         return res.json({
             status:"Success",
             message:"savings balance calculated",
-            data: totalSavingsBalnce
+            data: {
+                totalSavingsBalnce,
+                totalLoanBalance
+            }
         })
     }catch(err:any){
         return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+}
+
+export const topUpLottryAccountController = async (req: Request, res: Response) =>{
+    try{
+        const {amount,pin, remark} = req.body ;
+         const user = req.user as IUser;
+        // validate transaction pin to procced
+        if(pin.toString() !== user.pin.toString()){
+            return res.json({
+                status: "Failed",
+                message: "Transaction pin is incorrect enter the correct pin",
+            });
+        }
+        //check if user avaliableBalance is greater than the amount
+        if (amount > user.availableBalance) {
+            return res.json({
+                status: "Failed",
+                message: "insufficient fund",
+            });
+        }
+        const foundKYC = await getUserKyc1Record(user._id.toString()) ;
+        let bankCode = foundKYC.bankCode ;
+        let accountNumber = foundKYC.accountNumber.toString() ;
+        let accountName = foundKYC.accountDetails
+        const payment = await payOut(
+            user,
+            bankCode,
+            amount.toString(),
+            accountNumber,
+            accountName,
+        );
+        
+        //withdraw money from  user availiable
+        await userWithdraw(user._id.toString(), amount,remark, payment.data.transaction_reference,)
+        // also create TerminalTransaction record 
+        const terminalRecord = await createTerminalRecord(user._id.toString(), amount,payment.data.transaction_reference,remark) ;
+        await depositToTerminalAccount(user._id.toString(),amount) ;
+        return res.json({
+            status:"Success",
+            message:"terminal credited successfully",
+            data:terminalRecord
+        })
+    }catch(err:any){
+         return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+}
+
+export const getTerminalDetailsController = async (req: Request, res: Response) =>{
+    try{
+        const user = req.user as IUser 
+        const details = await getTerminalDetails(user._id.toString());
+        return  res.json({
+            status:"Success",
+            message: "found details",
+            data: details 
+        })
+    }catch(err:any){
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+}
+export const getTerminalTransactionController = async (req: Request, res: Response) =>{
+    try{
+        const user = req.user as IUser ;
+        const foundRecords = await getTerminalTransaction(user._id.toString()) ;
+        return res.json({
+            status:"Success",
+            message:"found records",
+            data: foundRecords
+        })
+    }catch(err:any){
+         return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+}
+export const getSingleTerminalTransactionController = async (req: Request, res: Response) =>{
+    try{
+        const {id} = req.params ;
+        const foundRecord = await getSingleTerminalTransaction(id) ;
+        return res.json({
+            status:"Success",
+            message:"found Transaction",
+            data: foundRecord
+        })
+    }catch(err:any){
+       return res.json({
             status: "Failed",
             message: err.message,
         });

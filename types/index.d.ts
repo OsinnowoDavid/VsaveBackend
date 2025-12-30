@@ -31,6 +31,20 @@ declare interface IVerificationToken extends Document {
     updatedAt?: Date;
 }
 
+
+declare interface IAdmin extends Document {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber?: string;
+  password: string;
+  role: "SUPER ADMIN" | "REGIONAL ADMIN" | "SUBREGIONAL ADMIN";
+  region?: string[];
+  subRegion?: string[];
+  profilePicture?: string;
+}
+
+
 declare interface ISuperAdmin extends Document {
     _id: Types.ObjectId;
     firstName: string;

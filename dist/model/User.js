@@ -45,6 +45,10 @@ const userSchema = new Schema({
         type: Number,
         default: 0,
     },
+    bonusBalance: {
+        type: Number,
+        default: 0
+    },
     subRegion: {
         type: mongoose_1.default.Schema.Types.ObjectId,
         ref: "SubRegion",
@@ -66,6 +70,8 @@ const userSchema = new Schema({
     },
     virtualAccountNumber: {
         type: String,
+        sparse: true,
+        unique: true,
     },
     pin: {
         type: String,
@@ -73,6 +79,12 @@ const userSchema = new Schema({
     kycStatus: {
         type: Boolean,
         default: false,
+    },
+    lottoryId: {
+        type: String
+    },
+    lastSeen: {
+        type: String
     },
 }, { timestamps: true });
 const User = mongoose_1.default.model("User", userSchema);

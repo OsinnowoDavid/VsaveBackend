@@ -14,9 +14,10 @@ router.get("/profile", JWT_1.verifySuperAdminToken, Admin_1.superAdminProfileCon
 // get index info
 router.post("/create-region", JWT_1.verifySuperAdminToken, Admin_1.createNewRegionController);
 router.post("/create-regional-admin", JWT_1.verifySuperAdminToken, Admin_1.createRegionalAdminController);
+router.post("/assign-regionaladmin-to-region", JWT_1.verifySuperAdminToken, Admin_1.assignRegionalAdminToRegionController);
 router.get("/get-all-regional-admin", JWT_1.verifySuperAdminToken, Admin_1.getAllRegionalAdminController);
-router.post("/get-all-region", JWT_1.verifySuperAdminToken, Admin_1.getAllRegionController);
-router.get("/get-regional-admin", JWT_1.verifySuperAdminToken, Admin_1.getRegionalAdminByEmailController);
+router.get("/get-all-region", JWT_1.verifySuperAdminToken, Admin_1.getAllRegionController);
+router.get("/get-regional-admin/:email", JWT_1.verifySuperAdminToken, Admin_1.getRegionalAdminByEmailController);
 router.post("/set-saving-config", JWT_1.verifySuperAdminToken, Admin_1.setAdminConfigController);
 router.get("/get-savings-config", JWT_1.verifySuperAdminToken, Admin_1.getAdminConfigController);
 // get all loan record

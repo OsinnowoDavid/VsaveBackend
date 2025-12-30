@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import argon from "argon2";
 import {
-    CreateSuperAdmin,
+    CreateAdmin,
     getAllSuperAdminByEmail,
     createRegionalAdmin,
     createNewRegion,
@@ -13,20 +13,26 @@ import {
     assignRegionalAdmin,
     setAdminSavingsConfig,
     getAdminSavingsConfig,
+    getRegionalAdmins,
+    assignRegionalAdminToRegions,
 } from "../services/Admin";
 import { signUserToken } from "../config/JWT";
 import {getAllLoanRecord,getLoanRecordByStatus,approveOrRejectLoan} from "../services/Loan" ;
+import Admin from "../model/Regionaladmin";
+import { IAdmin } from "../../types";
 
 export const registerAdminController = async (req: Request, res: Response) => {
     try {
-        const { firstName, lastName, email, phoneNumber, password } = req.body;
+        const { firstName, lastName, email, phoneNumber, password, role , profilePicture} = req.body;
         let hashPassword = await argon.hash(password);
-        const newAdmin = await CreateSuperAdmin(
+        const newAdmin = await CreateAdmin(
             firstName,
             lastName,
             email,
             phoneNumber,
             hashPassword,
+            role,
+            profilePicture
         );
         if (!newAdmin) {
             return res.json({
@@ -127,7 +133,7 @@ export const createRegionalAdminController = async (
             email,
             phoneNumber,
             hashPassword,
-            region.toString(),
+            region,
             profilePicture,
         );
         if (!newRegionalAdmin) {
@@ -150,6 +156,31 @@ export const createRegionalAdminController = async (
         });
     }
 };
+
+export const assignRegionalAdminToRegionController = async  (
+    req: Request,
+    res: Response,
+) => {
+    try{
+        const {regionalAdmin,region} = req.body ; 
+
+    const foundAdmin = await Admin.findById(regionalAdmin) as IAdmin
+    
+    const assignRegion = await assignRegionalAdmin(regionalAdmin, region); 
+     const assignRegionalAdminToRegion = await assignRegionalAdminToRegions(region,regionalAdmin) ;
+
+     return res.json({
+        status: "Success",
+        message: "admin assigned to region"
+     })
+
+    }catch(err:any){
+         return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+}
 
 export const createNewRegionController = async (
     req: Request,
@@ -226,13 +257,46 @@ export const getAllRegionalAdminController = async (
     }
 };
 
+export const getRegionalAdminsController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const {region} = req.body
+        const allRegionalAdmin = await getRegionalAdmins(region);
+        if (!allRegionalAdmin) {
+            return res.json({
+                status: "Failed",
+                message: "No Region Found",
+            });
+        }
+
+        return res.json({
+            status: "Success",
+            message: "Region Found",
+            data: allRegionalAdmin,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+
+
 export const getRegionalAdminByEmailController = async (
     req: Request,
     res: Response,
 ) => {
     try {
         const { email } = req.params;
-        const foundRegionalAdmin = await getRegionalAdminByEmail(email);
+        const foundRegionalAdmin = await getRegionalAdminByEmail(email); 
+          return res.json({
+            status: "Success",
+            message: "Regional admin Found",
+            data: foundRegionalAdmin,
+        });
     } catch (err: any) {
         return res.json({
             status: "Failed",
@@ -249,6 +313,7 @@ export const setAdminConfigController = async (req: Request, res: Response) => {
             loanPenaltyFee,
             fixedSavingsAnualInterest,
             fixedSavingsPenaltyFee,
+            terminalBonus
         } = req.body;
         const config = await setAdminSavingsConfig(
             defaultPenaltyFee,
@@ -256,6 +321,7 @@ export const setAdminConfigController = async (req: Request, res: Response) => {
             loanPenaltyFee,
             fixedSavingsAnualInterest,
             fixedSavingsPenaltyFee,
+            terminalBonus
         );
         if (!config) {
             return res.json({
