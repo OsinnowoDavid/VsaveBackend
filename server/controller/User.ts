@@ -1425,7 +1425,7 @@ export const topUpLottryAccountController = async (req: Request, res: Response) 
          if(!user.lottoryId){
              return res.json({
                 status: "Failed",
-                message: "not a lotto user ",
+                message: "not a lotto user",
             });
          }
         // validate transaction pin to procced
