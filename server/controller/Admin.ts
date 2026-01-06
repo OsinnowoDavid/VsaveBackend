@@ -15,12 +15,41 @@ import {
     getAdminSavingsConfig,
     getRegionalAdmins,
     assignRegionalAdminToRegions,
+    getRegionById,
+    getSubRegionById,
+    createAdminPassword,
+    getAdminByEmail,
 } from "../services/Admin";
 import { signUserToken } from "../config/JWT";
 import {getAllLoanRecord,getLoanRecordByStatus,approveOrRejectLoan} from "../services/Loan" ;
 import Admin from "../model/Regionaladmin";
 import { IAdmin } from "../../types";
+import SGMail from "@sendgrid/mail";
+const getAdminRegionsOrsubregions = async (admin:string) =>{
+    try{
+        const foundAdmin = await Admin.findById(admin) as IAdmin ; 
+        let result = {
+            regionNames: [],
+            subRegionNames:[]
+        } as any
+        if(foundAdmin.region){
+            for(const region of foundAdmin.region){
+                let foundRegion = await getRegionById(region) ;
+                result.regionNames.push(foundRegion.regionName)
+            }
+        } 
 
+         if(foundAdmin.subRegion){
+            for(const subRegion of foundAdmin.subRegion){
+                let foundSubRegion = await getSubRegionById(subRegion) ;
+                result.subRegionNames.push(foundSubRegion.subRegionName)
+            }
+        }
+        return result 
+    }catch(err:any){
+        throw err
+    }
+}
 export const registerAdminController = async (req: Request, res: Response) => {
     try {
         const { firstName, lastName, email, phoneNumber, password, role , profilePicture} = req.body;
@@ -30,7 +59,6 @@ export const registerAdminController = async (req: Request, res: Response) => {
             lastName,
             email,
             phoneNumber,
-            hashPassword,
             role,
             profilePicture
         );
@@ -39,7 +67,28 @@ export const registerAdminController = async (req: Request, res: Response) => {
                 status: "Failed",
                 message: "something went wrong, try again later",
             });
-        }
+        } 
+        const tokenNumber = Math.floor(100000 + Math.random() * 900000); 
+        newAdmin.verificationCode = tokenNumber ;
+        await newAdmin.save() ;
+        // Send email
+        const msg = {
+            to: newAdmin.email,
+            from: `David <danyboy99official@gmail.com>`,
+            subject: "Welcome to VSAVE Admin Panel🎉",
+            html: `Dear [First Name],
+                    Welcome aboard! We’re thrilled to have you as part of the GVC admin team. 
+                    As a ${newAdmin.role}, you’ll play a crucial role in managing and overseeing your designated area.
+                    below is your token to create a login password : ${tokenNumber}
+                    your profile details 
+                    FullNAme: ${newAdmin.firstName} ${newAdmin.lastName} 
+                    email: ${newAdmin.email},
+                    phoneNumber: ${newAdmin.phoneNumber} 
+                    role: ${newAdmin.role}
+    
+          — The VSave Team.`,
+        };
+        const sentMail = await SGMail.send(msg);
         return res.json({
             Status: "success",
             message: "SuperAdmin Account created successfuly",
@@ -52,7 +101,37 @@ export const registerAdminController = async (req: Request, res: Response) => {
         });
     }
 };
-
+export const createAdminPasswordController = async (req: Request, res: Response) => {
+    try{
+        const{code,email,password} = req.body ;
+        const foundAdmin = await getAdminByEmail(email) ;
+         let hashPassword = await argon.hash(password);
+        if(!foundAdmin){
+            return res.json({
+                status:"Failed",
+                message:"no admin found with this email"
+            })
+        }
+        // first verify code 
+        if(foundAdmin.verificationCode !== Number(code)){
+            return res.json({
+                status:"Failed",
+                message:"Incorrect verification token"
+            })
+        } 
+        let createPassword = await createAdminPassword(foundAdmin._id.toString(),hashPassword) 
+        return res.json({
+                status:"Success",
+                message:"Password created",
+                data: createPassword
+            })
+    }catch(err:any){
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+}
 export const LoginSuperAdminController = async (
     req: Request,
     res: Response,

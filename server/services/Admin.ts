@@ -1,6 +1,7 @@
 import Admin from "../model/Admin";
 import RegionalAdmin from "../model/Regionaladmin";
 import Region from "../model/Region";
+import SubRegion from "../model/SubRegion";
 import { ISuperAdmin } from "../../types";
 import AdminConfig from "../model/Admin_config";
 export const CreateAdmin = async (
@@ -8,7 +9,6 @@ export const CreateAdmin = async (
     lastName: string,
     email: string,
     phoneNumber: string,
-    password: string,
     role: string,
     profilePicture?: string,
 ) => {
@@ -19,7 +19,6 @@ export const CreateAdmin = async (
             lastName,
             email,
             phoneNumber,
-            password,
             role,
             profilePicture,
         });
@@ -37,7 +36,14 @@ export const getAdminById = async (id: string) => {
         throw err;
     }
 };
-
+export const getAdminByEmail = async (email: string) => {
+    try {
+        const foundAdmin = await Admin.findOne({ email});
+        return foundAdmin;
+    } catch (err: any) {
+        throw err;
+    }
+};
 export const getAllSuperAdminByEmail = async (email: string) => {
     try {
         const foundAdmin = await Admin.findOne({ email, role: "SUPER ADMIN" });
@@ -46,7 +52,17 @@ export const getAllSuperAdminByEmail = async (email: string) => {
         throw err;
     }
 };
-
+export const createAdminPassword = async (admin:string,password:string) =>{
+    try{
+        const foundAdmin = await Admin.findById(admin) ;
+        foundAdmin.password = password ; 
+        foundAdmin.isEmailVerified = true ;
+        await foundAdmin.save() ;
+        return foundAdmin
+    }catch(err:any){
+        throw err 
+    }
+}
 export const createNewRegion = async (
     regionName: string,
     shortCode: string,
@@ -182,7 +198,14 @@ export const getRegionByName = async (regionName: string) => {
         throw err;
     }
 };
-
+export const getRegionById = async (id:string) =>{
+    try{
+            const foundRecord = await Region.findById(id) ;
+            return foundRecord
+    }catch(err:any){
+        throw err
+    }
+}
 export const setAdminSavingsConfig = async (
     defaultPenaltyFee: string,
     firstTimeAdminFee: string,
@@ -271,3 +294,11 @@ export const createSubRegionalAdmin = async (  firstName: string,
             throw err
         }
     }
+export const getSubRegionById = async (id:string) =>{
+    try{
+        const foundRecord = await SubRegion.findById(id) ;
+        return foundRecord
+    }catch(err:any){
+        throw err
+    }
+}

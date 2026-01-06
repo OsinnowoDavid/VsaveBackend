@@ -24,6 +24,10 @@ const AdminSchema = new mongoose_1.default.Schema({
     password: {
         type: String,
     },
+    isEmailVerified: {
+        type: Boolean,
+        default: false,
+    },
     role: {
         type: String,
         enum: ["SUPER ADMIN", "REGIONAL ADMIN", "SUBREGIONAL ADMIN"],
@@ -33,6 +37,9 @@ const AdminSchema = new mongoose_1.default.Schema({
     subRegion: [String],
     profilePicture: {
         type: String
+    },
+    verificationCode: {
+        type: Number
     }
 }, { timestamps: true });
 const Admin = mongoose_1.default.model("Admin", AdminSchema);

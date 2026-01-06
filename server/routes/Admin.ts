@@ -10,7 +10,8 @@ import {
     getRegionalAdminByEmailController,
     setAdminConfigController,
     getAdminConfigController,
-    assignRegionalAdminToRegionController
+    assignRegionalAdminToRegionController,
+    createAdminPasswordController
 } from "../controller/Admin";
 import { verifySuperAdminToken } from "../config/JWT";
 import { validateAdminRegistrationInput } from "../validate-input/admin/index";
@@ -22,7 +23,7 @@ router.post(
     validateAdminRegistrationInput,
     registerAdminController,
 );
-
+router.post("/create-password", createAdminPasswordController)
 router.post("/login", LoginSuperAdminController);
 
 router.get("/profile", verifySuperAdminToken, superAdminProfileController);

@@ -20,6 +20,10 @@ const AdminSchema = new mongoose.Schema({
     password:{
         type:String,
     },
+    isEmailVerified: {
+            type: Boolean,
+            default: false,
+        },
     role:{
         type:String,
         enum:["SUPER ADMIN","REGIONAL ADMIN","SUBREGIONAL ADMIN"],
@@ -29,6 +33,9 @@ const AdminSchema = new mongoose.Schema({
     subRegion:[String],
     profilePicture: {
       type: String
+    },
+    verificationCode:{
+        type:Number
     }
 },
 {timestamps:true}

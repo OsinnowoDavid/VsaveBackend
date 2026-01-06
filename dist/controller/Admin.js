@@ -3,23 +3,70 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.approveOrRejectLoanController = exports.getLoanRecordByStatusController = exports.getAllLoanRecordController = exports.getAdminConfigController = exports.setAdminConfigController = exports.getRegionalAdminByEmailController = exports.getRegionalAdminsController = exports.getAllRegionalAdminController = exports.getAllRegionController = exports.createNewRegionController = exports.assignRegionalAdminToRegionController = exports.createRegionalAdminController = exports.superAdminProfileController = exports.LoginSuperAdminController = exports.registerAdminController = void 0;
+exports.approveOrRejectLoanController = exports.getLoanRecordByStatusController = exports.getAllLoanRecordController = exports.getAdminConfigController = exports.setAdminConfigController = exports.getRegionalAdminByEmailController = exports.getRegionalAdminsController = exports.getAllRegionalAdminController = exports.getAllRegionController = exports.createNewRegionController = exports.assignRegionalAdminToRegionController = exports.createRegionalAdminController = exports.superAdminProfileController = exports.LoginSuperAdminController = exports.createAdminPasswordController = exports.registerAdminController = void 0;
 const argon2_1 = __importDefault(require("argon2"));
 const Admin_1 = require("../services/Admin");
 const JWT_1 = require("../config/JWT");
 const Loan_1 = require("../services/Loan");
 const Regionaladmin_1 = __importDefault(require("../model/Regionaladmin"));
+const mail_1 = __importDefault(require("@sendgrid/mail"));
+const getAdminRegionsOrsubregions = async (admin) => {
+    try {
+        const foundAdmin = await Regionaladmin_1.default.findById(admin);
+        let result = {
+            regionNames: [],
+            subRegionNames: []
+        };
+        if (foundAdmin.region) {
+            for (const region of foundAdmin.region) {
+                let foundRegion = await (0, Admin_1.getRegionById)(region);
+                result.regionNames.push(foundRegion.regionName);
+            }
+        }
+        if (foundAdmin.subRegion) {
+            for (const subRegion of foundAdmin.subRegion) {
+                let foundSubRegion = await (0, Admin_1.getSubRegionById)(subRegion);
+                result.subRegionNames.push(foundSubRegion.subRegionName);
+            }
+        }
+        return result;
+    }
+    catch (err) {
+        throw err;
+    }
+};
 const registerAdminController = async (req, res) => {
     try {
         const { firstName, lastName, email, phoneNumber, password, role, profilePicture } = req.body;
         let hashPassword = await argon2_1.default.hash(password);
-        const newAdmin = await (0, Admin_1.CreateAdmin)(firstName, lastName, email, phoneNumber, hashPassword, role, profilePicture);
+        const newAdmin = await (0, Admin_1.CreateAdmin)(firstName, lastName, email, phoneNumber, role, profilePicture);
         if (!newAdmin) {
             return res.json({
                 status: "Failed",
                 message: "something went wrong, try again later",
             });
         }
+        const tokenNumber = Math.floor(100000 + Math.random() * 900000);
+        newAdmin.verificationCode = tokenNumber;
+        await newAdmin.save();
+        // Send email
+        const msg = {
+            to: newAdmin.email,
+            from: `David <danyboy99official@gmail.com>`,
+            subject: "Welcome to VSAVE Admin Panel🎉",
+            html: `Dear [First Name],
+                    Welcome aboard! We’re thrilled to have you as part of the GVC admin team. 
+                    As a ${newAdmin.role}, you’ll play a crucial role in managing and overseeing your designated area.
+                    below is your token to create a login password : ${tokenNumber}
+                    your profile details 
+                    FullNAme: ${newAdmin.firstName} ${newAdmin.lastName} 
+                    email: ${newAdmin.email},
+                    phoneNumber: ${newAdmin.phoneNumber} 
+                    role: ${newAdmin.role}
+    
+          — The VSave Team.`,
+        };
+        const sentMail = await mail_1.default.send(msg);
         return res.json({
             Status: "success",
             message: "SuperAdmin Account created successfuly",
@@ -34,6 +81,39 @@ const registerAdminController = async (req, res) => {
     }
 };
 exports.registerAdminController = registerAdminController;
+const createAdminPasswordController = async (req, res) => {
+    try {
+        const { code, email, password } = req.body;
+        const foundAdmin = await (0, Admin_1.getAdminByEmail)(email);
+        let hashPassword = await argon2_1.default.hash(password);
+        if (!foundAdmin) {
+            return res.json({
+                status: "Failed",
+                message: "no admin found with this email"
+            });
+        }
+        // first verify code 
+        if (foundAdmin.verificationCode !== Number(code)) {
+            return res.json({
+                status: "Failed",
+                message: "Incorrect verification token"
+            });
+        }
+        let createPassword = await (0, Admin_1.createAdminPassword)(foundAdmin._id.toString(), hashPassword);
+        return res.json({
+            status: "Success",
+            message: "Password created",
+            data: createPassword
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.createAdminPasswordController = createAdminPasswordController;
 const LoginSuperAdminController = async (req, res) => {
     try {
         const { email, password } = req.body;
