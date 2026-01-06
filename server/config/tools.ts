@@ -312,3 +312,18 @@ export function getEndTimeFromSecondsLive(seconds: number): Date {
   const endTime = new Date(now.getTime() + adjustedSeconds * 1000);
   return endTime;
 }
+
+export const generateReferralRefrenceCode = (type:"AGENT"|"USER") => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let code = "";
+    for (let i = 0; i < 7; i++) {
+        const randomIndex = Math.floor(Math.random() * chars.length);
+        code += chars[randomIndex];
+    }
+    if(type === "AGENT"){
+     return `A_${code}`;
+    }
+    if(type === "USER"){
+         return `U_${code}`;
+    }
+};

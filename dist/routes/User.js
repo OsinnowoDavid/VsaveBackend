@@ -57,4 +57,8 @@ router.post("/deposit-to-terminal", JWT_1.verifyUserToken, User_1.topUpLottryAcc
 router.get("/get-terminal-details", JWT_1.verifyUserToken, User_1.getTerminalDetailsController);
 router.get("/get-terminal-transaction", JWT_1.verifyUserToken, User_1.getTerminalTransactionController);
 router.get("/get-single-terminal-transaction", JWT_1.verifyUserToken, User_1.getSingleTerminalTransactionController);
+router.get("/get-referral-record", JWT_1.verifyUserToken, User_1.checkUserReferralRecordsController);
+router.get("/get-referral-by-status/:status", JWT_1.verifyUserToken, User_1.checkUserReferralRecordsByStatusController);
+router.get("/get-single-referral/:id", JWT_1.verifyUserToken, User_1.checkUserSingleReferralRecordController);
+router.get("/assign-referral", User_1.assignReferralCodeToExistingUserController);
 exports.default = router;

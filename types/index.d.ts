@@ -52,7 +52,7 @@ declare interface ISuperAdmin extends Document {
     lastName: string;
     email: string;
     phoneNumber?: string;
-    password: string;
+    password?: string;
     profilePicture?: string | null | undefined;
 }
 

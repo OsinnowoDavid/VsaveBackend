@@ -10,6 +10,9 @@ const userReferralSchema = new mongoose_1.default.Schema({
         ref: "User", // Reference to your User model
         required: true,
     },
+    referralCode: {
+        type: String
+    },
     bonusAmount: {
         type: Number,
     },
@@ -35,6 +38,13 @@ const userReferralSchema = new mongoose_1.default.Schema({
             type: Boolean,
             default: false
         },
+    },
+    depositedToAvaliableBalnace: {
+        type: Boolean,
+        default: false
+    },
+    depositedToAvaliableBalnaceDate: {
+        type: Date,
     }
 }, { timestamps: true });
 const userReferral = mongoose_1.default.model("user_referral", userReferralSchema);

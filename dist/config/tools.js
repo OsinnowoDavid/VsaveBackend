@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.checkIfContributionIsCompleted = exports.isPastTomorrow = exports.isPastYesterday = exports.generateLoanRefrenceCode = exports.generateSavingsRefrenceCode = exports.generateLottoryRefrenceCode = exports.generateRefrenceCode = void 0;
+exports.generateReferralRefrenceCode = exports.checkIfContributionIsCompleted = exports.isPastTomorrow = exports.isPastYesterday = exports.generateLoanRefrenceCode = exports.generateSavingsRefrenceCode = exports.generateLottoryRefrenceCode = exports.generateRefrenceCode = void 0;
 exports.calculateEndDate = calculateEndDate;
 exports.calculateMaturityAmount = calculateMaturityAmount;
 exports.getDayName = getDayName;
@@ -258,3 +258,18 @@ function getEndTimeFromSecondsLive(seconds) {
     const endTime = new Date(now.getTime() + adjustedSeconds * 1000);
     return endTime;
 }
+const generateReferralRefrenceCode = (type) => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let code = "";
+    for (let i = 0; i < 7; i++) {
+        const randomIndex = Math.floor(Math.random() * chars.length);
+        code += chars[randomIndex];
+    }
+    if (type === "AGENT") {
+        return `A_${code}`;
+    }
+    if (type === "USER") {
+        return `U_${code}`;
+    }
+};
+exports.generateReferralRefrenceCode = generateReferralRefrenceCode;

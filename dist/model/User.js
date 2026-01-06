@@ -86,6 +86,7 @@ const userSchema = new Schema({
     lastSeen: {
         type: String
     },
+    referralCode: String
 }, { timestamps: true });
 const User = mongoose_1.default.model("User", userSchema);
 exports.default = User;

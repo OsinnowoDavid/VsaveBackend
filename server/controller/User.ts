@@ -78,7 +78,8 @@ import {
      getTerminalDetails,
      getTerminalTransaction,
      getSingleTerminalTransaction,
-    } from "../services/Terminal"
+    } from "../services/Terminal" ;
+    import {assignReferral,createReferralCodeForUser,getAllUserReferralRecord,getUserReferralByStatus,getSingleReferralRecord,assignReferralCodeToExistingUser} from "../services/referral"
 const QOREID_API_KEY = process.env.QOREID_SECRET_KEY as string;
 const QOREID_BASE_URL = process.env.QOREID_BASE_URL as string;
 
@@ -90,10 +91,6 @@ const getNextFiveMinutes = () => {
 };
 
 export const registerUser = async (req: Request, res: Response) => {
-    console.log("=== REGISTER REQUEST ===");
-    console.log("Headers:", req.headers);
-    console.log("Body received:", req.body);
-    
     try {
         const {
             firstName,
@@ -106,28 +103,6 @@ export const registerUser = async (req: Request, res: Response) => {
             referralCode,
         } = req.body;
 
-        // Log each field
-        console.log("Parsed fields:", {
-            firstName,
-            lastName,
-            email,
-            password: password ? "[HIDDEN]" : "MISSING",
-            gender,
-            dateOfBirth,
-            phoneNumber,
-            referralCode,
-        });
-
-        // Validate required fields
-        if (!firstName || !lastName || !email || !password) {
-            console.log("Missing required fields");
-            return res.status(400).json({
-                status: "Failed",
-                message: "First name, last name, email, and password are required"
-            });
-        }
-
-        console.log("Hashing password...");
         let hashPassword = await argon.hash(password);
          const foundUser = await getUserByEmail(email) ;
                 if(foundUser){
@@ -146,8 +121,6 @@ export const registerUser = async (req: Request, res: Response) => {
             phoneNumber,
         );
         
-        console.log("User creation result:", newUser ? "Success" : "Failed");
-        
         if (!newUser) {
             console.log("User creation returned null/undefined");
             return res.status(500).json({
@@ -156,18 +129,11 @@ export const registerUser = async (req: Request, res: Response) => {
             });
         }
 
-        console.log("Generated user ID:", newUser.id || newUser._id);
-
         // Send verification code
         const tokenNumber = Math.floor(100000 + Math.random() * 900000);
-        console.log("Generated token:", tokenNumber);
-
         const expTime = getNextFiveMinutes();
         console.log("Token expiry:", expTime);
-
-        console.log("Assigning verification token...");
-        let token;
-        token = await assignUserEmailVerificationToken(
+       let token = await assignUserEmailVerificationToken(
             email,
             tokenNumber,
             expTime,
@@ -184,7 +150,6 @@ export const registerUser = async (req: Request, res: Response) => {
         console.log("Verification token assigned");
 
         // Send email
-        console.log("Preparing to send email to:", email);
         const msg = {
             to: newUser.email,
             from: `David <danyboy99official@gmail.com>`,
@@ -203,10 +168,13 @@ export const registerUser = async (req: Request, res: Response) => {
 
         // Assign referral code
         console.log("Assigning referral code...");
-        await assignAgentReferral(referralCode, newUser);
-        console.log("Referral assigned");
-
-        console.log("=== REGISTRATION COMPLETE ===");
+        await assignAgentReferral(referralCode, newUser); 
+        // check for referral code 
+        if(referralCode){
+            await assignReferral(newUser._id.toString(), referralCode) 
+        } 
+        // generate referral code 
+        await createReferralCodeForUser(newUser._id.toString())
         return res.json({
             status: "Success",
             message: `User created successfully. Verify your email - verification code has been sent to ${newUser.email} (also check your spam meesage for the code )`,
@@ -1541,3 +1509,70 @@ export const getSingleTerminalTransactionController = async (req: Request, res: 
     }
 }
 
+export const checkUserReferralRecordsController = async (req: Request, res: Response) =>{
+    try{
+        const user = req.user as IUser ;
+        const allRecords = await getAllUserReferralRecord(user._id.toString()) ;
+         return res.json({
+            status:"Success",
+            message:"Found Records",
+            data: allRecords
+        })
+    }catch(err:any){
+         return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+}
+
+export const checkUserReferralRecordsByStatusController = async (req: Request, res: Response) =>{
+    try{
+        const user = req.user as IUser ;
+        const {status} = req.params
+        const allRecords = await getUserReferralByStatus(user._id.toString(),status) ;
+         return res.json({
+            status:"Success",
+            message:"Found Records",
+            data: allRecords
+        })
+    }catch(err:any){
+         return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+}
+
+export const checkUserSingleReferralRecordController = async (req: Request, res: Response) =>{
+    try{
+        const {id} = req.params
+        const foundRecord = await getSingleReferralRecord(id) ;
+         return res.json({
+            status:"Success",
+            message:"Found Record",
+            data: foundRecord
+        })
+    }catch(err:any){
+         return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+} 
+
+export const assignReferralCodeToExistingUserController = async (req: Request, res: Response) =>{
+    try{
+        let task = await assignReferralCodeToExistingUser()
+         return res.json({
+            status:"Success",
+            message:"task completed",
+            data: task
+        })
+    }catch(err:any){
+         return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+}

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getSingleTerminalTransactionController = exports.getTerminalTransactionController = exports.getTerminalDetailsController = exports.topUpLottryAccountController = exports.getUserTotalSavingsAndLoanBalanceController = exports.getFixedSavingsByStatusController = exports.getAllFixedSavingsController = exports.getCompletedFixedSavingsController = exports.getActiveFixedSavingsController = exports.createFixedSavingController = exports.getUserSavingsRecordsByStatusController = exports.getSavingsCircleByIdController = exports.getAllUserSavingsRecordController = exports.getUserActiveSavingsRecordController = exports.getAvaliableSavingsController = exports.createPersonalSavingsCircleController = exports.joinSavingsController = exports.userGetAllSubRegionController = exports.getUserTransactionByTypeController = exports.getUserTransactionByStatusController = exports.getUserSingleTransactionController = exports.getUserTransactionsController = exports.payOutController = exports.accountLookUpController = exports.getBankCodeController = exports.buyDataController = exports.buyAirtimeController = exports.getDataPlanController = exports.updateTransactionPinController = exports.createTransactionPinController = exports.getUserKyc1RecordController = exports.updateKYC1RecordController = exports.registerKYC1 = exports.changePasswordController = exports.updateProfileController = exports.userProfile = exports.loginUser = exports.resendUserVerificationEmail = exports.verifyEmail = exports.registerUser = void 0;
+exports.assignReferralCodeToExistingUserController = exports.checkUserSingleReferralRecordController = exports.checkUserReferralRecordsByStatusController = exports.checkUserReferralRecordsController = exports.getSingleTerminalTransactionController = exports.getTerminalTransactionController = exports.getTerminalDetailsController = exports.topUpLottryAccountController = exports.getUserTotalSavingsAndLoanBalanceController = exports.getFixedSavingsByStatusController = exports.getAllFixedSavingsController = exports.getCompletedFixedSavingsController = exports.getActiveFixedSavingsController = exports.createFixedSavingController = exports.getUserSavingsRecordsByStatusController = exports.getSavingsCircleByIdController = exports.getAllUserSavingsRecordController = exports.getUserActiveSavingsRecordController = exports.getAvaliableSavingsController = exports.createPersonalSavingsCircleController = exports.joinSavingsController = exports.userGetAllSubRegionController = exports.getUserTransactionByTypeController = exports.getUserTransactionByStatusController = exports.getUserSingleTransactionController = exports.getUserTransactionsController = exports.payOutController = exports.accountLookUpController = exports.getBankCodeController = exports.buyDataController = exports.buyAirtimeController = exports.getDataPlanController = exports.updateTransactionPinController = exports.createTransactionPinController = exports.getUserKyc1RecordController = exports.updateKYC1RecordController = exports.registerKYC1 = exports.changePasswordController = exports.updateProfileController = exports.userProfile = exports.loginUser = exports.resendUserVerificationEmail = exports.verifyEmail = exports.registerUser = void 0;
 const argon2_1 = __importDefault(require("argon2"));
 const Agent_1 = require("../services/Agent");
 const User_1 = require("../services/User");
@@ -15,6 +15,7 @@ const tools_1 = require("../config/tools");
 const Admin_config_1 = __importDefault(require("../model/Admin_config"));
 const Loan_1 = require("../services/Loan");
 const Terminal_1 = require("../services/Terminal");
+const referral_1 = require("../services/referral");
 const QOREID_API_KEY = process.env.QOREID_SECRET_KEY;
 const QOREID_BASE_URL = process.env.QOREID_BASE_URL;
 mail_1.default.setApiKey(process.env.SENDGRID_API_KEY);
@@ -24,31 +25,8 @@ const getNextFiveMinutes = () => {
     return next;
 };
 const registerUser = async (req, res) => {
-    console.log("=== REGISTER REQUEST ===");
-    console.log("Headers:", req.headers);
-    console.log("Body received:", req.body);
     try {
         const { firstName, lastName, email, password, gender, dateOfBirth, phoneNumber, referralCode, } = req.body;
-        // Log each field
-        console.log("Parsed fields:", {
-            firstName,
-            lastName,
-            email,
-            password: password ? "[HIDDEN]" : "MISSING",
-            gender,
-            dateOfBirth,
-            phoneNumber,
-            referralCode,
-        });
-        // Validate required fields
-        if (!firstName || !lastName || !email || !password) {
-            console.log("Missing required fields");
-            return res.status(400).json({
-                status: "Failed",
-                message: "First name, last name, email, and password are required"
-            });
-        }
-        console.log("Hashing password...");
         let hashPassword = await argon2_1.default.hash(password);
         const foundUser = await (0, User_1.getUserByEmail)(email);
         if (foundUser) {
@@ -58,7 +36,6 @@ const registerUser = async (req, res) => {
             });
         }
         const newUser = await (0, User_1.createNewUser)(firstName, lastName, email.toLowerCase(), hashPassword, gender, dateOfBirth, phoneNumber);
-        console.log("User creation result:", newUser ? "Success" : "Failed");
         if (!newUser) {
             console.log("User creation returned null/undefined");
             return res.status(500).json({
@@ -66,15 +43,11 @@ const registerUser = async (req, res) => {
                 message: "Failed to create user, please try again later",
             });
         }
-        console.log("Generated user ID:", newUser.id || newUser._id);
         // Send verification code
         const tokenNumber = Math.floor(100000 + Math.random() * 900000);
-        console.log("Generated token:", tokenNumber);
         const expTime = getNextFiveMinutes();
         console.log("Token expiry:", expTime);
-        console.log("Assigning verification token...");
-        let token;
-        token = await (0, User_1.assignUserEmailVerificationToken)(email, tokenNumber, expTime);
+        let token = await (0, User_1.assignUserEmailVerificationToken)(email, tokenNumber, expTime);
         if (!token) {
             console.log("Failed to generate verification token");
             return res.status(500).json({
@@ -84,7 +57,6 @@ const registerUser = async (req, res) => {
         }
         console.log("Verification token assigned");
         // Send email
-        console.log("Preparing to send email to:", email);
         const msg = {
             to: newUser.email,
             from: `David <danyboy99official@gmail.com>`,
@@ -102,8 +74,12 @@ const registerUser = async (req, res) => {
         // Assign referral code
         console.log("Assigning referral code...");
         await (0, Agent_1.assignAgentReferral)(referralCode, newUser);
-        console.log("Referral assigned");
-        console.log("=== REGISTRATION COMPLETE ===");
+        // check for referral code 
+        if (referralCode) {
+            await (0, referral_1.assignReferral)(newUser._id.toString(), referralCode);
+        }
+        // generate referral code 
+        await (0, referral_1.createReferralCodeForUser)(newUser._id.toString());
         return res.json({
             status: "Success",
             message: `User created successfully. Verify your email - verification code has been sent to ${newUser.email} (also check your spam meesage for the code )`,
@@ -1209,3 +1185,75 @@ const getSingleTerminalTransactionController = async (req, res) => {
     }
 };
 exports.getSingleTerminalTransactionController = getSingleTerminalTransactionController;
+const checkUserReferralRecordsController = async (req, res) => {
+    try {
+        const user = req.user;
+        const allRecords = await (0, referral_1.getAllUserReferralRecord)(user._id.toString());
+        return res.json({
+            status: "Success",
+            message: "Found Records",
+            data: allRecords
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.checkUserReferralRecordsController = checkUserReferralRecordsController;
+const checkUserReferralRecordsByStatusController = async (req, res) => {
+    try {
+        const user = req.user;
+        const { status } = req.params;
+        const allRecords = await (0, referral_1.getUserReferralByStatus)(user._id.toString(), status);
+        return res.json({
+            status: "Success",
+            message: "Found Records",
+            data: allRecords
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.checkUserReferralRecordsByStatusController = checkUserReferralRecordsByStatusController;
+const checkUserSingleReferralRecordController = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const foundRecord = await (0, referral_1.getSingleReferralRecord)(id);
+        return res.json({
+            status: "Success",
+            message: "Found Record",
+            data: foundRecord
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.checkUserSingleReferralRecordController = checkUserSingleReferralRecordController;
+const assignReferralCodeToExistingUserController = async (req, res) => {
+    try {
+        let task = await (0, referral_1.assignReferralCodeToExistingUser)();
+        return res.json({
+            status: "Success",
+            message: "task completed",
+            data: task
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.assignReferralCodeToExistingUserController = assignReferralCodeToExistingUserController;

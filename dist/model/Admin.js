@@ -23,7 +23,6 @@ const AdminSchema = new mongoose_1.default.Schema({
     },
     password: {
         type: String,
-        required: true
     },
     role: {
         type: String,

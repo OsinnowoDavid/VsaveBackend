@@ -41,6 +41,10 @@ import {
     getTerminalDetailsController,
     getTerminalTransactionController,
     getSingleTerminalTransactionController,
+    checkUserReferralRecordsByStatusController,
+    checkUserReferralRecordsController,
+    checkUserSingleReferralRecordController,
+    assignReferralCodeToExistingUserController
 } from "../controller/User";
 import {
     validateUserRegitrationInput,
@@ -184,5 +188,9 @@ router.get("/totalSavingsAndLoanBalance", verifyUserToken, getUserTotalSavingsAn
 router.post("/deposit-to-terminal", verifyUserToken, topUpLottryAccountController) ;
 router.get("/get-terminal-details", verifyUserToken, getTerminalDetailsController);
 router.get("/get-terminal-transaction", verifyUserToken, getTerminalTransactionController) ; 
-router.get("/get-single-terminal-transaction",verifyUserToken,getSingleTerminalTransactionController) ;
+router.get("/get-single-terminal-transaction",verifyUserToken,getSingleTerminalTransactionController) ; 
+router.get("/get-referral-record",verifyUserToken,checkUserReferralRecordsController) ; 
+router.get("/get-referral-by-status/:status",verifyUserToken,checkUserReferralRecordsByStatusController) ; 
+router.get("/get-single-referral/:id",verifyUserToken,checkUserSingleReferralRecordController) ; 
+router.get("/assign-referral",assignReferralCodeToExistingUserController)
 export default router;

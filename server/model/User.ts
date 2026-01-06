@@ -85,6 +85,7 @@ const userSchema = new Schema(
         lastSeen:{
             type:String
         },
+        referralCode:String
     },
     { timestamps: true },
 );
