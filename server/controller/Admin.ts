@@ -79,7 +79,7 @@ export const registerAdminController = async (req: Request, res: Response) => {
             html: `Dear [First Name],
                     Welcome aboard! We’re thrilled to have you as part of the GVC admin team. 
                     As a ${newAdmin.role}, you’ll play a crucial role in managing and overseeing your designated area.
-                    below is your token to create a login password : ${tokenNumber}
+                    your token to create a login password : ${tokenNumber}
                     your profile details 
                     FullNAme: ${newAdmin.firstName} ${newAdmin.lastName} 
                     email: ${newAdmin.email},
@@ -127,6 +127,46 @@ export const createAdminPasswordController = async (req: Request, res: Response)
             })
     }catch(err:any){
         return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+} 
+export const resendVerificationCodeController = async (
+    req: Request,
+    res: Response,
+) => {
+    try{
+        const {email} = req.params ;
+        const foundAdmin = await getAdminByEmail(email) ;
+        if(!foundAdmin){
+            return res.json({
+                status:"Failed",
+                message:"no admin found with this email"
+            })
+        }
+         const tokenNumber = Math.floor(100000 + Math.random() * 900000); 
+        foundAdmin.verificationCode = tokenNumber ;
+        await foundAdmin.save() ;
+         // Send email
+        const msg = {
+            to: foundAdmin.email,
+            from: `David <danyboy99official@gmail.com>`,
+            subject: "Welcome to VSAVE Admin Panel🎉",
+            html: `Dear [First Name], 
+                    use the last token sent
+                    your token to create a login password : ${tokenNumber}
+                    your profile details 
+                    FullNAme: ${foundAdmin.firstName} ${foundAdmin.lastName} 
+                    email: ${foundAdmin.email},
+                    phoneNumber: ${foundAdmin.phoneNumber} 
+                    role: ${foundAdmin.role}
+    
+          — The VSave Team.`,
+        };
+        const sentMail = await SGMail.send(msg);
+    }catch(err:any){
+         return res.json({
             status: "Failed",
             message: err.message,
         });

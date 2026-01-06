@@ -11,7 +11,8 @@ import {
     setAdminConfigController,
     getAdminConfigController,
     assignRegionalAdminToRegionController,
-    createAdminPasswordController
+    createAdminPasswordController,
+    resendVerificationCodeController
 } from "../controller/Admin";
 import { verifySuperAdminToken } from "../config/JWT";
 import { validateAdminRegistrationInput } from "../validate-input/admin/index";
@@ -24,6 +25,7 @@ router.post(
     registerAdminController,
 );
 router.post("/create-password", createAdminPasswordController)
+router.post("/resend-verification-code", resendVerificationCodeController)
 router.post("/login", LoginSuperAdminController);
 
 router.get("/profile", verifySuperAdminToken, superAdminProfileController);
