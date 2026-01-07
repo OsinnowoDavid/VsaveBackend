@@ -19,7 +19,6 @@ const referral_1 = require("../services/referral");
 const QOREID_API_KEY = process.env.QOREID_SECRET_KEY;
 const QOREID_BASE_URL = process.env.QOREID_BASE_URL;
 mail_1.default.setApiKey(process.env.SENDGRID_API_KEY);
-console.log("sendgrid api key:", process.env.SENDGRID_API_KEY);
 const getNextFiveMinutes = () => {
     const now = new Date();
     const next = new Date(now.getTime() + 5 * 60 * 1000); // add 5 minutes

@@ -83,7 +83,6 @@ import {
 const QOREID_API_KEY = process.env.QOREID_SECRET_KEY as string;
 const QOREID_BASE_URL = process.env.QOREID_BASE_URL as string;
 SGMail.setApiKey(process.env.SENDGRID_API_KEY);
-console.log("sendgrid api key:", process.env.SENDGRID_API_KEY)
 const getNextFiveMinutes = () => {
     const now = new Date();
     const next = new Date(now.getTime() + 5 * 60 * 1000); // add 5 minutes
