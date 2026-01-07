@@ -152,7 +152,7 @@ export const registerUser = async (req: Request, res: Response) => {
         // Send email
         const msg = {
             to: newUser.email,
-            from: `David <danyboy99official@gmail.com>`,
+            from: `David <davidosinnowo1@gmail.com>`,
             subject: "Welcome to VSAVE 🎉",
             html: `Hello ${newUser.firstName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans. To get started, please verify your email using the code below:
            CODE : ${tokenNumber}
