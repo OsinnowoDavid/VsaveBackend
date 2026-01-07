@@ -10,6 +10,7 @@ const JWT_1 = require("../config/JWT");
 const Loan_1 = require("../services/Loan");
 const Regionaladmin_1 = __importDefault(require("../model/Regionaladmin"));
 const mail_1 = __importDefault(require("@sendgrid/mail"));
+mail_1.default.setApiKey(process.env.SENDGRID_API_KEY);
 const getAdminRegionsOrsubregions = async (admin) => {
     try {
         const foundAdmin = await Regionaladmin_1.default.findById(admin);

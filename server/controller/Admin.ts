@@ -25,6 +25,7 @@ import {getAllLoanRecord,getLoanRecordByStatus,approveOrRejectLoan} from "../ser
 import Admin from "../model/Regionaladmin";
 import { IAdmin } from "../../types";
 import SGMail from "@sendgrid/mail";
+SGMail.setApiKey(process.env.SENDGRID_API_KEY);
 const getAdminRegionsOrsubregions = async (admin:string) =>{
     try{
         const foundAdmin = await Admin.findById(admin) as IAdmin ; 
