@@ -8,7 +8,7 @@ const Admin_1 = require("../controller/Admin");
 const JWT_1 = require("../config/JWT");
 const index_1 = require("../validate-input/admin/index");
 const router = express_1.default.Router();
-router.post("/register", index_1.validateAdminRegistrationInput, Admin_1.registerAdminController);
+router.post("/register", JWT_1.verifySuperAdminToken, index_1.validateAdminRegistrationInput, Admin_1.registerAdminController);
 router.post("/create-password", Admin_1.createAdminPasswordController);
 router.post("/resend-verification-code", Admin_1.resendVerificationCodeController);
 router.post("/login", Admin_1.LoginSuperAdminController);

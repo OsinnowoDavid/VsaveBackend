@@ -53,7 +53,7 @@ const registerAdminController = async (req, res) => {
         // Send email
         const msg = {
             to: newAdmin.email,
-            from: `David <danyboy99official@gmail.com>`,
+            from: `David <davidosinnowo1@gmail.com>`,
             subject: "Welcome to VSAVE Admin Panel🎉",
             html: `Dear [First Name],
                     Welcome aboard! We’re thrilled to have you as part of the GVC admin team. 

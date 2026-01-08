@@ -1528,7 +1528,7 @@ export const checkUserReferralRecordsController = async (req: Request, res: Resp
 export const checkUserReferralRecordsByStatusController = async (req: Request, res: Response) =>{
     try{
         const user = req.user as IUser ;
-        const {status} = req.params
+        const {status} = req.params 
         const allRecords = await getUserReferralByStatus(user._id.toString(),status) ;
          return res.json({
             status:"Success",

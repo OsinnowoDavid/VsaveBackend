@@ -25,7 +25,7 @@ export const createUserReferral = async (user:string, referredUser:string) =>{
 
 export const getUserReferralByStatus = async (user:string, status:string) =>{
     try{
-        const foundRecord = await UserReferral.find({user,status}) ;
+        const foundRecord = await UserReferral.find({user,status}) ; 
         return foundRecord
     }catch(err:any){
         throw err 
