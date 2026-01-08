@@ -54,7 +54,6 @@ const getAdminRegionsOrsubregions = async (admin:string) =>{
 export const registerAdminController = async (req: Request, res: Response) => {
     try {
         const { firstName, lastName, email, phoneNumber, password, role , profilePicture} = req.body;
-        let hashPassword = await argon.hash(password);
         const newAdmin = await CreateAdmin(
             firstName,
             lastName,
