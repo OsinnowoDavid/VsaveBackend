@@ -77,7 +77,7 @@ export const registerAdminController = async (req: Request, res: Response) => {
             to: newAdmin.email,
             from: `David <davidosinnowo1@gmail.com>`,
             subject: "Welcome to VSAVE Admin Panel🎉",
-            html: `Dear [First Name],
+            html: `Dear ${newAdmin.firstName},
                     Welcome aboard! We’re thrilled to have you as part of the GVC admin team. 
                     As a ${newAdmin.role}, you’ll play a crucial role in managing and overseeing your designated area.
                     your token to create a login password : ${tokenNumber}
@@ -154,7 +154,7 @@ export const resendVerificationCodeController = async (
             to: foundAdmin.email,
             from: `David <danyboy99official@gmail.com>`,
             subject: "Welcome to VSAVE Admin Panel🎉",
-            html: `Dear [First Name], 
+            html: `Dear ${foundAdmin.firstName}, 
                     use the last token sent
                     your token to create a login password : ${tokenNumber}
                     your profile details 

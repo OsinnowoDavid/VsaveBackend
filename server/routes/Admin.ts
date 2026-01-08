@@ -22,7 +22,6 @@ const router = express.Router();
 router.post(
     "/register",
     verifySuperAdminToken,
-    validateAdminRegistrationInput,
     registerAdminController,
 );
 router.post("/create-password", createAdminPasswordController)
