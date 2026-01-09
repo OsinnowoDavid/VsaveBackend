@@ -15,7 +15,8 @@ import {
     resendVerificationCodeController,
     getAllAdminController,
     getAllUserController,
-    getAllAdminByRoleController
+    getAllAdminByRoleController,
+    getAdminDashboardDetails
 } from "../controller/Admin";
 import { verifySuperAdminToken } from "../config/JWT";
 import { validateAdminRegistrationInput } from "../validate-input/admin/index";
@@ -72,7 +73,9 @@ router.get("/get-all-user", verifySuperAdminToken, getAllUserController)
 // get all admin 
 router.get("/get-all-admin", verifySuperAdminToken, getAllAdminController) 
 // get admin by role 
-router.get("/get-admin/:role", verifySuperAdminToken, getAllAdminByRoleController)
+router.get("/get-admin/:role", verifySuperAdminToken, getAllAdminByRoleController) 
+router.get("/get-dashboardDetails", verifySuperAdminToken, getAdminDashboardDetails) 
+
 // get all loan record
 // get  loan record by status
 // aprovve pending loan

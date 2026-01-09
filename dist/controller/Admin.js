@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.approveOrRejectLoanController = exports.getLoanRecordByStatusController = exports.getAllLoanRecordController = exports.getAllAdminByRoleController = exports.getAllAdminController = exports.getAllUserController = exports.getAdminConfigController = exports.setAdminConfigController = exports.getRegionalAdminByEmailController = exports.getRegionalAdminsController = exports.getAllRegionalAdminController = exports.getAllRegionController = exports.createNewRegionController = exports.assignRegionalAdminToRegionController = exports.createRegionalAdminController = exports.superAdminProfileController = exports.LoginSuperAdminController = exports.resendVerificationCodeController = exports.createAdminPasswordController = exports.registerAdminController = void 0;
+exports.approveOrRejectLoanController = exports.getLoanRecordByStatusController = exports.getAllLoanRecordController = exports.getAdminDashboardDetails = exports.getAllAdminByRoleController = exports.getAllAdminController = exports.getAllUserController = exports.getAdminConfigController = exports.setAdminConfigController = exports.getRegionalAdminByEmailController = exports.getRegionalAdminsController = exports.getAllRegionalAdminController = exports.getAllRegionController = exports.createNewRegionController = exports.assignRegionalAdminToRegionController = exports.createRegionalAdminController = exports.superAdminProfileController = exports.LoginSuperAdminController = exports.resendVerificationCodeController = exports.createAdminPasswordController = exports.registerAdminController = void 0;
 const argon2_1 = __importDefault(require("argon2"));
 const Admin_1 = require("../services/Admin");
 const JWT_1 = require("../config/JWT");
@@ -474,6 +474,42 @@ const getAllAdminByRoleController = async (req, res) => {
     }
 };
 exports.getAllAdminByRoleController = getAllAdminByRoleController;
+const getAdminDashboardDetails = async (req, res) => {
+    try {
+        const alltransaction = await (0, Admin_1.getAllTransaction)();
+        let result = {
+            totalWalletFund: 0,
+            totalWithdrawal: 0,
+            totalAirtimeAndData: 0
+        };
+        for (const transaction of alltransaction) {
+            if (transaction.type === "deposit") {
+                result.totalWalletFund += transaction.amount;
+            }
+            if (transaction.type === "withdrawal") {
+                result.totalWithdrawal += transaction.amount;
+            }
+            if (transaction.type === "airtime") {
+                result.totalAirtimeAndData += transaction.amount;
+            }
+            if (transaction.type === "data") {
+                result.totalAirtimeAndData += transaction.amount;
+            }
+        }
+        return res.json({
+            status: "Success",
+            message: "details calculated successfuly",
+            data: result
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.getAdminDashboardDetails = getAdminDashboardDetails;
 // get all loan record
 const getAllLoanRecordController = async (req, res) => {
     try {

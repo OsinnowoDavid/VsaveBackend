@@ -27,6 +27,7 @@ router.get("/get-all-user", JWT_1.verifySuperAdminToken, Admin_1.getAllUserContr
 router.get("/get-all-admin", JWT_1.verifySuperAdminToken, Admin_1.getAllAdminController);
 // get admin by role 
 router.get("/get-admin/:role", JWT_1.verifySuperAdminToken, Admin_1.getAllAdminByRoleController);
+router.get("/get-dashboardDetails", JWT_1.verifySuperAdminToken, Admin_1.getAdminDashboardDetails);
 // get all loan record
 // get  loan record by status
 // aprovve pending loan

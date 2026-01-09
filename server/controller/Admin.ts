@@ -21,6 +21,7 @@ import {
     getAdminByEmail,
     getAllAdmin,
     getAdminByRole,
+    getAllTransaction,
 } from "../services/Admin";
 import { signUserToken } from "../config/JWT";
 import {getAllLoanRecord,getLoanRecordByStatus,approveOrRejectLoan} from "../services/Loan" ;
@@ -543,6 +544,43 @@ export const getAllAdminByRoleController = async (
             message:"found Admins",
             data:allAdmin,
             numberOfAdmin:allAdmin.length
+        })
+    }catch(err:any){
+         return res.json({
+            status: "Failed",
+            message: err.message,
+        }); 
+    }
+}
+export const getAdminDashboardDetails = async (
+    req: Request,
+    res: Response,
+) => {
+    try{
+        const alltransaction = await getAllTransaction() ;
+        let result = {
+            totalWalletFund:0,
+            totalWithdrawal:0,
+            totalAirtimeAndData:0
+        } 
+        for(const transaction of alltransaction){
+            if(transaction.type === "deposit"){
+                result.totalWalletFund += transaction.amount
+            }
+            if(transaction.type === "withdrawal"){
+                result.totalWithdrawal += transaction.amount 
+            }
+            if(transaction.type === "airtime"){
+                result.totalAirtimeAndData += transaction.amount 
+            }
+            if(transaction.type === "data"){
+                result.totalAirtimeAndData += transaction.amount 
+            }
+        } 
+        return res.json({
+            status:"Success",
+            message:"details calculated successfuly",
+            data: result
         })
     }catch(err:any){
          return res.json({

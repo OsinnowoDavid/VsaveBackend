@@ -3,11 +3,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getSubRegionById = exports.getSubRegionaladminByEmail = exports.getAllSubRegionalAdmin = exports.createSubRegionalAdmin = exports.sendNotification = exports.getAdminSavingsConfig = exports.setAdminSavingsConfig = exports.getRegionById = exports.getRegionByName = exports.getAllRegion = exports.getRegionalAdminByEmail = exports.getRegionalAdminById = exports.getRegionalAdmins = exports.getAllRegionalAdmin = exports.assignRegionalAdminToRegions = exports.assignRegionalAdmin = exports.createRegionalAdmin = exports.createNewRegion = exports.createAdminPassword = exports.getAllSuperAdminByEmail = exports.getAdminByRole = exports.getAllAdmin = exports.getAdminByEmail = exports.getAdminById = exports.CreateAdmin = void 0;
+exports.getAllTransaction = exports.getSubRegionById = exports.getSubRegionaladminByEmail = exports.getAllSubRegionalAdmin = exports.createSubRegionalAdmin = exports.sendNotification = exports.getAdminSavingsConfig = exports.setAdminSavingsConfig = exports.getRegionById = exports.getRegionByName = exports.getAllRegion = exports.getRegionalAdminByEmail = exports.getRegionalAdminById = exports.getRegionalAdmins = exports.getAllRegionalAdmin = exports.assignRegionalAdminToRegions = exports.assignRegionalAdmin = exports.createRegionalAdmin = exports.createNewRegion = exports.createAdminPassword = exports.getAllSuperAdminByEmail = exports.getAdminByRole = exports.getAllAdmin = exports.getAdminByEmail = exports.getAdminById = exports.CreateAdmin = void 0;
 const Admin_1 = __importDefault(require("../model/Admin"));
 const Region_1 = __importDefault(require("../model/Region"));
 const SubRegion_1 = __importDefault(require("../model/SubRegion"));
 const Admin_config_1 = __importDefault(require("../model/Admin_config"));
+const Transaction_1 = __importDefault(require("../model/Transaction"));
 const CreateAdmin = async (firstName, lastName, email, phoneNumber, role, profilePicture) => {
     try {
         const newSuperAdmin = await Admin_1.default.create({
@@ -319,3 +320,13 @@ const getSubRegionById = async (id) => {
     }
 };
 exports.getSubRegionById = getSubRegionById;
+const getAllTransaction = async () => {
+    try {
+        const allTransaction = await Transaction_1.default.find();
+        return allTransaction;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.getAllTransaction = getAllTransaction;

@@ -3,7 +3,8 @@ import RegionalAdmin from "../model/Regionaladmin";
 import Region from "../model/Region";
 import SubRegion from "../model/SubRegion";
 import { ISuperAdmin } from "../../types";
-import AdminConfig from "../model/Admin_config";
+import AdminConfig from "../model/Admin_config"; 
+import Transaction from "../model/Transaction";
 export const CreateAdmin = async (
     firstName: string,
     lastName: string,
@@ -161,7 +162,6 @@ export const getAllRegionalAdmin = async () => {
         throw err;
     }
 };
-
 export const getRegionalAdmins = async (region:string) =>{
     try{
         const foundRecord = await Admin.find({region}) ;
@@ -314,6 +314,14 @@ export const getSubRegionById = async (id:string) =>{
     try{
         const foundRecord = await SubRegion.findById(id) ;
         return foundRecord
+    }catch(err:any){
+        throw err
+    }
+}
+export const getAllTransaction = async () =>{
+    try{ 
+        const allTransaction = await Transaction.find() 
+        return allTransaction
     }catch(err:any){
         throw err
     }
