@@ -3,12 +3,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.approveOrRejectLoanController = exports.getLoanRecordByStatusController = exports.getAllLoanRecordController = exports.getAdminConfigController = exports.setAdminConfigController = exports.getRegionalAdminByEmailController = exports.getRegionalAdminsController = exports.getAllRegionalAdminController = exports.getAllRegionController = exports.createNewRegionController = exports.assignRegionalAdminToRegionController = exports.createRegionalAdminController = exports.superAdminProfileController = exports.LoginSuperAdminController = exports.resendVerificationCodeController = exports.createAdminPasswordController = exports.registerAdminController = void 0;
+exports.approveOrRejectLoanController = exports.getLoanRecordByStatusController = exports.getAllLoanRecordController = exports.getAllAdminByRoleController = exports.getAllAdminController = exports.getAllUserController = exports.getAdminConfigController = exports.setAdminConfigController = exports.getRegionalAdminByEmailController = exports.getRegionalAdminsController = exports.getAllRegionalAdminController = exports.getAllRegionController = exports.createNewRegionController = exports.assignRegionalAdminToRegionController = exports.createRegionalAdminController = exports.superAdminProfileController = exports.LoginSuperAdminController = exports.resendVerificationCodeController = exports.createAdminPasswordController = exports.registerAdminController = void 0;
 const argon2_1 = __importDefault(require("argon2"));
 const Admin_1 = require("../services/Admin");
 const JWT_1 = require("../config/JWT");
 const Loan_1 = require("../services/Loan");
 const Regionaladmin_1 = __importDefault(require("../model/Regionaladmin"));
+const User_1 = require("../services/User");
 const mail_1 = __importDefault(require("@sendgrid/mail"));
 mail_1.default.setApiKey(process.env.SENDGRID_API_KEY);
 const getAdminRegionsOrsubregions = async (admin) => {
@@ -39,6 +40,14 @@ const getAdminRegionsOrsubregions = async (admin) => {
 const registerAdminController = async (req, res) => {
     try {
         const { firstName, lastName, email, phoneNumber, password, role, profilePicture } = req.body;
+        // check if admin account already exist 
+        const foundAdmin = await (0, Admin_1.getAdminByEmail)(email);
+        if (foundAdmin) {
+            return res.json({
+                status: "Failed",
+                message: "account already exist as an admin."
+            });
+        }
         const newAdmin = await (0, Admin_1.CreateAdmin)(firstName, lastName, email, phoneNumber, role, profilePicture);
         if (!newAdmin) {
             return res.json({
@@ -407,6 +416,64 @@ const getAdminConfigController = async (req, res) => {
     }
 };
 exports.getAdminConfigController = getAdminConfigController;
+// get all users 
+const getAllUserController = async (req, res) => {
+    try {
+        const allUsers = await (0, User_1.getAllUser)();
+        return res.json({
+            status: "Success",
+            message: "found Users",
+            data: allUsers,
+            numberOfUsers: allUsers.length
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.getAllUserController = getAllUserController;
+// get all admin
+const getAllAdminController = async (req, res) => {
+    try {
+        const allAdmin = await (0, Admin_1.getAllAdmin)();
+        return res.json({
+            status: "Success",
+            message: "found Admins",
+            data: allAdmin,
+            numberOfAdmin: allAdmin.length
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.getAllAdminController = getAllAdminController;
+// get admin by role
+const getAllAdminByRoleController = async (req, res) => {
+    try {
+        const { role } = req.params;
+        const allAdmin = await (0, Admin_1.getAdminByRole)(role);
+        return res.json({
+            status: "Success",
+            message: "found Admins",
+            data: allAdmin,
+            numberOfAdmin: allAdmin.length
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.getAllAdminByRoleController = getAllAdminByRoleController;
 // get all loan record
 const getAllLoanRecordController = async (req, res) => {
     try {

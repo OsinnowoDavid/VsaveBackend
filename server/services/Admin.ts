@@ -44,6 +44,22 @@ export const getAdminByEmail = async (email: string) => {
         throw err;
     }
 };
+export const getAllAdmin = async ()=>{
+    try{
+        const allAdmin = await Admin.find() ;
+        return allAdmin
+    }catch(err:any){
+        throw err
+    }
+}
+export const getAdminByRole = async (role:string)=>{
+    try{
+        const admins = await Admin.find({role:role.toUpperCase()}) 
+        return admins
+    }catch(err:any){
+        throw err
+    }
+}
 export const getAllSuperAdminByEmail = async (email: string) => {
     try {
         const foundAdmin = await Admin.findOne({ email, role: "SUPER ADMIN" });

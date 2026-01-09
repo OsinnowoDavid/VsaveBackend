@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getSubRegionById = exports.getSubRegionaladminByEmail = exports.getAllSubRegionalAdmin = exports.createSubRegionalAdmin = exports.sendNotification = exports.getAdminSavingsConfig = exports.setAdminSavingsConfig = exports.getRegionById = exports.getRegionByName = exports.getAllRegion = exports.getRegionalAdminByEmail = exports.getRegionalAdminById = exports.getRegionalAdmins = exports.getAllRegionalAdmin = exports.assignRegionalAdminToRegions = exports.assignRegionalAdmin = exports.createRegionalAdmin = exports.createNewRegion = exports.createAdminPassword = exports.getAllSuperAdminByEmail = exports.getAdminByEmail = exports.getAdminById = exports.CreateAdmin = void 0;
+exports.getSubRegionById = exports.getSubRegionaladminByEmail = exports.getAllSubRegionalAdmin = exports.createSubRegionalAdmin = exports.sendNotification = exports.getAdminSavingsConfig = exports.setAdminSavingsConfig = exports.getRegionById = exports.getRegionByName = exports.getAllRegion = exports.getRegionalAdminByEmail = exports.getRegionalAdminById = exports.getRegionalAdmins = exports.getAllRegionalAdmin = exports.assignRegionalAdminToRegions = exports.assignRegionalAdmin = exports.createRegionalAdmin = exports.createNewRegion = exports.createAdminPassword = exports.getAllSuperAdminByEmail = exports.getAdminByRole = exports.getAllAdmin = exports.getAdminByEmail = exports.getAdminById = exports.CreateAdmin = void 0;
 const Admin_1 = __importDefault(require("../model/Admin"));
 const Region_1 = __importDefault(require("../model/Region"));
 const SubRegion_1 = __importDefault(require("../model/SubRegion"));
@@ -45,6 +45,26 @@ const getAdminByEmail = async (email) => {
     }
 };
 exports.getAdminByEmail = getAdminByEmail;
+const getAllAdmin = async () => {
+    try {
+        const allAdmin = await Admin_1.default.find();
+        return allAdmin;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.getAllAdmin = getAllAdmin;
+const getAdminByRole = async (role) => {
+    try {
+        const admins = await Admin_1.default.find({ role: role.toUpperCase() });
+        return admins;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.getAdminByRole = getAdminByRole;
 const getAllSuperAdminByEmail = async (email) => {
     try {
         const foundAdmin = await Admin_1.default.findOne({ email, role: "SUPER ADMIN" });

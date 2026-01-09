@@ -19,10 +19,13 @@ import {
     getSubRegionById,
     createAdminPassword,
     getAdminByEmail,
+    getAllAdmin,
+    getAdminByRole,
 } from "../services/Admin";
 import { signUserToken } from "../config/JWT";
 import {getAllLoanRecord,getLoanRecordByStatus,approveOrRejectLoan} from "../services/Loan" ;
 import Admin from "../model/Regionaladmin";
+import { getAllUser } from "../services/User";
 import { IAdmin } from "../../types";
 import SGMail from "@sendgrid/mail";
 SGMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -54,6 +57,14 @@ const getAdminRegionsOrsubregions = async (admin:string) =>{
 export const registerAdminController = async (req: Request, res: Response) => {
     try {
         const { firstName, lastName, email, phoneNumber, password, role , profilePicture} = req.body;
+        // check if admin account already exist 
+        const foundAdmin = await getAdminByEmail(email) ;
+        if(foundAdmin){
+            return res.json({
+                status:"Failed",
+                message:"account already exist as an admin."
+            })
+        }
         const newAdmin = await CreateAdmin(
             firstName,
             lastName,
@@ -479,7 +490,67 @@ export const getAdminConfigController = async (
         });
     }
 };
-
+// get all users 
+export const getAllUserController = async (
+    req: Request,
+    res: Response,
+) => {
+    try{
+        const allUsers = await getAllUser() 
+        return res.json({
+            status:"Success",
+            message:"found Users",
+            data:allUsers,
+            numberOfUsers:allUsers.length
+        })
+    }catch(err:any){
+         return res.json({
+            status: "Failed",
+            message: err.message,
+        }); 
+    }
+}
+// get all admin
+export const getAllAdminController = async (
+    req: Request,
+    res: Response,
+) => {
+    try{
+        const allAdmin = await getAllAdmin() ;
+         return res.json({
+            status:"Success",
+            message:"found Admins",
+            data:allAdmin,
+            numberOfAdmin:allAdmin.length
+        })
+    }catch(err:any){
+         return res.json({
+            status: "Failed",
+            message: err.message,
+        }); 
+    }
+}
+// get admin by role
+export const getAllAdminByRoleController = async (
+    req: Request,
+    res: Response,
+) => {
+    try{
+        const {role} = req.params
+        const allAdmin = await getAdminByRole(role);
+         return res.json({
+            status:"Success",
+            message:"found Admins",
+            data:allAdmin,
+            numberOfAdmin:allAdmin.length
+        })
+    }catch(err:any){
+         return res.json({
+            status: "Failed",
+            message: err.message,
+        }); 
+    }
+}
 // get all loan record
 export const getAllLoanRecordController = async (
     req: Request,
@@ -541,7 +612,9 @@ export const approveOrRejectLoanController =  async (
         }); 
     }
 }
+
 // edit pending loan for approval
 // send general notification
 // send personal notification
 // suspend admin account
+
