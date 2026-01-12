@@ -29,8 +29,12 @@ export const CreateAdmin = async (
     }
 };
 
-export const getAdminById = async (id: string) => {
+export const getAdminById = async (id: string, withpassword?:boolean) => {
     try {
+        if(withpassword){
+             const foundAdmin = await Admin.findById(id);
+            return foundAdmin;
+        }
         const foundAdmin = await Admin.findById(id, { password: 0 });
         return foundAdmin;
     } catch (err: any) {

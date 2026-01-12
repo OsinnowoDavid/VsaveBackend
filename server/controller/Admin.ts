@@ -154,8 +154,8 @@ export const updateAdminPasswordController = async (
 ) => {
     try{
         const user = req.user as IAdmin ;
-        const {oldPassword , newPassword} = req.body ;
-        const foundAdmin = await getAdminById(user._id.toString()) ;
+        const {oldPassword , newPassword} = req.body ; 
+        const foundAdmin = await getAdminById(user._id.toString(),true) ;
         let verifyPassword = await argon.verify(foundAdmin.password, oldPassword); 
         if(!verifyPassword){
              return res.json({

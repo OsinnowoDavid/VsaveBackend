@@ -26,8 +26,12 @@ const CreateAdmin = async (firstName, lastName, email, phoneNumber, role, profil
     }
 };
 exports.CreateAdmin = CreateAdmin;
-const getAdminById = async (id) => {
+const getAdminById = async (id, withpassword) => {
     try {
+        if (withpassword) {
+            const foundAdmin = await Admin_1.default.findById(id);
+            return foundAdmin;
+        }
         const foundAdmin = await Admin_1.default.findById(id, { password: 0 });
         return foundAdmin;
     }
