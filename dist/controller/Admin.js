@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.approveOrRejectLoanController = exports.getLoanRecordByStatusController = exports.getAllLoanRecordController = exports.getAdminDashboardDetails = exports.getAllAdminByRoleController = exports.getAllAdminController = exports.getAllUserController = exports.getAdminConfigController = exports.setAdminConfigController = exports.getRegionalAdminByEmailController = exports.getRegionalAdminsController = exports.getAllRegionalAdminController = exports.getAllRegionController = exports.createNewRegionController = exports.assignRegionalAdminToRegionController = exports.createRegionalAdminController = exports.superAdminProfileController = exports.LoginSuperAdminController = exports.resendVerificationCodeController = exports.createAdminPasswordController = exports.registerAdminController = void 0;
+exports.approveOrRejectLoanController = exports.getLoanRecordByStatusController = exports.getAllLoanRecordController = exports.getUserSavingsDetailsController = exports.getSavingsDetailsController = exports.getAdminDashboardDetails = exports.getAllAdminByRoleController = exports.getAllAdminController = exports.getAllUserController = exports.getAdminConfigController = exports.setAdminConfigController = exports.getRegionalAdminByEmailController = exports.getRegionalAdminsController = exports.getAllRegionalAdminController = exports.getAllRegionController = exports.createNewRegionController = exports.assignRegionalAdminToRegionController = exports.createRegionalAdminController = exports.updateAdminRecordController = exports.superAdminProfileController = exports.LoginSuperAdminController = exports.resendVerificationCodeController = exports.createAdminPasswordController = exports.registerAdminController = void 0;
 const argon2_1 = __importDefault(require("argon2"));
 const Admin_1 = require("../services/Admin");
 const JWT_1 = require("../config/JWT");
@@ -11,6 +11,7 @@ const Loan_1 = require("../services/Loan");
 const Regionaladmin_1 = __importDefault(require("../model/Regionaladmin"));
 const User_1 = require("../services/User");
 const mail_1 = __importDefault(require("@sendgrid/mail"));
+const Savings_1 = require("../services/Savings");
 mail_1.default.setApiKey(process.env.SENDGRID_API_KEY);
 const getAdminRegionsOrsubregions = async (admin) => {
     try {
@@ -217,6 +218,25 @@ const superAdminProfileController = async (req, res) => {
     }
 };
 exports.superAdminProfileController = superAdminProfileController;
+const updateAdminRecordController = async (req, res) => {
+    try {
+        const { firstName, lastName, email, phoneNumber } = req.body;
+        const user = req.user;
+        const updatedRecord = await (0, Admin_1.updateAdminRecord)(user._id.toString(), firstName, lastName, email, phoneNumber);
+        return res.json({
+            status: "Success",
+            message: "account updated Successfuly",
+            data: updatedRecord
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.updateAdminRecordController = updateAdminRecordController;
 const createRegionalAdminController = async (req, res) => {
     try {
         const { firstName, lastName, email, phoneNumber, password, region, profilePicture, } = req.body;
@@ -510,6 +530,40 @@ const getAdminDashboardDetails = async (req, res) => {
     }
 };
 exports.getAdminDashboardDetails = getAdminDashboardDetails;
+const getSavingsDetailsController = async (req, res) => {
+    try {
+        const savingsDetails = await (0, Savings_1.getSavingsDetails)();
+        return res.json({
+            status: "Success",
+            message: "savings details calculated",
+            data: savingsDetails
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.getSavingsDetailsController = getSavingsDetailsController;
+const getUserSavingsDetailsController = async (req, res) => {
+    try {
+        const foundRecord = await (0, Savings_1.getAllUserSavingsRecord)();
+        return res.json({
+            status: "Success",
+            message: "found Record",
+            data: foundRecord
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.getUserSavingsDetailsController = getUserSavingsDetailsController;
 // get all loan record
 const getAllLoanRecordController = async (req, res) => {
     try {

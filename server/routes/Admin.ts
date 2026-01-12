@@ -16,7 +16,10 @@ import {
     getAllAdminController,
     getAllUserController,
     getAllAdminByRoleController,
-    getAdminDashboardDetails
+    getAdminDashboardDetails,
+    getSavingsDetailsController,
+    getUserSavingsDetailsController,
+    updateAdminRecordController
 } from "../controller/Admin";
 import { verifySuperAdminToken } from "../config/JWT";
 import { validateAdminRegistrationInput } from "../validate-input/admin/index";
@@ -75,7 +78,10 @@ router.get("/get-all-admin", verifySuperAdminToken, getAllAdminController)
 // get admin by role 
 router.get("/get-admin/:role", verifySuperAdminToken, getAllAdminByRoleController) 
 router.get("/get-dashboardDetails", verifySuperAdminToken, getAdminDashboardDetails) 
-
+// get all user savings (calculated) 
+router.get("/user-savings-calculation", verifySuperAdminToken, getSavingsDetailsController) 
+router.get("/user-savings-record", verifySuperAdminToken, getUserSavingsDetailsController)
+router.post("/update", verifySuperAdminToken, updateAdminRecordController) ;
 // get all loan record
 // get  loan record by status
 // aprovve pending loan

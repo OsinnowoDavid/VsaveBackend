@@ -28,6 +28,10 @@ router.get("/get-all-admin", JWT_1.verifySuperAdminToken, Admin_1.getAllAdminCon
 // get admin by role 
 router.get("/get-admin/:role", JWT_1.verifySuperAdminToken, Admin_1.getAllAdminByRoleController);
 router.get("/get-dashboardDetails", JWT_1.verifySuperAdminToken, Admin_1.getAdminDashboardDetails);
+// get all user savings (calculated) 
+router.get("/user-savings-calculation", JWT_1.verifySuperAdminToken, Admin_1.getSavingsDetailsController);
+router.get("/user-savings-record", JWT_1.verifySuperAdminToken, Admin_1.getUserSavingsDetailsController);
+router.post("/update", JWT_1.verifySuperAdminToken, Admin_1.updateAdminRecordController);
 // get all loan record
 // get  loan record by status
 // aprovve pending loan

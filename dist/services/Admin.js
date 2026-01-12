@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllTransaction = exports.getSubRegionById = exports.getSubRegionaladminByEmail = exports.getAllSubRegionalAdmin = exports.createSubRegionalAdmin = exports.sendNotification = exports.getAdminSavingsConfig = exports.setAdminSavingsConfig = exports.getRegionById = exports.getRegionByName = exports.getAllRegion = exports.getRegionalAdminByEmail = exports.getRegionalAdminById = exports.getRegionalAdmins = exports.getAllRegionalAdmin = exports.assignRegionalAdminToRegions = exports.assignRegionalAdmin = exports.createRegionalAdmin = exports.createNewRegion = exports.createAdminPassword = exports.getAllSuperAdminByEmail = exports.getAdminByRole = exports.getAllAdmin = exports.getAdminByEmail = exports.getAdminById = exports.CreateAdmin = void 0;
+exports.getAllTransaction = exports.getSubRegionById = exports.getSubRegionaladminByEmail = exports.getAllSubRegionalAdmin = exports.createSubRegionalAdmin = exports.sendNotification = exports.getAdminSavingsConfig = exports.setAdminSavingsConfig = exports.getRegionById = exports.getRegionByName = exports.getAllRegion = exports.getRegionalAdminByEmail = exports.getRegionalAdminById = exports.getRegionalAdmins = exports.getAllRegionalAdmin = exports.assignRegionalAdminToRegions = exports.UpdateAdminPassword = exports.updateAdminRecord = exports.assignRegionalAdmin = exports.createRegionalAdmin = exports.createNewRegion = exports.createAdminPassword = exports.getAllSuperAdminByEmail = exports.getAdminByRole = exports.getAllAdmin = exports.getAdminByEmail = exports.getAdminById = exports.CreateAdmin = void 0;
 const Admin_1 = __importDefault(require("../model/Admin"));
 const Region_1 = __importDefault(require("../model/Region"));
 const SubRegion_1 = __importDefault(require("../model/SubRegion"));
@@ -138,6 +138,26 @@ const assignRegionalAdmin = async (admin, region) => {
     }
 };
 exports.assignRegionalAdmin = assignRegionalAdmin;
+const updateAdminRecord = async (id, firstName, lastName, email, phoneNumber) => {
+    try {
+        const foundAdmin = await Admin_1.default.findByIdAndUpdate(id, { firstName, lastName, email, phoneNumber });
+        return foundAdmin;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.updateAdminRecord = updateAdminRecord;
+const UpdateAdminPassword = async (id, password) => {
+    try {
+        const foundAdmin = await Admin_1.default.findByIdAndUpdate(id, { password });
+        return foundAdmin;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.UpdateAdminPassword = UpdateAdminPassword;
 const assignRegionalAdminToRegions = async (region, regionalAdmin) => {
     try {
         const foundAdmin = await Admin_1.default.findById(regionalAdmin);

@@ -210,6 +210,25 @@ export const getUserActiveSavingsRecord = async (user: IUser) => {
         throw err;
     }
 };
+export const getAllUserSavingsRecord = async () =>{
+    try{
+        const foundSavingsRecord = await UserSavingsRecord.find(); 
+        let result = [] 
+        let savingsResult ={
+            savingsDetails:{},
+            contributionDetails:{}
+        }
+        for(const savingsRecord of foundSavingsRecord){
+            savingsResult.savingsDetails = savingsRecord 
+            const foundContribution = await SavingsContribution.findById(savingsRecord.contributionId) ;
+            savingsResult.contributionDetails = foundContribution ;
+            result.push(savingsResult) ;
+        } 
+       return result 
+    }catch(err:any){
+        throw err
+    }
+}
 export const getUserPausedSavingsRecord = async (user: IUser) => {
     try {
         const foundUserSavingsRecord = UserSavingsRecord.find({
@@ -698,4 +717,40 @@ export const getUserTotalSavingsBalance = async (user:string) =>{
 }catch(err:any){
     throw err
 }
+}
+
+export const getSavingsDetails = async () =>{
+    try{
+        let result = {
+            totalSavingsCollected:0,
+            totalSavingsPayOut:0,
+            totalPendingSavings:0
+        } 
+        const allSavingsRecord = await UserSavingsRecord.find() ;
+        for(const savingRecord of allSavingsRecord){
+            if(savingRecord.status === "ACTIVE"){
+                const foundContribution = await SavingsContribution.findById(savingRecord.contributionId) ;
+                for(const contribution of foundContribution.record){
+                    if(contribution.status === "paid"){
+                        result.totalSavingsCollected += contribution.amount 
+                    } 
+                    if(contribution.status === "pending"){
+                        result.totalPendingSavings += contribution.amount
+                    }
+                }
+            }
+
+            if(savingRecord.status === "ENDED"){
+                 const foundContribution = await SavingsContribution.findById(savingRecord.contributionId) ; 
+                 for(const contribution of foundContribution.record){
+                   if(contribution.status === "paid"){
+                    result.totalSavingsPayOut += contribution.amount
+                   }
+                 }
+            }
+        } 
+        return result
+    }catch(err:any){
+        throw err
+    }
 }

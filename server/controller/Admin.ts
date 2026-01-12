@@ -22,6 +22,8 @@ import {
     getAllAdmin,
     getAdminByRole,
     getAllTransaction,
+    updateAdminRecord,
+    UpdateAdminPassword
 } from "../services/Admin";
 import { signUserToken } from "../config/JWT";
 import {getAllLoanRecord,getLoanRecordByStatus,approveOrRejectLoan} from "../services/Loan" ;
@@ -29,6 +31,7 @@ import Admin from "../model/Regionaladmin";
 import { getAllUser } from "../services/User";
 import { IAdmin } from "../../types";
 import SGMail from "@sendgrid/mail";
+import { getAllUserSavingsRecord, getSavingsDetails } from "../services/Savings";
 SGMail.setApiKey(process.env.SENDGRID_API_KEY);
 const getAdminRegionsOrsubregions = async (admin:string) =>{
     try{
@@ -242,6 +245,27 @@ export const superAdminProfileController = async (
         });
     }
 };
+
+export const updateAdminRecordController =  async (
+    req: Request,
+    res: Response,
+) => {
+    try{
+        const {firstName,lastName,email,phoneNumber} = req.body ;
+        const user = req.user as IAdmin ;
+        const updatedRecord = await updateAdminRecord(user._id.toString(),firstName,lastName,email,phoneNumber) ;
+        return res.json({
+            status:"Success",
+            message:"account updated Successfuly",
+            data:updatedRecord
+        })
+    }catch(err:any){
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+}
 
 export const createRegionalAdminController = async (
     req: Request,
@@ -577,6 +601,7 @@ export const getAdminDashboardDetails = async (
                 result.totalAirtimeAndData += transaction.amount 
             }
         } 
+        
         return res.json({
             status:"Success",
             message:"details calculated successfuly",
@@ -584,6 +609,36 @@ export const getAdminDashboardDetails = async (
         })
     }catch(err:any){
          return res.json({
+            status: "Failed",
+            message: err.message,
+        }); 
+    }
+}
+export const getSavingsDetailsController = async ( req: Request,res: Response,) =>{
+    try{
+        const savingsDetails = await getSavingsDetails() ;
+        return res.json({
+            status:"Success",
+            message:"savings details calculated",
+            data : savingsDetails
+        })
+    }catch(err:any){
+       return res.json({
+            status: "Failed",
+            message: err.message,
+        }); 
+    }
+}
+export const getUserSavingsDetailsController = async ( req: Request,res: Response,) =>{
+    try{
+        const foundRecord = await  getAllUserSavingsRecord() ;
+        return res.json({
+            status:"Success",
+            message:"found Record",
+            data: foundRecord 
+        })
+    }catch(err:any){
+        return res.json({
             status: "Failed",
             message: err.message,
         }); 

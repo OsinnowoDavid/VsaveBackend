@@ -139,6 +139,22 @@ export const assignRegionalAdmin = async (
         throw err;
     }
 };
+export const updateAdminRecord = async (id:string,firstName:string, lastName:string,email:string,phoneNumber:string ) =>{
+    try{
+        const foundAdmin = await Admin.findByIdAndUpdate(id,{firstName,lastName, email,phoneNumber}) ;
+        return foundAdmin
+    }catch(err:any){
+        throw err 
+    }
+}
+export const UpdateAdminPassword = async (id:string,password:string) =>{
+    try{
+       const foundAdmin = await Admin.findByIdAndUpdate(id,{password}) ;
+       return foundAdmin
+    }catch(err:any){
+        throw err
+    }
+}
 export const assignRegionalAdminToRegions = async (region:[string], regionalAdmin:string)=>{
     try{
         const foundAdmin = await Admin.findById(regionalAdmin);
@@ -157,7 +173,7 @@ export const assignRegionalAdminToRegions = async (region:[string], regionalAdmi
 export const getAllRegionalAdmin = async () => {
     try {
         const allRegionalAdmin = await Admin.find();
-        return allRegionalAdmin;
+        return allRegionalAdmin; 
     } catch (err: any) {
         throw err;
     }
