@@ -108,6 +108,40 @@ export const verifySuperAdminToken = async (
         });
     }
 };
+export const verifyGeneralAdminToken = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try{
+          // Extract token from authorization header
+        const { authorization = "" } = req.headers;
+        if (!authorization || authorization === "") {
+            return res.json({
+                status: "failed!",
+                msg: "No authorization token found",
+            });
+        }
+        const decoded: any = jwt.verify(authorization, jwt_secret);
+        const foundId = decoded.user._id;
+        // find superadmin by decoded user id
+        const currentAdmin = await getAdminById(foundId);
+        if (!currentAdmin ) {
+            return res.json({
+                status: "failed!",
+                msg: "user not authorized!!",
+            });
+        }
+        // Attach user to request object
+        req.user = currentAdmin;
+        return next();
+    }catch(err:any){
+         res.json({
+            Status: "Failed",
+            message: err.message,
+        });
+    }
+}
 const regionalAdminPass = (admin: any) =>{
 try{
     let result = false

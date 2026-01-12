@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.attachToToken = exports.verifySubRegionalAdminToken = exports.verifyRegionalAdminToken = exports.verifySuperAdminToken = exports.verifyUserToken = exports.signUserToken = void 0;
+exports.attachToToken = exports.verifySubRegionalAdminToken = exports.verifyRegionalAdminToken = exports.verifyGeneralAdminToken = exports.verifySuperAdminToken = exports.verifyUserToken = exports.signUserToken = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const jwt_secret = process.env.jwt_secret;
 const User_1 = require("../services/User");
@@ -86,6 +86,38 @@ const verifySuperAdminToken = async (req, res, next) => {
     }
 };
 exports.verifySuperAdminToken = verifySuperAdminToken;
+const verifyGeneralAdminToken = async (req, res, next) => {
+    try {
+        // Extract token from authorization header
+        const { authorization = "" } = req.headers;
+        if (!authorization || authorization === "") {
+            return res.json({
+                status: "failed!",
+                msg: "No authorization token found",
+            });
+        }
+        const decoded = jsonwebtoken_1.default.verify(authorization, jwt_secret);
+        const foundId = decoded.user._id;
+        // find superadmin by decoded user id
+        const currentAdmin = await (0, Admin_1.getAdminById)(foundId);
+        if (!currentAdmin) {
+            return res.json({
+                status: "failed!",
+                msg: "user not authorized!!",
+            });
+        }
+        // Attach user to request object
+        req.user = currentAdmin;
+        return next();
+    }
+    catch (err) {
+        res.json({
+            Status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.verifyGeneralAdminToken = verifyGeneralAdminToken;
 const regionalAdminPass = (admin) => {
     try {
         let result = false;

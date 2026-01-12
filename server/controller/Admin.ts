@@ -23,7 +23,8 @@ import {
     getAdminByRole,
     getAllTransaction,
     updateAdminRecord,
-    UpdateAdminPassword
+    UpdateAdminPassword,
+    getAdminById
 } from "../services/Admin";
 import { signUserToken } from "../config/JWT";
 import {getAllLoanRecord,getLoanRecordByStatus,approveOrRejectLoan} from "../services/Loan" ;
@@ -147,6 +148,35 @@ export const createAdminPasswordController = async (req: Request, res: Response)
         });
     }
 } 
+export const updateAdminPasswordController = async (
+    req: Request,
+    res: Response,
+) => {
+    try{
+        const user = req.user as IAdmin ;
+        const {oldPassword , newPassword} = req.body ;
+        const foundAdmin = await getAdminById(user._id.toString()) ;
+        let verifyPassword = await argon.verify(foundAdmin.password, oldPassword); 
+        if(!verifyPassword){
+             return res.json({
+                status: "Failed",
+                message: "incorrect old passsword",
+            });
+        } 
+        let hashPassword = await argon.hash(newPassword); 
+       const newRecord = await UpdateAdminPassword(foundAdmin._id.toString(),hashPassword) 
+       return res.json({
+        status:"Success",
+        message:"password updated successfuly",
+        data:newRecord
+       })
+    }catch(err:any){
+         return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+}
 export const resendVerificationCodeController = async (
     req: Request,
     res: Response,

@@ -19,9 +19,10 @@ import {
     getAdminDashboardDetails,
     getSavingsDetailsController,
     getUserSavingsDetailsController,
-    updateAdminRecordController
+    updateAdminRecordController,
+    updateAdminPasswordController
 } from "../controller/Admin";
-import { verifySuperAdminToken } from "../config/JWT";
+import { verifyGeneralAdminToken, verifySuperAdminToken } from "../config/JWT";
 import { validateAdminRegistrationInput } from "../validate-input/admin/index";
 
 const router = express.Router();
@@ -81,7 +82,8 @@ router.get("/get-dashboardDetails", verifySuperAdminToken, getAdminDashboardDeta
 // get all user savings (calculated) 
 router.get("/user-savings-calculation", verifySuperAdminToken, getSavingsDetailsController) 
 router.get("/user-savings-record", verifySuperAdminToken, getUserSavingsDetailsController)
-router.post("/update", verifySuperAdminToken, updateAdminRecordController) ;
+router.post("/update", verifyGeneralAdminToken, updateAdminRecordController) ; 
+router.post("/update-password", verifyGeneralAdminToken,updateAdminPasswordController )
 // get all loan record
 // get  loan record by status
 // aprovve pending loan

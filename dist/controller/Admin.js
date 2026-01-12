@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.approveOrRejectLoanController = exports.getLoanRecordByStatusController = exports.getAllLoanRecordController = exports.getUserSavingsDetailsController = exports.getSavingsDetailsController = exports.getAdminDashboardDetails = exports.getAllAdminByRoleController = exports.getAllAdminController = exports.getAllUserController = exports.getAdminConfigController = exports.setAdminConfigController = exports.getRegionalAdminByEmailController = exports.getRegionalAdminsController = exports.getAllRegionalAdminController = exports.getAllRegionController = exports.createNewRegionController = exports.assignRegionalAdminToRegionController = exports.createRegionalAdminController = exports.updateAdminRecordController = exports.superAdminProfileController = exports.LoginSuperAdminController = exports.resendVerificationCodeController = exports.createAdminPasswordController = exports.registerAdminController = void 0;
+exports.approveOrRejectLoanController = exports.getLoanRecordByStatusController = exports.getAllLoanRecordController = exports.getUserSavingsDetailsController = exports.getSavingsDetailsController = exports.getAdminDashboardDetails = exports.getAllAdminByRoleController = exports.getAllAdminController = exports.getAllUserController = exports.getAdminConfigController = exports.setAdminConfigController = exports.getRegionalAdminByEmailController = exports.getRegionalAdminsController = exports.getAllRegionalAdminController = exports.getAllRegionController = exports.createNewRegionController = exports.assignRegionalAdminToRegionController = exports.createRegionalAdminController = exports.updateAdminRecordController = exports.superAdminProfileController = exports.LoginSuperAdminController = exports.resendVerificationCodeController = exports.updateAdminPasswordController = exports.createAdminPasswordController = exports.registerAdminController = void 0;
 const argon2_1 = __importDefault(require("argon2"));
 const Admin_1 = require("../services/Admin");
 const JWT_1 = require("../config/JWT");
@@ -124,6 +124,34 @@ const createAdminPasswordController = async (req, res) => {
     }
 };
 exports.createAdminPasswordController = createAdminPasswordController;
+const updateAdminPasswordController = async (req, res) => {
+    try {
+        const user = req.user;
+        const { oldPassword, newPassword } = req.body;
+        const foundAdmin = await (0, Admin_1.getAdminById)(user._id.toString());
+        let verifyPassword = await argon2_1.default.verify(foundAdmin.password, oldPassword);
+        if (!verifyPassword) {
+            return res.json({
+                status: "Failed",
+                message: "incorrect old passsword",
+            });
+        }
+        let hashPassword = await argon2_1.default.hash(newPassword);
+        const newRecord = await (0, Admin_1.UpdateAdminPassword)(foundAdmin._id.toString(), hashPassword);
+        return res.json({
+            status: "Success",
+            message: "password updated successfuly",
+            data: newRecord
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.updateAdminPasswordController = updateAdminPasswordController;
 const resendVerificationCodeController = async (req, res) => {
     try {
         const { email } = req.params;

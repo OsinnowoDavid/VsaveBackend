@@ -31,7 +31,8 @@ router.get("/get-dashboardDetails", JWT_1.verifySuperAdminToken, Admin_1.getAdmi
 // get all user savings (calculated) 
 router.get("/user-savings-calculation", JWT_1.verifySuperAdminToken, Admin_1.getSavingsDetailsController);
 router.get("/user-savings-record", JWT_1.verifySuperAdminToken, Admin_1.getUserSavingsDetailsController);
-router.post("/update", JWT_1.verifySuperAdminToken, Admin_1.updateAdminRecordController);
+router.post("/update", JWT_1.verifyGeneralAdminToken, Admin_1.updateAdminRecordController);
+router.post("/update-password", JWT_1.verifyGeneralAdminToken, Admin_1.updateAdminPasswordController);
 // get all loan record
 // get  loan record by status
 // aprovve pending loan
