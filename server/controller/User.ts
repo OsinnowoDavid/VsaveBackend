@@ -164,10 +164,6 @@ export const registerUser = async (req: Request, res: Response) => {
         console.log("Sending email via SendGrid...");
         const sentMail = await SGMail.send(msg);
         console.log("Email sent successfully:", sentMail);
-
-        // Assign referral code
-        console.log("Assigning referral code...");
-        await assignAgentReferral(referralCode, newUser); 
         // check for referral code 
         if(referralCode){
             await assignReferral(newUser._id.toString(), referralCode) 
