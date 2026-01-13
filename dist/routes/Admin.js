@@ -34,8 +34,11 @@ router.get("/user-savings-record", JWT_1.verifySuperAdminToken, Admin_1.getUserS
 router.post("/update", JWT_1.verifyGeneralAdminToken, Admin_1.updateAdminRecordController);
 router.post("/update-password", JWT_1.verifyGeneralAdminToken, Admin_1.updateAdminPasswordController);
 // get all loan record
+router.get("/get-all-loan", JWT_1.verifySuperAdminToken, Admin_1.getAllLoanRecordController);
 // get  loan record by status
-// aprovve pending loan
+router.get("/get-loan-by-status", JWT_1.verifySuperAdminToken, Admin_1.getLoanRecordByStatusController);
+// aprovve pending loan 
+router.post("/approve-pending-loan", JWT_1.verifySuperAdminToken, Admin_1.approveOrRejectLoanController);
 // send general notification
 // send personal notification
 // suspend admin account

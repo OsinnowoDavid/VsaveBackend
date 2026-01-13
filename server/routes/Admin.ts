@@ -20,7 +20,10 @@ import {
     getSavingsDetailsController,
     getUserSavingsDetailsController,
     updateAdminRecordController,
-    updateAdminPasswordController
+    updateAdminPasswordController,
+    getAllLoanRecordController,
+    getLoanRecordByStatusController,
+    approveOrRejectLoanController,
 } from "../controller/Admin";
 import { verifyGeneralAdminToken, verifySuperAdminToken } from "../config/JWT";
 import { validateAdminRegistrationInput } from "../validate-input/admin/index";
@@ -85,8 +88,11 @@ router.get("/user-savings-record", verifySuperAdminToken, getUserSavingsDetailsC
 router.post("/update", verifyGeneralAdminToken, updateAdminRecordController) ; 
 router.post("/update-password", verifyGeneralAdminToken,updateAdminPasswordController )
 // get all loan record
+router.get("/get-all-loan", verifySuperAdminToken, getAllLoanRecordController) 
 // get  loan record by status
-// aprovve pending loan
+router.get("/get-loan-by-status", verifySuperAdminToken, getLoanRecordByStatusController,)
+// aprovve pending loan 
+router.post("/approve-pending-loan", verifySuperAdminToken, approveOrRejectLoanController)
 // send general notification
 // send personal notification
 // suspend admin account
