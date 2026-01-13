@@ -1,6 +1,7 @@
 import UserReferral from "../model/User_referral"; 
 import User from "../model/User" ;
 import {generateReferralRefrenceCode} from "../config/tools" ;
+import { IUser } from "../../types";
 
 export const createUserReferral = async (user:string, referredUser:string) =>{
     try{
@@ -85,20 +86,21 @@ export const createReferralCodeForUser = async (user:string) =>{
 }
 export const assignReferral = async (user:string,referralCode:string) =>{
     try{
-        let foundUser = null ;
-        let firstLetter: string = referralCode.charAt(0);
+        let foundUser = {} as IUser ;
+        let firstLetter: string = referralCode.charAt(0); 
         // check if its a User referral code 
-        if(firstLetter === "U"){
+        if(firstLetter === "U"){ 
             foundUser = await User.findOne({referralCode}) ;
             if(!foundUser){
-                throw {message:"account created but, no user found with this referral code"}
+                return  {err:true,message:"account created but, no user found with this referral code"}
             }
             let newRecord = await createUserReferral(foundUser._id.toString(), user) ;
             foundUser.pendingBalance += 500 ;
             await foundUser.save() ;
-            return newRecord
+            return newRecord 
+        
         } ;
-        throw {message: "account created but, invalid referral code"}
+        return  {err:true,message: "account created but, invalid referral code"}
     }catch(err:any){
         throw err
     }

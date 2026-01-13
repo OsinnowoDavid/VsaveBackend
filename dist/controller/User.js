@@ -71,8 +71,10 @@ const registerUser = async (req, res) => {
         const sentMail = await mail_1.default.send(msg);
         console.log("Email sent successfully:", sentMail);
         // check for referral code 
+        let referralErr = "";
         if (referralCode) {
-            await (0, referral_1.assignReferral)(newUser._id.toString(), referralCode);
+            const userReferred = await (0, referral_1.assignReferral)(newUser._id.toString(), referralCode);
+            referralErr = userReferred.message;
         }
         // generate referral code 
         await (0, referral_1.createReferralCodeForUser)(newUser._id.toString());
@@ -80,6 +82,7 @@ const registerUser = async (req, res) => {
             status: "Success",
             message: `User created successfully. Verify your email - verification code has been sent to ${newUser.email} (also check your spam meesage for the code )`,
             data: newUser,
+            err: referralErr
         });
     }
     catch (err) {
@@ -96,7 +99,7 @@ const registerUser = async (req, res) => {
             : `Error: ${err.message} - ${err.stack}`;
         return res.status(500).json({
             status: "Failed",
-            message: errorMessage,
+            message: err.message,
         });
     }
 };

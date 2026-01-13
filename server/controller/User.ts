@@ -165,15 +165,19 @@ export const registerUser = async (req: Request, res: Response) => {
         const sentMail = await SGMail.send(msg);
         console.log("Email sent successfully:", sentMail);
         // check for referral code 
+        let referralErr = "";
         if(referralCode){
-            await assignReferral(newUser._id.toString(), referralCode) 
+           const userReferred = await assignReferral(newUser._id.toString(), referralCode) as any ; 
+           referralErr = userReferred.message
         } 
+       
         // generate referral code 
         await createReferralCodeForUser(newUser._id.toString())
         return res.json({
             status: "Success",
             message: `User created successfully. Verify your email - verification code has been sent to ${newUser.email} (also check your spam meesage for the code )`,
             data: newUser,
+            err: referralErr
         });
     } catch (err: any) {
         console.error("=== UNEXPECTED ERROR ===");
@@ -191,7 +195,7 @@ export const registerUser = async (req: Request, res: Response) => {
 
         return res.status(500).json({
             status: "Failed",
-            message: errorMessage,
+            message: err.message,
         });
     }
 };

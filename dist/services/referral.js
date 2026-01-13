@@ -100,13 +100,13 @@ const createReferralCodeForUser = async (user) => {
 exports.createReferralCodeForUser = createReferralCodeForUser;
 const assignReferral = async (user, referralCode) => {
     try {
-        let foundUser = null;
+        let foundUser = {};
         let firstLetter = referralCode.charAt(0);
         // check if its a User referral code 
         if (firstLetter === "U") {
             foundUser = await User_1.default.findOne({ referralCode });
             if (!foundUser) {
-                throw { message: "account created but, no user found with this referral code" };
+                return { err: true, message: "account created but, no user found with this referral code" };
             }
             let newRecord = await (0, exports.createUserReferral)(foundUser._id.toString(), user);
             foundUser.pendingBalance += 500;
@@ -114,7 +114,7 @@ const assignReferral = async (user, referralCode) => {
             return newRecord;
         }
         ;
-        throw { message: "account created but, invalid referral code" };
+        return { err: true, message: "account created but, invalid referral code" };
     }
     catch (err) {
         throw err;
