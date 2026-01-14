@@ -22,6 +22,12 @@ declare interface IUser extends Document {
     virtualAccountNumber?: string | null;
     createdAt?: Date;
     updatedAt?: Date;
+    profession?:
+        | "Lottory Agent"
+        | "Student"
+        | "Self Employed"
+        | "Unemployed"
+        | "Other";
 }
 declare interface IVerificationToken extends Document {
     user?: Types.ObjectId;

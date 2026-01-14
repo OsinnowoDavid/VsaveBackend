@@ -470,6 +470,8 @@ export const registerKYC1 = async (req: Request, res: Response) => {
             address,
             subRegion,
         );
+        user.profession = profession ;
+        await user.save() ;
         if(profession === "Lottery Agent" ){
              await generateAndAsignLottoryId(user._id.toString()) ;
         }

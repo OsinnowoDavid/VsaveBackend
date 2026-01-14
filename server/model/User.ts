@@ -79,6 +79,16 @@ const userSchema = new Schema(
             type: Boolean,
             default: false,
         },
+         profession: {
+            type: String,
+            enum: [
+                "Lottery Agent",
+                "Student",
+                "Self Employed",
+                "Unemployed",
+                "Other",
+            ],
+        },
         lottoryId:{
             type:String
         },

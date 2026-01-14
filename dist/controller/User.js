@@ -328,6 +328,8 @@ const registerKYC1 = async (req, res) => {
         await (0, User_1.createVirtualAccountIndex)(user._id.toString(), virtualAccount.data.virtual_account_number);
         // save KYC1
         const newKYC1 = await (0, User_1.createKYC1Record)(user, profession, accountNumber, bank, accountDetails, bankCode, country, state, bvn, address, subRegion);
+        user.profession = profession;
+        await user.save();
         if (profession === "Lottery Agent") {
             await (0, Terminal_1.generateAndAsignLottoryId)(user._id.toString());
         }

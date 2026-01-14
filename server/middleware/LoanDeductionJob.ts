@@ -9,7 +9,7 @@ import { generateLoanRefrenceCode } from "../config/tools";
 
 const deductLoanRepayment = async (user: string) => {
     try {
-        const foundUser = await getUserById(user);
+        const foundUser = await getUserById(user) as IUser ;
         const foundUnsettledLoan = await getUserUnsettledLoan(foundUser);
         if (!foundUnsettledLoan) {
             return "no unsettled loan";
