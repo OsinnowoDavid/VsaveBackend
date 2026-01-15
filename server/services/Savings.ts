@@ -204,7 +204,7 @@ export const getUserActiveSavingsRecord = async (user: IUser) => {
         const foundUserSavingsRecord = await UserSavingsRecord.find({
             user: user._id,
             status: "ACTIVE",
-        });
+        }).populate({path:'User', select:'-password'}); 
         return foundUserSavingsRecord;
     } catch (err: any) {
         throw err;
@@ -212,7 +212,7 @@ export const getUserActiveSavingsRecord = async (user: IUser) => {
 };
 export const getAllUserSavingsRecord = async () =>{
     try{
-        const foundSavingsRecord = await UserSavingsRecord.find(); 
+        const foundSavingsRecord = await UserSavingsRecord.find().populate({path:'User', select:'-password'}); 
         let result = [] 
         let savingsResult ={
             savingsDetails:{},
@@ -234,7 +234,7 @@ export const getUserPausedSavingsRecord = async (user: IUser) => {
         const foundUserSavingsRecord = UserSavingsRecord.find({
             user: user._id,
             status: "PAUSED",
-        });
+        }).populate({path:'User', select:'-password'}); 
         return foundUserSavingsRecord;
     } catch (err: any) {
         throw err;
@@ -244,7 +244,7 @@ export const getAllUserPausedSavingsRecord = async () => {
     try {
         const allPausedSavingsRecord = await UserSavingsRecord.find({
             status: "PAUSED",
-        });
+        }).populate({path:'User', select:'-password'}); 
         return allPausedSavingsRecord;
     } catch (err: any) {
         throw err;
@@ -255,7 +255,7 @@ export const getAllUserActiveSavingsRecord = async () => {
     try {
         const allActiveSavingsRecord = await UserSavingsRecord.find({
             status: "ACTIVE",
-        });
+        }).populate({path:'User', select:'-password'}); 
         return allActiveSavingsRecord;
     } catch (err: any) {
         throw err;

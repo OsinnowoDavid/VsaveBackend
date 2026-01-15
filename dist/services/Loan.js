@@ -104,7 +104,7 @@ const allUnsettledRecord = async () => {
 exports.allUnsettledRecord = allUnsettledRecord;
 const getUserLoanByStatus = async (user, status) => {
     try {
-        const foundRecord = await Loan_1.default.find({ user, status });
+        const foundRecord = await Loan_1.default.find({ user, status }).populate({ path: 'User', select: '-password' });
         return foundRecord;
     }
     catch (err) {
@@ -114,7 +114,7 @@ const getUserLoanByStatus = async (user, status) => {
 exports.getUserLoanByStatus = getUserLoanByStatus;
 const getAllLoanRecord = async () => {
     try {
-        const foundRecord = await Loan_1.default.find();
+        const foundRecord = await Loan_1.default.find().populate({ path: 'User', select: '-password' });
         return foundRecord;
     }
     catch (err) {
@@ -124,7 +124,7 @@ const getAllLoanRecord = async () => {
 exports.getAllLoanRecord = getAllLoanRecord;
 const getLoanRecordByStatus = async (status) => {
     try {
-        const foundRecord = await Loan_1.default.find({ status });
+        const foundRecord = await Loan_1.default.find({ status }).populate({ path: 'User', select: '-password' });
         return foundRecord;
     }
     catch (err) {
