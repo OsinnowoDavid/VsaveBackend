@@ -173,6 +173,7 @@ export const registerUser = async (req: Request, res: Response) => {
        
         // generate referral code 
         await createReferralCodeForUser(newUser._id.toString())
+        console.log("finish creating account")
         return res.json({
             status: "Success",
             message: `User created successfully. Verify your email - verification code has been sent to ${newUser.email} (also check your spam meesage for the code )`,
