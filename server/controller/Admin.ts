@@ -32,7 +32,7 @@ import Admin from "../model/Regionaladmin";
 import { getAllUser } from "../services/User";
 import { IAdmin } from "../../types";
 import SGMail from "@sendgrid/mail";
-import { getAllUserSavingsRecord, getSavingsDetails } from "../services/Savings";
+import { getAllSavingsCircle, getAllUserSavingsRecord, getSavingsDetails } from "../services/Savings";
 SGMail.setApiKey(process.env.SENDGRID_API_KEY);
 const getAdminRegionsOrsubregions = async (admin:string) =>{
     try{
@@ -735,7 +735,24 @@ export const approveOrRejectLoanController =  async (
         }); 
     }
 }
-
+export const getAllAdminSavingsController = async (
+    req: Request,
+    res: Response,
+) => {
+    try{
+        const foundRecord = await getAllSavingsCircle() ;
+        return res.json({
+            status:"Success",
+            message:"found record",
+            data:foundRecord
+        })
+    }catch(err:any){
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        }); 
+    }
+}
 // edit pending loan for approval
 // send general notification
 // send personal notification
