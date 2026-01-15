@@ -181,7 +181,7 @@ const getUserActiveSavingsRecord = async (user) => {
         const foundUserSavingsRecord = await User_savings_record_1.default.find({
             user: user._id,
             status: "ACTIVE",
-        }).populate({ path: 'User', select: '-password' });
+        }).populate({ path: 'user', select: '-password' });
         return foundUserSavingsRecord;
     }
     catch (err) {
@@ -191,7 +191,7 @@ const getUserActiveSavingsRecord = async (user) => {
 exports.getUserActiveSavingsRecord = getUserActiveSavingsRecord;
 const getAllUserSavingsRecord = async () => {
     try {
-        const foundSavingsRecord = await User_savings_record_1.default.find().populate({ path: 'User', select: '-password' });
+        const foundSavingsRecord = await User_savings_record_1.default.find().populate({ path: 'user', select: '-password' });
         let result = [];
         let savingsResult = {
             savingsDetails: {},
@@ -215,7 +215,7 @@ const getUserPausedSavingsRecord = async (user) => {
         const foundUserSavingsRecord = User_savings_record_1.default.find({
             user: user._id,
             status: "PAUSED",
-        }).populate({ path: 'User', select: '-password' });
+        }).populate({ path: 'user', select: '-password' });
         return foundUserSavingsRecord;
     }
     catch (err) {
@@ -227,7 +227,7 @@ const getAllUserPausedSavingsRecord = async () => {
     try {
         const allPausedSavingsRecord = await User_savings_record_1.default.find({
             status: "PAUSED",
-        }).populate({ path: 'User', select: '-password' });
+        }).populate({ path: 'user', select: '-password' });
         return allPausedSavingsRecord;
     }
     catch (err) {
@@ -239,7 +239,7 @@ const getAllUserActiveSavingsRecord = async () => {
     try {
         const allActiveSavingsRecord = await User_savings_record_1.default.find({
             status: "ACTIVE",
-        }).populate({ path: 'User', select: '-password' });
+        }).populate({ path: 'user', select: '-password' });
         return allActiveSavingsRecord;
     }
     catch (err) {

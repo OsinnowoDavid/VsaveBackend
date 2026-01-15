@@ -106,7 +106,7 @@ export const getUserLoanByStatus = async (
     status: ILoanStatus,
 ) => {
     try {
-        const foundRecord = await Loan.find({ user, status }).populate({path:'User', select:'-password'}); 
+        const foundRecord = await Loan.find({ user, status }).populate({path:'user', select:'-password'}); 
         return foundRecord;
     } catch (err: any) {
         throw err;
@@ -115,7 +115,7 @@ export const getUserLoanByStatus = async (
 
 export const getAllLoanRecord = async () => {
     try {
-        const foundRecord = await Loan.find().populate({path:'User', select:'-password'}); 
+        const foundRecord = await Loan.find().populate({path:'user', select:'-password'}); 
         return foundRecord;
     } catch (err: any) {
         throw err;
@@ -124,7 +124,7 @@ export const getAllLoanRecord = async () => {
 
 export const getLoanRecordByStatus = async (status: string) => {
     try {
-        const foundRecord = await Loan.find({ status }).populate({path:'User', select:'-password'}); 
+        const foundRecord = await Loan.find({ status }).populate({path:'user', select:'-password'}); 
         return foundRecord;
     } catch (err: any) {
         throw err;
