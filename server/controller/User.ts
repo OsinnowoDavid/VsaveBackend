@@ -371,12 +371,13 @@ export const userProfile = async (req: Request, res: Response) => {
 
 export const updateProfileController = async (req: Request, res: Response) => {
     try {
-        const { firstName, lastName, phoneNumber } = req.body;
+        const { firstName, email, lastName, phoneNumber } = req.body;
         const user = req.user as IUser;
         const updatedProfile = await updateProfile(
             user,
             firstName,
             lastName,
+            email,
             phoneNumber,
         );
         return res.json({

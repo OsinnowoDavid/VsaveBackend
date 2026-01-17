@@ -101,11 +101,12 @@ const getUserVerificationToken = async (email, token) => {
     }
 };
 exports.getUserVerificationToken = getUserVerificationToken;
-const updateProfile = async (user, firstName, lastName, phoneNumber) => {
+const updateProfile = async (user, firstName, lastName, email, phoneNumber) => {
     try {
         const updatedUser = await User_1.default.findByIdAndUpdate(user._id, {
             firstName,
             lastName,
+            email,
             phoneNumber,
         });
         return updatedUser;

@@ -113,12 +113,14 @@ export const updateProfile = async (
     user: IUser,
     firstName: string,
     lastName: string,
+    email:string,
     phoneNumber: string,
 ) => {
     try {
         const updatedUser = await User.findByIdAndUpdate(user._id, {
             firstName,
             lastName,
+            email,
             phoneNumber,
         });
         return updatedUser;

@@ -262,9 +262,9 @@ const userProfile = async (req, res) => {
 exports.userProfile = userProfile;
 const updateProfileController = async (req, res) => {
     try {
-        const { firstName, lastName, phoneNumber } = req.body;
+        const { firstName, email, lastName, phoneNumber } = req.body;
         const user = req.user;
-        const updatedProfile = await (0, User_1.updateProfile)(user, firstName, lastName, phoneNumber);
+        const updatedProfile = await (0, User_1.updateProfile)(user, firstName, lastName, email, phoneNumber);
         return res.json({
             status: "Success",
             message: "profile updated successfuly",
