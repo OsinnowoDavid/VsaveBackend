@@ -122,7 +122,7 @@ export const updateProfile = async (
             lastName,
             email,
             phoneNumber,
-        });
+        },{new:true,runValidators:true});
         return updatedUser;
     } catch (err: any) {
         throw err;

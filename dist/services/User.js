@@ -108,7 +108,7 @@ const updateProfile = async (user, firstName, lastName, email, phoneNumber) => {
             lastName,
             email,
             phoneNumber,
-        });
+        }, { new: true, runValidators: true });
         return updatedUser;
     }
     catch (err) {
