@@ -24,7 +24,8 @@ import {
     getAllTransaction,
     updateAdminRecord,
     UpdateAdminPassword,
-    getAdminById
+    getAdminById,
+    deleteAdmin
 } from "../services/Admin";
 import { signUserToken } from "../config/JWT";
 import {getAllLoanRecord,getLoanRecordByStatus,approveOrRejectLoan} from "../services/Loan" ;
@@ -275,7 +276,25 @@ export const superAdminProfileController = async (
         });
     }
 };
-
+export const deleteAminController = async (
+    req: Request,
+    res: Response,
+) => {
+    try{
+        const {id} = req.params ;
+        const deletedRecord = await deleteAdmin(id) ;
+        return res.json({
+            status:"Success",
+            message:"Account deleted Successfuly",
+            data: deletedRecord
+        })
+    }catch(err:any){
+         return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+}
 export const updateAdminRecordController =  async (
     req: Request,
     res: Response,

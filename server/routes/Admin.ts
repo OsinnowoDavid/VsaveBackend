@@ -24,7 +24,8 @@ import {
     getAllLoanRecordController,
     getLoanRecordByStatusController,
     approveOrRejectLoanController,
-    getAllAdminSavingsController
+    getAllAdminSavingsController,
+    deleteAminController
 } from "../controller/Admin";
 import { verifyGeneralAdminToken, verifySuperAdminToken } from "../config/JWT";
 import { validateAdminRegistrationInput } from "../validate-input/admin/index";
@@ -88,6 +89,7 @@ router.get("/user-savings-calculation", verifySuperAdminToken, getSavingsDetails
 router.get("/user-savings-record", verifySuperAdminToken, getUserSavingsDetailsController)
 router.post("/update", verifyGeneralAdminToken, updateAdminRecordController) ; 
 router.post("/update-password", verifyGeneralAdminToken,updateAdminPasswordController )
+router.delete("/:id", verifySuperAdminToken, deleteAminController) ;
 // get all loan record
 router.get("/get-all-loan", verifySuperAdminToken, getAllLoanRecordController) 
 // get  loan record by status

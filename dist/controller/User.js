@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.assignReferralCodeToExistingUserController = exports.checkUserSingleReferralRecordController = exports.checkUserReferralRecordsByStatusController = exports.checkUserReferralRecordsController = exports.getSingleTerminalTransactionController = exports.getTerminalTransactionController = exports.getTerminalDetailsController = exports.topUpLottryAccountController = exports.getUserTotalSavingsAndLoanBalanceController = exports.getFixedSavingsByStatusController = exports.getAllFixedSavingsController = exports.getCompletedFixedSavingsController = exports.getActiveFixedSavingsController = exports.createFixedSavingController = exports.getUserSavingsRecordsByStatusController = exports.getSavingsCircleByIdController = exports.getAllUserSavingsRecordController = exports.getUserActiveSavingsRecordController = exports.getAvaliableSavingsController = exports.createPersonalSavingsCircleController = exports.joinSavingsController = exports.userGetAllSubRegionController = exports.getUserTransactionByTypeController = exports.getUserTransactionByStatusController = exports.getUserSingleTransactionController = exports.getUserTransactionsController = exports.payOutController = exports.accountLookUpController = exports.getBankCodeController = exports.buyDataController = exports.buyAirtimeController = exports.getDataPlanController = exports.updateTransactionPinController = exports.createTransactionPinController = exports.getUserKyc1RecordController = exports.updateKYC1RecordController = exports.registerKYC1 = exports.changePasswordController = exports.updateProfileController = exports.userProfile = exports.loginUser = exports.resendUserVerificationEmail = exports.verifyEmail = exports.registerUser = void 0;
+exports.assignReferralCodeToExistingUserController = exports.checkUserSingleReferralRecordController = exports.checkUserReferralRecordsByStatusController = exports.checkUserReferralRecordsController = exports.getSingleTerminalTransactionController = exports.getTerminalTransactionController = exports.getTerminalDetailsController = exports.topUpLottryAccountController = exports.getUserTotalSavingsAndLoanBalanceController = exports.getFixedSavingsByStatusController = exports.getAllFixedSavingsController = exports.getCompletedFixedSavingsController = exports.getActiveFixedSavingsController = exports.createFixedSavingController = exports.getUserSavingsRecordsByStatusController = exports.getSavingsCircleByIdController = exports.getAllUserSavingsRecordController = exports.getUserActiveSavingsRecordController = exports.getAvaliableSavingsController = exports.createPersonalSavingsCircleController = exports.joinSavingsController = exports.userGetAllSubRegionController = exports.getUserTransactionByTypeController = exports.getUserTransactionByStatusController = exports.getUserSingleTransactionController = exports.getUserTransactionsController = exports.getAccountBalanceController = exports.payOutController = exports.accountLookUpController = exports.getBankCodeController = exports.buyDataController = exports.buyAirtimeController = exports.getDataPlanController = exports.updateTransactionPinController = exports.createTransactionPinController = exports.getUserKyc1RecordController = exports.updateKYC1RecordController = exports.registerKYC1 = exports.changePasswordController = exports.updateProfileController = exports.userProfile = exports.loginUser = exports.resendUserVerificationEmail = exports.verifyEmail = exports.registerUser = void 0;
 const argon2_1 = __importDefault(require("argon2"));
 const User_1 = require("../services/User");
 const Savings_1 = require("../services/Savings");
@@ -679,6 +679,24 @@ const payOutController = async (req, res) => {
     }
 };
 exports.payOutController = payOutController;
+const getAccountBalanceController = async (req, res) => {
+    try {
+        const user = req.user;
+        const balanceResult = await (0, User_1.getAccountBalance)(user._id.toString());
+        return res.json({
+            status: "Success",
+            message: "balance found",
+            data: balanceResult
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.getAccountBalanceController = getAccountBalanceController;
 const getUserTransactionsController = async (req, res) => {
     try {
         const user = req.user;

@@ -44,7 +44,8 @@ import {
     checkUserReferralRecordsByStatusController,
     checkUserReferralRecordsController,
     checkUserSingleReferralRecordController,
-    assignReferralCodeToExistingUserController
+    assignReferralCodeToExistingUserController,
+    getAccountBalanceController
 } from "../controller/User";
 import {
     validateUserRegitrationInput,
@@ -98,6 +99,8 @@ router.get("/get-bank-code", verifyUserToken, getBankCodeController);
 router.post("/account-lookup", verifyUserToken, accountLookUpController);
 
 router.post("/payout", verifyUserToken, payOutController);
+
+router.get("/account-balance", verifyUserToken, getAccountBalanceController) ;
 
 router.get("/transactions", verifyUserToken, getUserTransactionsController);
 

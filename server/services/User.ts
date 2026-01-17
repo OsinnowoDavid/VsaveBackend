@@ -700,7 +700,21 @@ export const payOut = async (
         }
     }
 };
-
+export const getAccountBalance = async (user:string) =>{
+    try{
+        const foundUser = await User.findById(user) ;
+        let result = {
+            availableBalance:0,
+            pendingBalance:0
+        } 
+        result.availableBalance = foundUser.availableBalance ;
+        result.pendingBalance = foundUser.pendingBalance ;
+        return result ;
+        
+    }catch(err:any){
+        throw err
+    }
+}
 export const getUserTransactions = async (user: string) => {
     try {
         const userTransaction = await Transaction.find({ userId: user });

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllAdminSavingsController = exports.approveOrRejectLoanController = exports.getLoanRecordByStatusController = exports.getAllLoanRecordController = exports.getUserSavingsDetailsController = exports.getSavingsDetailsController = exports.getAdminDashboardDetails = exports.getAllAdminByRoleController = exports.getAllAdminController = exports.getAllUserController = exports.getAdminConfigController = exports.setAdminConfigController = exports.getRegionalAdminByEmailController = exports.getRegionalAdminsController = exports.getAllRegionalAdminController = exports.getAllRegionController = exports.createNewRegionController = exports.assignRegionalAdminToRegionController = exports.createRegionalAdminController = exports.updateAdminRecordController = exports.superAdminProfileController = exports.LoginSuperAdminController = exports.resendVerificationCodeController = exports.updateAdminPasswordController = exports.createAdminPasswordController = exports.registerAdminController = void 0;
+exports.getAllAdminSavingsController = exports.approveOrRejectLoanController = exports.getLoanRecordByStatusController = exports.getAllLoanRecordController = exports.getUserSavingsDetailsController = exports.getSavingsDetailsController = exports.getAdminDashboardDetails = exports.getAllAdminByRoleController = exports.getAllAdminController = exports.getAllUserController = exports.getAdminConfigController = exports.setAdminConfigController = exports.getRegionalAdminByEmailController = exports.getRegionalAdminsController = exports.getAllRegionalAdminController = exports.getAllRegionController = exports.createNewRegionController = exports.assignRegionalAdminToRegionController = exports.createRegionalAdminController = exports.updateAdminRecordController = exports.deleteAminController = exports.superAdminProfileController = exports.LoginSuperAdminController = exports.resendVerificationCodeController = exports.updateAdminPasswordController = exports.createAdminPasswordController = exports.registerAdminController = void 0;
 const argon2_1 = __importDefault(require("argon2"));
 const Admin_1 = require("../services/Admin");
 const JWT_1 = require("../config/JWT");
@@ -246,6 +246,24 @@ const superAdminProfileController = async (req, res) => {
     }
 };
 exports.superAdminProfileController = superAdminProfileController;
+const deleteAminController = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const deletedRecord = await (0, Admin_1.deleteAdmin)(id);
+        return res.json({
+            status: "Success",
+            message: "Account deleted Successfuly",
+            data: deletedRecord
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.deleteAminController = deleteAminController;
 const updateAdminRecordController = async (req, res) => {
     try {
         const { firstName, lastName, email, phoneNumber } = req.body;

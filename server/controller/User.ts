@@ -42,6 +42,7 @@ import {
     createTransactionPin,
     validateTransactionPin,
     getUserByIdPublicUse,
+    getAccountBalance,
 } from "../services/User";
 import { IUser, IVerificationToken, IKYC1 } from "../../types";
 import {
@@ -883,6 +884,25 @@ export const payOutController = async (req: Request, res: Response) => {
         });
     }
 };
+export const getAccountBalanceController = async (
+    req: Request,
+    res: Response,
+) => {
+    try{
+        const user = req.user as IUser ; 
+        const balanceResult = await getAccountBalance(user._id.toString()) ;
+        return res.json({
+            status:"Success",
+            message : "balance found",
+            data: balanceResult
+        })
+    }catch(err:any){
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+}
 export const getUserTransactionsController = async (
     req: Request,
     res: Response,

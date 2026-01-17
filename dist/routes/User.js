@@ -35,6 +35,7 @@ router.post("/buy-data", JWT_1.verifyUserToken, User_1.buyDataController);
 router.get("/get-bank-code", JWT_1.verifyUserToken, User_1.getBankCodeController);
 router.post("/account-lookup", JWT_1.verifyUserToken, User_1.accountLookUpController);
 router.post("/payout", JWT_1.verifyUserToken, User_1.payOutController);
+router.get("/account-balance", JWT_1.verifyUserToken, User_1.getAccountBalanceController);
 router.get("/transactions", JWT_1.verifyUserToken, User_1.getUserTransactionsController);
 router.get("/single-transaction/:id", JWT_1.verifyUserToken, User_1.getUserSingleTransactionController);
 router.get("/transaction-by-status/:status", JWT_1.verifyUserToken, User_1.getUserTransactionByStatusController);

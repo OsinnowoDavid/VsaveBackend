@@ -33,6 +33,7 @@ router.get("/user-savings-calculation", JWT_1.verifySuperAdminToken, Admin_1.get
 router.get("/user-savings-record", JWT_1.verifySuperAdminToken, Admin_1.getUserSavingsDetailsController);
 router.post("/update", JWT_1.verifyGeneralAdminToken, Admin_1.updateAdminRecordController);
 router.post("/update-password", JWT_1.verifyGeneralAdminToken, Admin_1.updateAdminPasswordController);
+router.delete("/:id", JWT_1.verifySuperAdminToken, Admin_1.deleteAminController);
 // get all loan record
 router.get("/get-all-loan", JWT_1.verifySuperAdminToken, Admin_1.getAllLoanRecordController);
 // get  loan record by status

@@ -84,6 +84,14 @@ export const createAdminPassword = async (admin:string,password:string) =>{
         throw err 
     }
 }
+export const deleteAdmin = async (id:string) =>{
+    try{
+        const deletedRecord = await Admin.findByIdAndDelete(id) ;
+        return "Done"
+    }catch(err:any){
+        throw err
+    }
+}
 export const createNewRegion = async (
     regionName: string,
     shortCode: string,

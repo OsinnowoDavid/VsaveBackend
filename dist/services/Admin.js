@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllTransaction = exports.getSubRegionById = exports.getSubRegionaladminByEmail = exports.getAllSubRegionalAdmin = exports.createSubRegionalAdmin = exports.sendNotification = exports.getAdminSavingsConfig = exports.setAdminSavingsConfig = exports.getRegionById = exports.getRegionByName = exports.getAllRegion = exports.getRegionalAdminByEmail = exports.getRegionalAdminById = exports.getRegionalAdmins = exports.getAllRegionalAdmin = exports.assignRegionalAdminToRegions = exports.UpdateAdminPassword = exports.updateAdminRecord = exports.assignRegionalAdmin = exports.createRegionalAdmin = exports.createNewRegion = exports.createAdminPassword = exports.getAllSuperAdminByEmail = exports.getAdminByRole = exports.getAllAdmin = exports.getAdminByEmail = exports.getAdminById = exports.CreateAdmin = void 0;
+exports.getAllTransaction = exports.getSubRegionById = exports.getSubRegionaladminByEmail = exports.getAllSubRegionalAdmin = exports.createSubRegionalAdmin = exports.sendNotification = exports.getAdminSavingsConfig = exports.setAdminSavingsConfig = exports.getRegionById = exports.getRegionByName = exports.getAllRegion = exports.getRegionalAdminByEmail = exports.getRegionalAdminById = exports.getRegionalAdmins = exports.getAllRegionalAdmin = exports.assignRegionalAdminToRegions = exports.UpdateAdminPassword = exports.updateAdminRecord = exports.assignRegionalAdmin = exports.createRegionalAdmin = exports.createNewRegion = exports.deleteAdmin = exports.createAdminPassword = exports.getAllSuperAdminByEmail = exports.getAdminByRole = exports.getAllAdmin = exports.getAdminByEmail = exports.getAdminById = exports.CreateAdmin = void 0;
 const Admin_1 = __importDefault(require("../model/Admin"));
 const Region_1 = __importDefault(require("../model/Region"));
 const SubRegion_1 = __importDefault(require("../model/SubRegion"));
@@ -93,6 +93,16 @@ const createAdminPassword = async (admin, password) => {
     }
 };
 exports.createAdminPassword = createAdminPassword;
+const deleteAdmin = async (id) => {
+    try {
+        const deletedRecord = await Admin_1.default.findByIdAndDelete(id);
+        return "Done";
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.deleteAdmin = deleteAdmin;
 const createNewRegion = async (regionName, shortCode) => {
     try {
         const newRegion = await Region_1.default.create({
