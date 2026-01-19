@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.assignReferralCodeToExistingUserController = exports.checkUserSingleReferralRecordController = exports.checkUserReferralRecordsByStatusController = exports.checkUserReferralRecordsController = exports.getSingleTerminalTransactionController = exports.getTerminalTransactionController = exports.getTerminalDetailsController = exports.topUpLottryAccountController = exports.getUserTotalSavingsAndLoanBalanceController = exports.getFixedSavingsByStatusController = exports.getAllFixedSavingsController = exports.getCompletedFixedSavingsController = exports.getActiveFixedSavingsController = exports.createFixedSavingController = exports.getUserSavingsRecordsByStatusController = exports.getSavingsCircleByIdController = exports.getAllUserSavingsRecordController = exports.getUserActiveSavingsRecordController = exports.getAvaliableSavingsController = exports.createPersonalSavingsCircleController = exports.joinSavingsController = exports.userGetAllSubRegionController = exports.getUserTransactionByTypeController = exports.getUserTransactionByStatusController = exports.getUserSingleTransactionController = exports.getUserTransactionsController = exports.getAccountBalanceController = exports.payOutController = exports.accountLookUpController = exports.getBankCodeController = exports.buyDataController = exports.buyAirtimeController = exports.getDataPlanController = exports.updateTransactionPinController = exports.createTransactionPinController = exports.getUserKyc1RecordController = exports.updateKYC1RecordController = exports.registerKYC1 = exports.changePasswordController = exports.updateProfileController = exports.userProfile = exports.loginUser = exports.resendUserVerificationEmail = exports.verifyEmail = exports.registerUser = void 0;
+exports.assignReferralCodeToExistingUserController = exports.checkUserSingleReferralRecordController = exports.checkUserReferralRecordsByStatusController = exports.checkUserReferralRecordsController = exports.getSingleTerminalTransactionController = exports.getTerminalTransactionController = exports.getTerminalDetailsController = exports.topUpLottryAccountController = exports.getUserTotalSavingsAndLoanBalanceController = exports.getFixedSavingsByStatusController = exports.getAllFixedSavingsController = exports.getCompletedFixedSavingsController = exports.getActiveFixedSavingsController = exports.createFixedSavingController = exports.getUserSavingsRecordsByStatusController = exports.getSavingsCircleByIdController = exports.getAllUserSavingsRecordController = exports.getUserActiveSavingsRecordController = exports.getAvaliableSavingsController = exports.createPersonalSavingsCircleController = exports.joinSavingsController = exports.userGetAllSubRegionController = exports.getUserTransactionByTypeController = exports.getUserTransactionByStatusController = exports.getUserSingleTransactionController = exports.getUserTransactionsController = exports.getAccountBalanceController = exports.payOutController = exports.accountLookUpController = exports.getBankCodeController = exports.buyDataController = exports.buyAirtimeController = exports.getDataPlanController = exports.updateTransactionPinController = exports.createTransactionPinController = exports.getUserKyc1RecordController = exports.updateKYC1RecordController = exports.registerKYC1 = exports.changePasswordController = exports.updateProfileController = exports.resetPasswordController = exports.initPasswordResetController = exports.userProfile = exports.loginUser = exports.resendUserVerificationEmail = exports.verifyEmail = exports.registerUser = void 0;
 const argon2_1 = __importDefault(require("argon2"));
 const User_1 = require("../services/User");
 const Savings_1 = require("../services/Savings");
@@ -20,7 +20,7 @@ const QOREID_BASE_URL = process.env.QOREID_BASE_URL;
 mail_1.default.setApiKey(process.env.SENDGRID_API_KEY);
 const getNextFiveMinutes = () => {
     const now = new Date();
-    const next = new Date(now.getTime() + 5 * 60 * 1000); // add 5 minutes
+    const next = new Date(now.getTime() + 10 * 60 * 1000); // add 5 minutes
     return next;
 };
 const registerUser = async (req, res) => {
@@ -74,6 +74,11 @@ const registerUser = async (req, res) => {
         let referralErr = "";
         if (referralCode) {
             const userReferred = await (0, referral_1.assignReferral)(newUser._id.toString(), referralCode);
+            if (userReferred === "Successful") {
+                const foundUser = await (0, User_1.getReferalByReferalCode)(referralCode);
+                newUser.referredBy = foundUser._id;
+                await newUser.save();
+            }
             referralErr = userReferred.message;
         }
         // generate referral code 
@@ -149,7 +154,7 @@ const resendUserVerificationEmail = async (req, res) => {
         //  config mail option
         const msg = {
             to: user.email,
-            from: `David <danyboy99official@gmail.com>`,
+            from: `David <davidosinnowo1@gmail.com>`,
             subject: "Welcome to VSAVE 🎉",
             html: `Hello ${user.firstName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans. To get started, please verify your email using the code below:
            CODE : ${tokenNumber}
@@ -191,7 +196,7 @@ const loginUser = async (req, res) => {
             //  config mail option
             const msg = {
                 to: user.email,
-                from: `David <danyboy99official@gmail.com>`,
+                from: `David <davidosinnowo1@gmail.com>`,
                 subject: "Welcome to VSAVE 🎉",
                 html: `Hello ${user.firstName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans. To get started, please verify your email using the code below:
            CODE : ${tokenNumber}
@@ -253,13 +258,92 @@ const userProfile = async (req, res) => {
         });
     }
     catch (err) {
-        res.json({
+        return res.json({
             status: "Failed",
             message: err.message,
         });
     }
 };
 exports.userProfile = userProfile;
+const initPasswordResetController = async (req, res) => {
+    try {
+        const { email } = req.body;
+        const foundUser = await (0, User_1.getUserByEmail)(email);
+        if (!foundUser) {
+            return res.json({
+                status: "Failed",
+                message: "no user found with this email"
+            });
+        }
+        ;
+        const tokenNumber = Math.floor(100000 + Math.random() * 900000);
+        const expTime = getNextFiveMinutes();
+        await (0, User_1.assignUserEmailVerificationToken)(foundUser.email, tokenNumber, expTime);
+        //  config mail option
+        const msg = {
+            to: foundUser.email,
+            from: `David <davidosinnowo1@gmail.com>`,
+            subject: "VSave Password Reset",
+            html: `Hello ${foundUser.firstName}, You have requested a password reset.
+            Please use the code ${tokenNumber} to proceed with resetting your password,
+            token expires in 10 mins .
+            If you did not initiate this request, you can safely ignore this email. 
+            Your security is important to us. Thank you!
+
+          — The VSave Team.`,
+        };
+        const sentMail = await mail_1.default.send(msg);
+        console.log("email sent successfuly:", sentMail);
+        return res.json({
+            status: "Success",
+            message: `reset code sent to ${foundUser.email} check your email and procced to reset your password`
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.initPasswordResetController = initPasswordResetController;
+const resetPasswordController = async (req, res) => {
+    try {
+        const { email, code, password } = req.body;
+        const foundUser = await (0, User_1.getUserByEmail)(email);
+        const verifyToken = (await (0, User_1.getUserVerificationToken)(email, code));
+        console.log("allToken:", verifyToken);
+        for (const token of verifyToken) {
+            if (token.token === code.toString()) {
+                let hashPassword = await argon2_1.default.hash(password);
+                const changedPassword = await (0, User_1.changePassword)(foundUser, hashPassword);
+                return res.json({
+                    status: "Success",
+                    message: "password changed successfuly",
+                    data: changedPassword,
+                });
+            }
+        }
+        const tokenExist = await (0, User_1.confirmTokenExist)(email, code);
+        if (tokenExist) {
+            return res.json({
+                status: "Failed",
+                message: "Expired token",
+            });
+        }
+        return res.json({
+            status: "Failed",
+            message: "Incorrect code ",
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.resetPasswordController = resetPasswordController;
 const updateProfileController = async (req, res) => {
     try {
         const { firstName, email, lastName, phoneNumber } = req.body;
@@ -328,7 +412,7 @@ const registerKYC1 = async (req, res) => {
         }
         await (0, User_1.createVirtualAccountIndex)(user._id.toString(), virtualAccount.data.virtual_account_number);
         // save KYC1
-        const newKYC1 = await (0, User_1.createKYC1Record)(user, profession, accountNumber, bank, accountDetails, bankCode, country, state, bvn, address, subRegion);
+        const newKYC1 = await (0, User_1.createKYC1Record)(user, profession, country, state, bvn, address, subRegion, accountNumber, bank, accountDetails, bankCode);
         user.profession = profession;
         await user.save();
         if (profession === "Lottery Agent") {

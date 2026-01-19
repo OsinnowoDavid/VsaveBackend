@@ -90,13 +90,19 @@ const userSchema = new Schema({
             "Other",
         ],
     },
+    referredBy: {
+        type: mongoose_1.default.Schema.Types.ObjectId,
+        ref: "Officer",
+    },
     lottoryId: {
         type: String
     },
     lastSeen: {
         type: String
     },
-    referralCode: String
+    referralCode: {
+        type: String
+    }
 }, { timestamps: true });
 const User = mongoose_1.default.model("User", userSchema);
 exports.default = User;

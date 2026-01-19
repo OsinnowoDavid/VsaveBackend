@@ -102,13 +102,19 @@ export const getUserVerificationToken = async (
             token,
             createdAt: { $gte: fiveMinsAgo },
         });
-
         return foundToken;
     } catch (err: any) {
         throw err;
     }
 };
-
+export const confirmTokenExist = async (email:string,token:string) =>{
+    try{
+        const foundRecord = await VerificationToken.findOne({email,token});
+        return foundRecord
+    }catch(err:any){
+        throw err
+    }
+}
 export const updateProfile = async (
     user: IUser,
     firstName: string,
@@ -171,15 +177,15 @@ export const kycStatusChange = async (
 export const createKYC1Record = async (
     user: IUser,
     profession: string,
-    accountNumber: number,
-    bank: string,
-    accountDetails: string,
-    bankCode:string,
     country: string,
     state: string,
     bvn: string,
     address: string,
     subRegion: string,
+    accountNumber?: number,
+    bank?: string,
+    accountDetails?: string,
+    bankCode?:string,
 ) => {
     try {
         const newKYC1 = await KYC1.create({
@@ -205,10 +211,10 @@ export const createKYC1Record = async (
 export const updateKYC1Record = async (
     user: IUser,
     profession: string,
-    bank: string,
-    accountNumber: Number,
-    accountDetails: string,
-    bankCode:string,
+    bank?: string,
+    accountNumber?: Number,
+    accountDetails?: string,
+    bankCode?:string,
     country?: string,
     state?: string,
     address?: string,
@@ -925,3 +931,11 @@ export const getAllUser = async () => {
         throw err;
     }
 };
+export const getReferalByReferalCode = async (code:string) =>{
+    try{
+        const foundRecord = await User.findOne({referralCode:code}) ;
+        return foundRecord
+    }catch(err:any){
+        throw err
+    }
+}

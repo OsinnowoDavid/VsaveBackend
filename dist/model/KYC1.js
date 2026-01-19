@@ -20,15 +20,15 @@ const KYC1Schema = new mongoose_1.default.Schema({
     },
     accountNumber: {
         type: Number,
-        required: true,
+        required: false,
     },
     bank: {
         type: String,
-        required: true,
+        required: false,
     },
     accountDetails: {
         type: String,
-        required: true,
+        required: false,
     },
     bankCode: {
         type: String,

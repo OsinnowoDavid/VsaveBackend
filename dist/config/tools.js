@@ -83,7 +83,7 @@ function getDayName(dateString) {
 }
 function getFiveMinutesAgo() {
     const now = new Date();
-    const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
+    const fiveMinutesAgo = new Date(now.getTime() - 10 * 60 * 1000);
     return fiveMinutesAgo;
 }
 const generateRefrenceCode = () => {

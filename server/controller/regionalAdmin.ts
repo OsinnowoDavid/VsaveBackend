@@ -12,7 +12,8 @@ import {
     getAllSubRegion,
     assignSubRegionToRegion,
 } from "../services/RegionalAdmin"; 
-import {} from "../services/Admin"
+import {} from "../services/Admin";
+import { ISubRegion } from "../../types";
 
 export const LoginRegionalAdmin = async (req: Request, res: Response) => {
     try {
@@ -73,11 +74,11 @@ export const createSubRegionController = async (
 ) => {
     try {
         const { subRegionName, shortCode, region } = req.body;
-        const newSubRegion = await createSubRegion(
+        const newSubRegion = (await createSubRegion(
             subRegionName,
             shortCode,
             region.toString(),
-        );
+        )) as ISubRegion 
         if (!newSubRegion) {
             return res.json({
                 status: "Failed",

@@ -28,6 +28,8 @@ declare interface IUser extends Document {
         | "Self Employed"
         | "Unemployed"
         | "Other";
+    referralCode:string ;
+    referredBy: Types.ObjectId | string | null;
 }
 declare interface IVerificationToken extends Document {
     user?: Types.ObjectId;
@@ -91,8 +93,8 @@ declare interface ISubRegion extends Document {
     shortCode: string;
     region: Types.ObjectId;
     admin: Types.ObjectId[];
-    agent: Types.ObjectId[];
     user: Types.ObjectId[];
+    teams: Types.ObjectId[];
     createdAt?: Date;
     updatedAt?: Date;
 }

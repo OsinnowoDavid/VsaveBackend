@@ -12,6 +12,8 @@ const router = express_1.default.Router();
 router.post("/waitlist", waitList_1.createWaitListController);
 router.get("/get-all-waitlist", waitList_1.getAllWaitListController);
 router.get("/get-waitlist-by-email/:email", waitList_1.getAllWaitListController);
+router.post("/init-password-reset", User_1.initPasswordResetController);
+router.post("/password-reset", User_1.resetPasswordController);
 router.post("/register", user_1.validateUserRegitrationInput, User_1.registerUser);
 router.post("/login", user_1.validateUserLoginInput, User_1.loginUser);
 router.post("/verify-email", User_1.verifyEmail);

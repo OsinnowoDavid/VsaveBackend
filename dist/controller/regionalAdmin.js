@@ -65,7 +65,7 @@ exports.regionalAdminProfile = regionalAdminProfile;
 const createSubRegionController = async (req, res) => {
     try {
         const { subRegionName, shortCode, region } = req.body;
-        const newSubRegion = await (0, RegionalAdmin_1.createSubRegion)(subRegionName, shortCode, region.toString());
+        const newSubRegion = (await (0, RegionalAdmin_1.createSubRegion)(subRegionName, shortCode, region.toString()));
         if (!newSubRegion) {
             return res.json({
                 status: "Failed",

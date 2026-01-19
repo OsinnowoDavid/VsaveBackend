@@ -22,8 +22,8 @@ const subRegionSchema = new Schema({
     admin: [
         { type: mongoose_1.default.Schema.Types.ObjectId, ref: "SubRegionAdmin" },
     ],
-    agent: [{ type: mongoose_1.default.Schema.Types.ObjectId, ref: "Agent" }],
     user: [{ type: mongoose_1.default.Schema.Types.ObjectId, ref: "User" }],
+    teams: [{ type: mongoose_1.default.Schema.Types.ObjectId, ref: "Team" }]
 }, { timestamps: true });
 const subRegion = mongoose_1.default.model("SubRegion", subRegionSchema);
 exports.default = subRegion;

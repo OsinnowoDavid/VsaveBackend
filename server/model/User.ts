@@ -89,13 +89,19 @@ const userSchema = new Schema(
                 "Other",
             ],
         },
+        referredBy:{
+             type: mongoose.Schema.Types.ObjectId,
+            ref: "Officer", 
+        },
         lottoryId:{
             type:String
         },
         lastSeen:{
             type:String
         },
-        referralCode:String
+        referralCode:{
+            type:String
+        }
     },
     { timestamps: true },
 );

@@ -45,7 +45,9 @@ import {
     checkUserReferralRecordsController,
     checkUserSingleReferralRecordController,
     assignReferralCodeToExistingUserController,
-    getAccountBalanceController
+    getAccountBalanceController,
+    initPasswordResetController,
+    resetPasswordController
 } from "../controller/User";
 import {
     validateUserRegitrationInput,
@@ -57,7 +59,9 @@ import { createWaitListController , getAllWaitListController, getWaitListByEmail
 const router = express.Router();
 router.post("/waitlist", createWaitListController)
 router.get("/get-all-waitlist",getAllWaitListController )
-router.get("/get-waitlist-by-email/:email",getAllWaitListController )
+router.get("/get-waitlist-by-email/:email",getAllWaitListController );
+router.post("/init-password-reset",initPasswordResetController ) ;
+router.post("/password-reset",resetPasswordController ) ;
 router.post("/register", validateUserRegitrationInput, registerUser);  
 router.post("/login", validateUserLoginInput, loginUser);
 router.post("/verify-email", verifyEmail);

@@ -111,7 +111,7 @@ const assignReferral = async (user, referralCode) => {
             let newRecord = await (0, exports.createUserReferral)(foundUser._id.toString(), user);
             foundUser.pendingBalance += 500;
             await foundUser.save();
-            return newRecord;
+            return "Successful";
         }
         ;
         return { err: true, message: "account created but, invalid referral code" };

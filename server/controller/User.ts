@@ -43,6 +43,8 @@ import {
     validateTransactionPin,
     getUserByIdPublicUse,
     getAccountBalance,
+    getReferalByReferalCode,
+    confirmTokenExist,
 } from "../services/User";
 import { IUser, IVerificationToken, IKYC1 } from "../../types";
 import {
@@ -86,7 +88,7 @@ const QOREID_BASE_URL = process.env.QOREID_BASE_URL as string;
 SGMail.setApiKey(process.env.SENDGRID_API_KEY);
 const getNextFiveMinutes = () => {
     const now = new Date();
-    const next = new Date(now.getTime() + 5 * 60 * 1000); // add 5 minutes
+    const next = new Date(now.getTime() + 10 * 60 * 1000); // add 5 minutes
     return next;
 };
 
@@ -168,7 +170,12 @@ export const registerUser = async (req: Request, res: Response) => {
         // check for referral code 
         let referralErr = "";
         if(referralCode){
-           const userReferred = await assignReferral(newUser._id.toString(), referralCode) as any ; 
+           const userReferred = await assignReferral(newUser._id.toString(), referralCode) as any ;  
+            if(userReferred === "Successful"){
+                const foundUser = await getReferalByReferalCode(referralCode) ;
+                newUser.referredBy = foundUser._id ;
+                await newUser.save()
+            }
            referralErr = userReferred.message
         } 
        
@@ -249,7 +256,7 @@ export const resendUserVerificationEmail = async (
         //  config mail option
         const msg = {
             to: user.email,
-            from: `David <danyboy99official@gmail.com>`,
+            from: `David <davidosinnowo1@gmail.com>`,
             subject: "Welcome to VSAVE 🎉",
             html: `Hello ${user.firstName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans. To get started, please verify your email using the code below:
            CODE : ${tokenNumber}
@@ -295,7 +302,7 @@ export const loginUser = async (req: Request, res: Response) => {
             //  config mail option
             const msg = {
                 to: user.email,
-                from: `David <danyboy99official@gmail.com>`,
+                from: `David <davidosinnowo1@gmail.com>`,
                 subject: "Welcome to VSAVE 🎉",
                 html: `Hello ${user.firstName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans. To get started, please verify your email using the code below:
            CODE : ${tokenNumber}
@@ -362,13 +369,93 @@ export const userProfile = async (req: Request, res: Response) => {
             data,
         });
     } catch (err: any) {
-        res.json({
+       return res.json({
             status: "Failed",
             message: err.message,
         });
     }
 };
+export const initPasswordResetController = async (req: Request, res: Response) =>{
+    try{
+        const {email} = req.body; 
+        const foundUser = await getUserByEmail(email) ;
+        if(!foundUser){
+            return res.json({
+                status:"Failed",
+                message:"no user found with this email"
+            })
+        } ;
+         const tokenNumber = Math.floor(100000 + Math.random() * 900000);
+          const expTime = getNextFiveMinutes();
+        await assignUserEmailVerificationToken(
+            foundUser.email,
+            tokenNumber,
+            expTime,
+        );
+        //  config mail option
+        const msg = {
+            to: foundUser.email,
+            from: `David <davidosinnowo1@gmail.com>`,
+            subject: "VSave Password Reset",
+            html: `Hello ${foundUser.firstName}, You have requested a password reset.
+            Please use the code ${tokenNumber} to proceed with resetting your password,
+            token expires in 10 mins .
+            If you did not initiate this request, you can safely ignore this email. 
+            Your security is important to us. Thank you!
 
+          — The VSave Team.`,
+        };
+        const sentMail = await SGMail.send(msg); 
+         console.log("email sent successfuly:", sentMail)
+        return res.json({
+            status:"Success",
+            message :`reset code sent to ${foundUser.email} check your email and procced to reset your password` 
+        });
+    }catch(err:any){
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        }); 
+    }
+}
+export const resetPasswordController = async (req: Request, res: Response) =>{
+    try{
+       const {email,code,password} = req.body ; 
+       const foundUser = await getUserByEmail(email) as IUser ; 
+         const verifyToken = (await getUserVerificationToken(
+            email,
+            code,
+        )) as any; 
+        console.log("allToken:", verifyToken)
+         for (const token of verifyToken) {
+            if (token.token === code.toString()) {
+                 let hashPassword = await argon.hash(password);
+                const changedPassword = await changePassword(foundUser, hashPassword);
+                return res.json({
+                    status: "Success",
+                    message: "password changed successfuly",
+                    data: changedPassword,
+                });
+            }
+        }
+        const tokenExist = await confirmTokenExist(email,code) ;
+        if(tokenExist){
+            return res.json({
+            status: "Failed",
+            message: "Expired token",
+        });
+        }
+         return res.json({
+            status: "Failed",
+            message: "Incorrect code ",
+        });
+    }catch(err:any){
+         return res.json({
+            status: "Failed",
+            message: err.message,
+        }); 
+    }
+}
 export const updateProfileController = async (req: Request, res: Response) => {
     try {
         const { firstName, email, lastName, phoneNumber } = req.body;
@@ -463,15 +550,15 @@ export const registerKYC1 = async (req: Request, res: Response) => {
         const newKYC1 = await createKYC1Record(
             user,
             profession,
-            accountNumber,
-            bank,
-            accountDetails,
-            bankCode,
             country,
             state,
             bvn,
             address,
             subRegion,
+            accountNumber,
+            bank,
+            accountDetails,
+            bankCode,
         );
         user.profession = profession ;
         await user.save() ;
