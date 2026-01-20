@@ -261,6 +261,13 @@ export const getAllUserActiveSavingsRecord = async () => {
         throw err;
     }
 };
+// export const getUserSavingsRecord = async (user:IUser) =>{
+//     try{
+        
+//     }catch(err:any){
+//         throw err 
+//     }
+// }
 const getTomorrowsDate = () => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -454,10 +461,21 @@ export const getSavingsContributionById = async (contributionId: string) => {
 
 export const userSavingsRecords = async (user: IUser) => {
     try {
-        const allSavingsRecords = await UserSavingsRecord.find({
-            user: user._id,
+        const foundSavingsRecord = await UserSavingsRecord.find({
+            user,
         });
-        return allSavingsRecords;
+        let result = [];
+         for (const record of foundSavingsRecord) {
+            const foundContributionRecord = await SavingsContribution.findById(
+                record.contributionId,
+            );
+            let resultToPush = {
+                savingsRecord: foundSavingsRecord,
+                contributionRecord: foundContributionRecord,
+            };
+            result.push(resultToPush);
+        }
+        return result;
     } catch (err: any) {
         throw err;
     }
