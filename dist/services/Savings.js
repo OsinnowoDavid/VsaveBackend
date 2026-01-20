@@ -436,7 +436,7 @@ const userSavingsRecords = async (user) => {
         for (const record of foundSavingsRecord) {
             const foundContributionRecord = await SavingsContribution_1.default.findById(record.contributionId);
             let resultToPush = {
-                savingsRecord: foundSavingsRecord,
+                savingsRecord: record,
                 contributionRecord: foundContributionRecord,
             };
             result.push(resultToPush);

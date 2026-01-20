@@ -470,7 +470,7 @@ export const userSavingsRecords = async (user: IUser) => {
                 record.contributionId,
             );
             let resultToPush = {
-                savingsRecord: foundSavingsRecord,
+                savingsRecord: record,
                 contributionRecord: foundContributionRecord,
             };
             result.push(resultToPush);
