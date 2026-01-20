@@ -178,11 +178,22 @@ const getAllUserSavingsCircle = async (user) => {
 exports.getAllUserSavingsCircle = getAllUserSavingsCircle;
 const getUserActiveSavingsRecord = async (user) => {
     try {
-        const foundUserSavingsRecord = await User_savings_record_1.default.find({
+        const foundSavingsRecord = await User_savings_record_1.default.find({
             user: user._id,
             status: "ACTIVE",
         }).populate({ path: 'user', select: '-password' });
-        return foundUserSavingsRecord;
+        let result = [];
+        let savingsResult = {
+            savingsDetails: {},
+            contributionDetails: {}
+        };
+        for (const savingsRecord of foundSavingsRecord) {
+            savingsResult.savingsDetails = savingsRecord;
+            const foundContribution = await SavingsContribution_1.default.findById(savingsRecord.contributionId);
+            savingsResult.contributionDetails = foundContribution;
+            result.push(savingsResult);
+        }
+        return result;
     }
     catch (err) {
         throw err;

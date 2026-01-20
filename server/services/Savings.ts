@@ -201,11 +201,22 @@ export const getAllUserSavingsCircle = async (user: IUser) => {
 };
 export const getUserActiveSavingsRecord = async (user: IUser) => {
     try {
-        const foundUserSavingsRecord = await UserSavingsRecord.find({
+        const foundSavingsRecord = await UserSavingsRecord.find({
             user: user._id,
             status: "ACTIVE",
         }).populate({path:'user', select:'-password'}); 
-        return foundUserSavingsRecord;
+          let result = [] 
+        let savingsResult ={
+            savingsDetails:{},
+            contributionDetails:{}
+        }
+        for(const savingsRecord of foundSavingsRecord){
+            savingsResult.savingsDetails = savingsRecord 
+            const foundContribution = await SavingsContribution.findById(savingsRecord.contributionId) ;
+            savingsResult.contributionDetails = foundContribution ;
+            result.push(savingsResult) ;
+        } 
+       return result 
     } catch (err: any) {
         throw err;
     }

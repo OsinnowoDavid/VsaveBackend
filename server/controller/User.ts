@@ -1216,21 +1216,11 @@ export const getUserActiveSavingsRecordController = async (
     try {
         const user = req.user as IUser;
         const record = await getUserActiveSavingsRecord(user);
-        let result = [] as any;
-        for (const rec of record) {
-            let savingsCircle = await checkForCircleById(
-                rec.savingsCircleId.toString(),
-            );
-            let miniResult = [] as any;
-            miniResult.push(savingsCircle);
-            miniResult.push(rec);
-            result.push(miniResult);
-        }
 
         return res.json({
             status: "Success",
             message: "found savings plan",
-            data: result,
+            data: record,
         });
     } catch (err: any) {
         return res.json({

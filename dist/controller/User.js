@@ -949,18 +949,10 @@ const getUserActiveSavingsRecordController = async (req, res) => {
     try {
         const user = req.user;
         const record = await (0, Savings_2.getUserActiveSavingsRecord)(user);
-        let result = [];
-        for (const rec of record) {
-            let savingsCircle = await (0, Savings_2.checkForCircleById)(rec.savingsCircleId.toString());
-            let miniResult = [];
-            miniResult.push(savingsCircle);
-            miniResult.push(rec);
-            result.push(miniResult);
-        }
         return res.json({
             status: "Success",
             message: "found savings plan",
-            data: result,
+            data: record,
         });
     }
     catch (err) {
