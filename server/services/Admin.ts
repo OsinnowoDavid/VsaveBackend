@@ -2,7 +2,7 @@ import Admin from "../model/Admin";
 import RegionalAdmin from "../model/Regionaladmin";
 import Region from "../model/Region";
 import SubRegion from "../model/SubRegion";
-import { ISuperAdmin } from "../../types";
+import { IAdmin, ISuperAdmin } from "../../types";
 import AdminConfig from "../model/Admin_config"; 
 import Transaction from "../model/Transaction";
 export const CreateAdmin = async (
@@ -95,11 +95,13 @@ export const deleteAdmin = async (id:string) =>{
 export const createNewRegion = async (
     regionName: string,
     shortCode: string,
+    location:string
 ) => {
     try {
         const newRegion = await Region.create({
             regionName,
             shortCode,
+            location
         });
         return newRegion;
     } catch (err: any) {
@@ -248,6 +250,51 @@ export const getRegionById = async (id:string) =>{
             return foundRecord
     }catch(err:any){
         throw err
+    }
+}
+export const createSubRegion = async (areaName:string, shortCode:string, location:string,region:string) =>{
+    try{
+        const newSubRegion = await SubRegion.create({
+            subRegionName: areaName,
+            shortCode,
+            location,
+            region
+        })
+        return newSubRegion
+    }catch(err:any){
+        throw err
+    }
+}
+export const assignSubRegionAdmin = async (admin:string, subRegion:[string])  =>{
+    try{
+        const foundAdmin = await Admin.findById(admin) ;
+        for(const record of subRegion){
+            const foundSubRegion = await SubRegion.findById(record) ;
+            if(!foundSubRegion){
+                throw {Message:"no sub region found with this ID"}
+            }
+            foundAdmin.subRegion.push(record) ;
+        } 
+        await  foundAdmin.save() ;
+        return foundAdmin
+    }catch(err:any){
+        throw err
+    }
+}
+export const assignSubRegionAdminToSubRegion = async (admin:IAdmin, subRegion:[string]) =>{
+    try{
+        for(const id of subRegion){
+         const foundSubRegion = await SubRegion.findById(id);
+        if (!foundSubRegion) {
+            throw {message:"no sub region found with this ID"};
+        }
+        foundSubRegion.admin.push(admin._id);
+          await foundSubRegion.save();
+       }
+      
+        return 'Done'
+    }catch(err:any){
+        throw err 
     }
 }
 export const setAdminSavingsConfig = async (

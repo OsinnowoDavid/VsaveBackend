@@ -5,7 +5,6 @@ import connectDB from "./config/mongodB";
 import userRouter from "./routes/User";
 import adminRouter from "./routes/Admin";
 import loanRouter from "./routes/Loan";
-import regionalAdminRouter from "./routes/RegionalAdmin";
 import savingsRouter from "./routes/Savings";
 import webhookRouter from "./routes/Webhook";
 import dotenv from "dotenv";
@@ -48,9 +47,6 @@ app.use("/user", userRouter);
 
 // superAdmin routes config
 app.use("/admin", adminRouter);
-
-// regionaladmin routes config
-app.use("/regionaladmin", regionalAdminRouter);
 
 app.use("/savings", savingsRouter);
 

@@ -4,7 +4,6 @@ import {
     LoginSuperAdminController,
     superAdminProfileController,
     createNewRegionController,
-    createRegionalAdminController,
     getAllRegionController,
     getAllRegionalAdminController,
     getRegionalAdminByEmailController,
@@ -25,9 +24,11 @@ import {
     getLoanRecordByStatusController,
     approveOrRejectLoanController,
     getAllAdminSavingsController,
-    deleteAminController
+    deleteAminController,
+    createSubRegionController,
+    assignSubRegionAdminToSubRegionController
 } from "../controller/Admin";
-import { verifyGeneralAdminToken, verifySuperAdminToken } from "../config/JWT";
+import { verifyGeneralAdminToken, verifySuperAdminToken , verifyRegionalAdminToken} from "../config/JWT";
 import { validateAdminRegistrationInput } from "../validate-input/admin/index";
 
 const router = express.Router();
@@ -45,11 +46,6 @@ router.get("/profile", verifySuperAdminToken, superAdminProfileController);
 // get index info
 router.post("/create-region", verifySuperAdminToken, createNewRegionController);
 
-router.post(
-    "/create-regional-admin",
-    verifySuperAdminToken,
-    createRegionalAdminController,
-);
 
 router.post("/assign-regionaladmin-to-region", verifySuperAdminToken,assignRegionalAdminToRegionController)
 
@@ -66,7 +62,12 @@ router.get(
     verifySuperAdminToken,
     getRegionalAdminByEmailController,
 );
-
+router.post(
+    "/create-area",
+   verifyRegionalAdminToken,
+    createSubRegionController,
+);
+router.post("/assign-admin-to-area",verifyRegionalAdminToken, assignSubRegionAdminToSubRegionController) ;
 router.post(
     "/set-saving-config",
     verifySuperAdminToken,

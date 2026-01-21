@@ -14,11 +14,12 @@ router.post("/login", Admin_1.LoginSuperAdminController);
 router.get("/profile", JWT_1.verifySuperAdminToken, Admin_1.superAdminProfileController);
 // get index info
 router.post("/create-region", JWT_1.verifySuperAdminToken, Admin_1.createNewRegionController);
-router.post("/create-regional-admin", JWT_1.verifySuperAdminToken, Admin_1.createRegionalAdminController);
 router.post("/assign-regionaladmin-to-region", JWT_1.verifySuperAdminToken, Admin_1.assignRegionalAdminToRegionController);
 router.get("/get-all-regional-admin", JWT_1.verifySuperAdminToken, Admin_1.getAllRegionalAdminController);
 router.get("/get-all-region", JWT_1.verifySuperAdminToken, Admin_1.getAllRegionController);
 router.get("/get-regional-admin/:email", JWT_1.verifySuperAdminToken, Admin_1.getRegionalAdminByEmailController);
+router.post("/create-area", JWT_1.verifyRegionalAdminToken, Admin_1.createSubRegionController);
+router.post("/assign-admin-to-area", JWT_1.verifyRegionalAdminToken, Admin_1.assignSubRegionAdminToSubRegionController);
 router.post("/set-saving-config", JWT_1.verifySuperAdminToken, Admin_1.setAdminConfigController);
 router.get("/get-savings-config", JWT_1.verifySuperAdminToken, Admin_1.getAdminConfigController);
 // get all User 

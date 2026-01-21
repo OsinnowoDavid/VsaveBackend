@@ -21,10 +21,8 @@ const officerSchema = new mongoose_1.default.Schema({
         type: String,
         required: true,
     },
-    role: {
-        type: String,
-        required: true,
-        enum: ["OFFICER", "GROUP LEADER", "TEAM LEADER"]
+    level: {
+        type: String
     },
     password: {
         type: String,
@@ -38,10 +36,8 @@ const officerSchema = new mongoose_1.default.Schema({
         type: String,
         required: true,
     },
-    group: { type: mongoose_1.default.Schema.Types.ObjectId,
-        ref: "Group", },
-    team: { type: mongoose_1.default.Schema.Types.ObjectId,
-        ref: "Team", }
+    area: { type: mongoose_1.default.Schema.Types.ObjectId,
+        ref: "Area", }
 });
 const officer = mongoose_1.default.model("Officer", officerSchema);
 exports.default = officer;

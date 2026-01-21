@@ -42,6 +42,7 @@ declare interface IVerificationToken extends Document {
 
 
 declare interface IAdmin extends Document {
+  _id: Types.ObjectId;
   firstName: string;
   lastName: string;
   email: string;
@@ -68,6 +69,7 @@ declare interface IRegion extends Document {
     _id: Types.ObjectId;
     regionName: string;
     shortCode: string;
+    location:string;
     admin: Types.ObjectId[];
     subRegion: Types.ObjectId[];
     createdAt?: Date;
@@ -91,6 +93,7 @@ declare interface ISubRegion extends Document {
     _id: Types.ObjectId;
     subRegionName: string;
     shortCode: string;
+    location:string;
     region: Types.ObjectId;
     admin: Types.ObjectId[];
     user: Types.ObjectId[];

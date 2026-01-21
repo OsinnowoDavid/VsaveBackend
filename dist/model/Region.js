@@ -14,6 +14,10 @@ const regionSchema = new Schema({
         type: String,
         required: true,
     },
+    location: {
+        type: String,
+        required: true
+    },
     admin: [{ type: mongoose_1.default.Schema.Types.ObjectId, ref: "Admin" }],
     subRegion: [{ type: mongoose_1.default.Schema.Types.ObjectId, ref: "Agent" }],
 }, { timestamps: true });

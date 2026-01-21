@@ -18,10 +18,8 @@ const officerSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    role:{
-        type:String,
-        required:true,
-        enum:["OFFICER", "GROUP LEADER", "TEAM LEADER"]
+    level:{
+        type:String
     },
     password: {
         type: String,
@@ -35,10 +33,8 @@ const officerSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    group: { type: mongoose.Schema.Types.ObjectId,
-                ref: "Group",},
-    team:{type: mongoose.Schema.Types.ObjectId,
-                ref: "Team",}
+    area:{type: mongoose.Schema.Types.ObjectId,
+                ref: "Area",}
 })
 
 const officer = mongoose.model("Officer", officerSchema) ;

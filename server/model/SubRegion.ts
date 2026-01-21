@@ -17,15 +17,18 @@ const subRegionSchema = new Schema(
             ref: "Region",
             required: true,
         },
+        location:{
+            type:String,
+            required:true
+            },
         admin: [
-            { type: mongoose.Schema.Types.ObjectId, ref: "SubRegionAdmin" },
+            { type: mongoose.Schema.Types.ObjectId, ref: "Admin" },
         ],
-        user: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
         teams: [{type: mongoose.Schema.Types.ObjectId, ref: "Team"}]
     },
     { timestamps: true },
 );
 
-const subRegion = mongoose.model("SubRegion", subRegionSchema);
+const subRegion = mongoose.model("Area", subRegionSchema);
 
 export default subRegion; 

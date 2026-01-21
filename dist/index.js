@@ -10,7 +10,6 @@ const mongodB_1 = __importDefault(require("./config/mongodB"));
 const User_1 = __importDefault(require("./routes/User"));
 const Admin_1 = __importDefault(require("./routes/Admin"));
 const Loan_1 = __importDefault(require("./routes/Loan"));
-const RegionalAdmin_1 = __importDefault(require("./routes/RegionalAdmin"));
 const Savings_1 = __importDefault(require("./routes/Savings"));
 const Webhook_1 = __importDefault(require("./routes/Webhook"));
 const dotenv_1 = __importDefault(require("dotenv"));
@@ -47,8 +46,6 @@ app.get("/", (req, res) => {
 app.use("/user", User_1.default);
 // superAdmin routes config
 app.use("/admin", Admin_1.default);
-// regionaladmin routes config
-app.use("/regionaladmin", RegionalAdmin_1.default);
 app.use("/savings", Savings_1.default);
 app.use("/webhook", Webhook_1.default);
 app.use("/loan", Loan_1.default);

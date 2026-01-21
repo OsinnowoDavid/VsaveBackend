@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllAdminSavingsController = exports.approveOrRejectLoanController = exports.getLoanRecordByStatusController = exports.getAllLoanRecordController = exports.getUserSavingsDetailsController = exports.getSavingsDetailsController = exports.getAdminDashboardDetails = exports.getAllAdminByRoleController = exports.getAllAdminController = exports.getAllUserController = exports.getAdminConfigController = exports.setAdminConfigController = exports.getRegionalAdminByEmailController = exports.getRegionalAdminsController = exports.getAllRegionalAdminController = exports.getAllRegionController = exports.createNewRegionController = exports.assignRegionalAdminToRegionController = exports.createRegionalAdminController = exports.updateAdminRecordController = exports.deleteAminController = exports.superAdminProfileController = exports.LoginSuperAdminController = exports.resendVerificationCodeController = exports.updateAdminPasswordController = exports.createAdminPasswordController = exports.registerAdminController = void 0;
+exports.getAllAdminSavingsController = exports.approveOrRejectLoanController = exports.getLoanRecordByStatusController = exports.getAllLoanRecordController = exports.getUserSavingsDetailsController = exports.getSavingsDetailsController = exports.getAdminDashboardDetails = exports.getAllAdminByRoleController = exports.getAllAdminController = exports.getAllUserController = exports.getAdminConfigController = exports.setAdminConfigController = exports.assignSubRegionAdminToSubRegionController = exports.createSubRegionController = exports.getRegionalAdminByEmailController = exports.getRegionalAdminsController = exports.getAllRegionalAdminController = exports.getAllRegionController = exports.createNewRegionController = exports.assignRegionalAdminToRegionController = exports.updateAdminRecordController = exports.deleteAminController = exports.superAdminProfileController = exports.LoginSuperAdminController = exports.resendVerificationCodeController = exports.updateAdminPasswordController = exports.createAdminPasswordController = exports.registerAdminController = void 0;
 const argon2_1 = __importDefault(require("argon2"));
 const Admin_1 = require("../services/Admin");
 const JWT_1 = require("../config/JWT");
@@ -283,33 +283,6 @@ const updateAdminRecordController = async (req, res) => {
     }
 };
 exports.updateAdminRecordController = updateAdminRecordController;
-const createRegionalAdminController = async (req, res) => {
-    try {
-        const { firstName, lastName, email, phoneNumber, password, region, profilePicture, } = req.body;
-        let hashPassword = await argon2_1.default.hash(password);
-        const newRegionalAdmin = await (0, Admin_1.createRegionalAdmin)(firstName, lastName, email, phoneNumber, hashPassword, region, profilePicture);
-        if (!newRegionalAdmin) {
-            return res.json({
-                status: "Failed",
-                message: "something went wrong, try again later",
-            });
-        }
-        // assing regional admin to is region
-        await (0, Admin_1.assignRegionalAdmin)(newRegionalAdmin, region);
-        return res.json({
-            status: "Success",
-            message: "Regional admin created successfully",
-            data: newRegionalAdmin,
-        });
-    }
-    catch (err) {
-        return res.json({
-            status: "Failed",
-            message: err.message,
-        });
-    }
-};
-exports.createRegionalAdminController = createRegionalAdminController;
 const assignRegionalAdminToRegionController = async (req, res) => {
     try {
         const { regionalAdmin, region } = req.body;
@@ -331,8 +304,8 @@ const assignRegionalAdminToRegionController = async (req, res) => {
 exports.assignRegionalAdminToRegionController = assignRegionalAdminToRegionController;
 const createNewRegionController = async (req, res) => {
     try {
-        const { regionName, shortCode } = req.body;
-        const newRegion = await (0, Admin_1.createNewRegion)(regionName, shortCode);
+        const { regionName, shortCode, location } = req.body;
+        const newRegion = await (0, Admin_1.createNewRegion)(regionName, shortCode, location);
         if (!newRegion) {
             return res.json({
                 status: "Failed",
@@ -441,6 +414,44 @@ const getRegionalAdminByEmailController = async (req, res) => {
     }
 };
 exports.getRegionalAdminByEmailController = getRegionalAdminByEmailController;
+const createSubRegionController = async (req, res) => {
+    try {
+        const { subRegionName, shortCode, location, region } = req.body;
+        const newSubRegion = await (0, Admin_1.createSubRegion)(subRegionName, shortCode, location, region);
+        return res.json({
+            status: "Success",
+            message: "sub region created successfuly",
+            data: newSubRegion
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.createSubRegionController = createSubRegionController;
+const assignSubRegionAdminToSubRegionController = async (req, res) => {
+    try {
+        const { admin, subRegions } = req.body;
+        const foundAdmin = await (0, Admin_1.getAdminById)(admin);
+        const assignAdmin = await (0, Admin_1.assignSubRegionAdmin)(foundAdmin._id.toString(), subRegions);
+        const assignAdminToSubRegion = await (0, Admin_1.assignSubRegionAdminToSubRegion)(foundAdmin, subRegions);
+        return res.json({
+            status: "Success",
+            message: "admin assign successfuly",
+            data: assignAdmin
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.assignSubRegionAdminToSubRegionController = assignSubRegionAdminToSubRegionController;
 const setAdminConfigController = async (req, res) => {
     try {
         const { defaultPenaltyFee, firstTimeAdminFee, loanPenaltyFee, fixedSavingsAnualInterest, fixedSavingsPenaltyFee, terminalBonus } = req.body;

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllTransaction = exports.getSubRegionById = exports.getSubRegionaladminByEmail = exports.getAllSubRegionalAdmin = exports.createSubRegionalAdmin = exports.sendNotification = exports.getAdminSavingsConfig = exports.setAdminSavingsConfig = exports.getRegionById = exports.getRegionByName = exports.getAllRegion = exports.getRegionalAdminByEmail = exports.getRegionalAdminById = exports.getRegionalAdmins = exports.getAllRegionalAdmin = exports.assignRegionalAdminToRegions = exports.UpdateAdminPassword = exports.updateAdminRecord = exports.assignRegionalAdmin = exports.createRegionalAdmin = exports.createNewRegion = exports.deleteAdmin = exports.createAdminPassword = exports.getAllSuperAdminByEmail = exports.getAdminByRole = exports.getAllAdmin = exports.getAdminByEmail = exports.getAdminById = exports.CreateAdmin = void 0;
+exports.getAllTransaction = exports.getSubRegionById = exports.getSubRegionaladminByEmail = exports.getAllSubRegionalAdmin = exports.createSubRegionalAdmin = exports.sendNotification = exports.getAdminSavingsConfig = exports.setAdminSavingsConfig = exports.assignSubRegionAdminToSubRegion = exports.assignSubRegionAdmin = exports.createSubRegion = exports.getRegionById = exports.getRegionByName = exports.getAllRegion = exports.getRegionalAdminByEmail = exports.getRegionalAdminById = exports.getRegionalAdmins = exports.getAllRegionalAdmin = exports.assignRegionalAdminToRegions = exports.UpdateAdminPassword = exports.updateAdminRecord = exports.assignRegionalAdmin = exports.createRegionalAdmin = exports.createNewRegion = exports.deleteAdmin = exports.createAdminPassword = exports.getAllSuperAdminByEmail = exports.getAdminByRole = exports.getAllAdmin = exports.getAdminByEmail = exports.getAdminById = exports.CreateAdmin = void 0;
 const Admin_1 = __importDefault(require("../model/Admin"));
 const Region_1 = __importDefault(require("../model/Region"));
 const SubRegion_1 = __importDefault(require("../model/SubRegion"));
@@ -103,11 +103,12 @@ const deleteAdmin = async (id) => {
     }
 };
 exports.deleteAdmin = deleteAdmin;
-const createNewRegion = async (regionName, shortCode) => {
+const createNewRegion = async (regionName, shortCode, location) => {
     try {
         const newRegion = await Region_1.default.create({
             regionName,
             shortCode,
+            location
         });
         return newRegion;
     }
@@ -267,6 +268,56 @@ const getRegionById = async (id) => {
     }
 };
 exports.getRegionById = getRegionById;
+const createSubRegion = async (areaName, shortCode, location, region) => {
+    try {
+        const newSubRegion = await SubRegion_1.default.create({
+            subRegionName: areaName,
+            shortCode,
+            location,
+            region
+        });
+        return newSubRegion;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.createSubRegion = createSubRegion;
+const assignSubRegionAdmin = async (admin, subRegion) => {
+    try {
+        const foundAdmin = await Admin_1.default.findById(admin);
+        for (const record of subRegion) {
+            const foundSubRegion = await SubRegion_1.default.findById(record);
+            if (!foundSubRegion) {
+                throw { Message: "no sub region found with this ID" };
+            }
+            foundAdmin.subRegion.push(record);
+        }
+        await foundAdmin.save();
+        return foundAdmin;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.assignSubRegionAdmin = assignSubRegionAdmin;
+const assignSubRegionAdminToSubRegion = async (admin, subRegion) => {
+    try {
+        for (const id of subRegion) {
+            const foundSubRegion = await SubRegion_1.default.findById(id);
+            if (!foundSubRegion) {
+                throw { message: "no sub region found with this ID" };
+            }
+            foundSubRegion.admin.push(admin._id);
+            await foundSubRegion.save();
+        }
+        return 'Done';
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.assignSubRegionAdminToSubRegion = assignSubRegionAdminToSubRegion;
 const setAdminSavingsConfig = async (defaultPenaltyFee, firstTimeAdminFee, loanPenaltyFee, fixedSavingsAnualInterest, fixedSavingsPenaltyFee, terminalBonus) => {
     try {
         const configSettings = await Admin_config_1.default.getSettings();

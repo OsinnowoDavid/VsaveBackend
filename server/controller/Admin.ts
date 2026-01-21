@@ -25,7 +25,10 @@ import {
     updateAdminRecord,
     UpdateAdminPassword,
     getAdminById,
-    deleteAdmin
+    deleteAdmin,
+    createSubRegion,
+    assignSubRegionAdmin,
+    assignSubRegionAdminToSubRegion
 } from "../services/Admin";
 import { signUserToken } from "../config/JWT";
 import {getAllLoanRecord,getLoanRecordByStatus,approveOrRejectLoan} from "../services/Loan" ;
@@ -316,50 +319,7 @@ export const updateAdminRecordController =  async (
     }
 }
 
-export const createRegionalAdminController = async (
-    req: Request,
-    res: Response,
-) => {
-    try {
-        const {
-            firstName,
-            lastName,
-            email,
-            phoneNumber,
-            password,
-            region,
-            profilePicture,
-        } = req.body;
-        let hashPassword = await argon.hash(password);
-        const newRegionalAdmin = await createRegionalAdmin(
-            firstName,
-            lastName,
-            email,
-            phoneNumber,
-            hashPassword,
-            region,
-            profilePicture,
-        );
-        if (!newRegionalAdmin) {
-            return res.json({
-                status: "Failed",
-                message: "something went wrong, try again later",
-            });
-        }
-        // assing regional admin to is region
-        await assignRegionalAdmin(newRegionalAdmin, region);
-        return res.json({
-            status: "Success",
-            message: "Regional admin created successfully",
-            data: newRegionalAdmin,
-        });
-    } catch (err: any) {
-        return res.json({
-            status: "Failed",
-            message: err.message,
-        });
-    }
-};
+
 
 export const assignRegionalAdminToRegionController = async  (
     req: Request,
@@ -391,8 +351,8 @@ export const createNewRegionController = async (
     res: Response,
 ) => {
     try {
-        const { regionName, shortCode } = req.body;
-        const newRegion = await createNewRegion(regionName, shortCode);
+        const { regionName, shortCode,location } = req.body;
+        const newRegion = await createNewRegion(regionName, shortCode, location);
         if (!newRegion) {
             return res.json({
                 status: "Failed",
@@ -508,7 +468,40 @@ export const getRegionalAdminByEmailController = async (
         });
     }
 };
-
+export const createSubRegionController = async (req: Request, res: Response) =>{
+    try{
+        const {subRegionName,shortCode,location,region} = req.body ;
+        const newSubRegion = await createSubRegion(subRegionName,shortCode,location,region) ;
+        return res.json({
+            status:"Success",
+            message:"sub region created successfuly",
+            data: newSubRegion
+        })
+    }catch(err:any){
+         return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+}
+export const assignSubRegionAdminToSubRegionController = async (req: Request, res: Response) =>{
+    try{
+        const {admin,subRegions} = req.body ;
+        const foundAdmin = await getAdminById(admin) as IAdmin
+        const assignAdmin = await assignSubRegionAdmin(foundAdmin._id.toString(),subRegions) ;
+        const assignAdminToSubRegion = await assignSubRegionAdminToSubRegion(foundAdmin,subRegions) ;
+        return res.json({
+            status:"Success",
+            message:"admin assign successfuly",
+            data: assignAdmin
+        })
+    }catch(err:any){
+         return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+}
 export const setAdminConfigController = async (req: Request, res: Response) => {
     try {
         const {
