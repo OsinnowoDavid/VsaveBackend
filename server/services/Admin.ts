@@ -308,6 +308,33 @@ export const getAllSubRegion = async () =>{
         throw err
     }
 }
+export const getAllMySubRegion = async (admin:string) =>{
+    try{
+        const foundAdmin = await Admin.findById(admin) ;
+        let result = [] ;
+       if(foundAdmin.role === "SUBREGIONAL ADMIN"){
+         for(const record of foundAdmin.subRegion){
+            const foundArea = await SubRegion.findById(record) ;
+            result.push(foundArea) ;
+        }
+        return result 
+       }
+       if(foundAdmin.role === "REGIONAL ADMIN"){
+            for(const record of foundAdmin.region){
+                const foundRegion = await Region.findById(record) ;
+                for(const areaRecord of foundRegion.areas){
+                    const foundArea = await SubRegion.findById(areaRecord) ;
+                    result.push(foundArea) ;
+                }
+            }
+            return result 
+       }
+       const allArea = await SubRegion.find() ;
+       return allArea
+    }catch(err:any){
+        throw err
+    }
+}
 export const setAdminSavingsConfig = async (
     defaultPenaltyFee: string,
     firstTimeAdminFee: string,

@@ -28,7 +28,8 @@ import {
     deleteAdmin,
     createSubRegion,
     assignSubRegionAdmin,
-    assignSubRegionAdminToSubRegion
+    assignSubRegionAdminToSubRegion,
+    getAllMySubRegion
 } from "../services/Admin";
 import { signUserToken } from "../config/JWT";
 import {getAllLoanRecord,getLoanRecordByStatus,approveOrRejectLoan} from "../services/Loan" ;
@@ -494,6 +495,22 @@ export const assignSubRegionAdminToSubRegionController = async (req: Request, re
             status:"Success",
             message:"admin assign successfuly",
             data: assignAdmin
+        })
+    }catch(err:any){
+         return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+}
+export const getAllSubRegion = async (req: Request, res: Response) =>{
+    try{
+        const user = req.user as IAdmin;
+        const foundArea = await getAllMySubRegion(user._id.toString()) ; 
+        return res.json({
+            status: "Success",
+            message:"foundAllRegion",
+            data: foundArea
         })
     }catch(err:any){
          return res.json({
