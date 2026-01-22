@@ -26,7 +26,6 @@ const officerSchema = new mongoose_1.default.Schema({
     },
     password: {
         type: String,
-        required: true,
     },
     profilePicture: {
         type: String,
@@ -37,7 +36,10 @@ const officerSchema = new mongoose_1.default.Schema({
         required: true,
     },
     area: { type: mongoose_1.default.Schema.Types.ObjectId,
-        ref: "Area", }
+        ref: "Area", },
+    VerificationToken: {
+        type: Number
+    }
 });
 const officer = mongoose_1.default.model("Officer", officerSchema);
 exports.default = officer;

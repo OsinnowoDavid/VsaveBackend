@@ -6,11 +6,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const Admin_1 = require("../controller/Admin");
 const JWT_1 = require("../config/JWT");
+const Area_1 = require("../controller/Area");
 const router = express_1.default.Router();
 router.post("/register", JWT_1.verifySuperAdminToken, Admin_1.registerAdminController);
 router.post("/create-password", Admin_1.createAdminPasswordController);
 router.post("/resend-verification-code", Admin_1.resendVerificationCodeController);
-router.post("/login", Admin_1.LoginSuperAdminController);
+router.post("/login", Admin_1.LoginAdminController);
 router.get("/profile", JWT_1.verifySuperAdminToken, Admin_1.superAdminProfileController);
 // get index info
 router.post("/create-region", JWT_1.verifySuperAdminToken, Admin_1.createNewRegionController);
@@ -18,9 +19,9 @@ router.post("/assign-regionaladmin-to-region", JWT_1.verifySuperAdminToken, Admi
 router.get("/get-all-regional-admin", JWT_1.verifySuperAdminToken, Admin_1.getAllRegionalAdminController);
 router.get("/get-all-region", JWT_1.verifySuperAdminToken, Admin_1.getAllRegionController);
 router.get("/get-regional-admin/:email", JWT_1.verifySuperAdminToken, Admin_1.getRegionalAdminByEmailController);
-router.post("/create-area", JWT_1.verifyRegionalAdminToken, Admin_1.createSubRegionController);
-router.post("/assign-admin-to-area", JWT_1.verifyRegionalAdminToken, Admin_1.assignSubRegionAdminToSubRegionController);
-router.get("/get-all-area", JWT_1.verifySubRegionalAdminToken, Admin_1.getAllSubRegion);
+router.post("/create-area", JWT_1.verifyRegionalAdminToken, Admin_1.createTeamController);
+router.post("/assign-admin-to-area", JWT_1.verifyRegionalAdminToken, Admin_1.assignTeamAdminToTeamController);
+router.get("/get-all-area", JWT_1.verifySubRegionalAdminToken, Admin_1.getAllMyTeamController);
 router.post("/set-saving-config", JWT_1.verifySuperAdminToken, Admin_1.setAdminConfigController);
 router.get("/get-savings-config", JWT_1.verifySuperAdminToken, Admin_1.getAdminConfigController);
 // get all User 
@@ -46,4 +47,6 @@ router.get("/all-admin-created-savings", JWT_1.verifySuperAdminToken, Admin_1.ge
 // send general notification
 // send personal notification
 // suspend admin account
+// create Officer 
+router.post("/create-officer", JWT_1.verifySubRegionalAdminToken, Area_1.createOfficerController);
 exports.default = router;

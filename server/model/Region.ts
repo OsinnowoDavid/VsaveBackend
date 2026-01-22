@@ -10,14 +10,14 @@ const regionSchema = new Schema(
     },
     shortCode: {
       type: String,
-      required: true,
+      required: false,
     },
     location:{
       type:String,
       required:true
     },
     admin: [{ type: mongoose.Schema.Types.ObjectId, ref: "Admin" }],
-    areas: [{ type: mongoose.Schema.Types.ObjectId, ref: "Agent" }],
+    teams: [{ type: mongoose.Schema.Types.ObjectId, ref: "Agent" }],
   },
   { timestamps: true }
 );

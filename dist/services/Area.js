@@ -3,16 +3,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getOfficerByEmail = exports.getOfficerById = exports.createOfficer = void 0;
+exports.createPassword = exports.verifyToken = exports.getOfficerByEmail = exports.getOfficerById = exports.createOfficer = void 0;
 const Officers_1 = __importDefault(require("../model/Officers"));
-const createOfficer = async (firstName, lastName, email, phoneNumber, password, area, referralCode, level, profilePicture) => {
+const createOfficer = async (firstName, lastName, email, phoneNumber, area, referralCode, level, profilePicture) => {
     try {
         const newOfficer = await Officers_1.default.create({
             firstName,
             lastName,
             email,
             phoneNumber,
-            password,
             referralCode,
             level,
             area,
@@ -53,3 +52,28 @@ const getOfficerByEmail = async (email, addPassword) => {
     }
 };
 exports.getOfficerByEmail = getOfficerByEmail;
+const verifyToken = async (user, token) => {
+    try {
+        const foundAdmin = await Officers_1.default.findById(user);
+        let result = false;
+        if (foundAdmin.VerificationToken === token) {
+            result = true;
+            return result;
+        }
+        return result;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.verifyToken = verifyToken;
+const createPassword = async (user, password) => {
+    try {
+        const foundAdmin = await Officers_1.default.findByIdAndUpdate(user, { password }, { new: true });
+        return foundAdmin;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.createPassword = createPassword;

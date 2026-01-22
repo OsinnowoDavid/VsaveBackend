@@ -1,14 +1,13 @@
 import Officers from "../model/Officers" ;
 
 
-export const createOfficer = async (firstName:string,lastName:string,email:string,phoneNumber:string,password:string,area:string,referralCode:string,level:string,profilePicture:string) =>{
+export const createOfficer = async (firstName:string,lastName:string,email:string,phoneNumber:string,area:string,referralCode:string,level:string,profilePicture:string) =>{
     try{
         const newOfficer = await Officers.create({
             firstName,
             lastName,
             email,
             phoneNumber,
-            password,
             referralCode,
             level,
             area,
@@ -45,3 +44,28 @@ export const getOfficerByEmail = async (email:string,addPassword?:boolean) =>{
         throw err 
     }
 }
+
+export const verifyToken = async (user:string, token:number) =>{
+    try{
+        const foundAdmin = await Officers.findById(user) ;
+        let result = false ;
+        if(foundAdmin.VerificationToken ===token){
+            result = true 
+            return result
+        }
+        return result
+    }catch(err:any){
+        throw err
+    }
+}
+
+export const createPassword = async (user:string, password: string) =>{
+    try{
+         const foundAdmin = await Officers.findByIdAndUpdate(user,{password},{new:true}) ; 
+         return foundAdmin
+        
+    }catch(err:any){
+        throw err
+    }
+} 
+

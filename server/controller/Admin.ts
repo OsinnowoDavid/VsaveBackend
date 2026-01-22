@@ -26,10 +26,10 @@ import {
     UpdateAdminPassword,
     getAdminById,
     deleteAdmin,
-    createSubRegion,
-    assignSubRegionAdmin,
-    assignSubRegionAdminToSubRegion,
-    getAllMySubRegion
+    createTeam,
+    assignTeamAdmin,
+   assignTeamAdminToTeam,
+    getAllMyTeam
 } from "../services/Admin";
 import { signUserToken } from "../config/JWT";
 import {getAllLoanRecord,getLoanRecordByStatus,approveOrRejectLoan} from "../services/Loan" ;
@@ -222,7 +222,7 @@ export const resendVerificationCodeController = async (
         });
     }
 }
-export const LoginSuperAdminController = async (
+export const LoginAdminController = async (
     req: Request,
     res: Response,
 ) => {
@@ -233,6 +233,12 @@ export const LoginSuperAdminController = async (
             return res.json({
                 status: "Failed",
                 message: "User Not Found",
+            });
+        }
+        if(!foundAdmin.password){
+            return res.json({
+                status: "Failed",
+                message: "User Not Allow to Login You need to create a Password",
             });
         }
         let verifyPassword = await argon.verify(foundAdmin.password, password);
@@ -352,8 +358,8 @@ export const createNewRegionController = async (
     res: Response,
 ) => {
     try {
-        const { regionName, shortCode,location } = req.body;
-        const newRegion = await createNewRegion(regionName, shortCode, location);
+        const { regionName, shortCode,location, admin} = req.body;
+        const newRegion = await createNewRegion(regionName, shortCode, location, admin);
         if (!newRegion) {
             return res.json({
                 status: "Failed",
@@ -469,10 +475,10 @@ export const getRegionalAdminByEmailController = async (
         });
     }
 };
-export const createSubRegionController = async (req: Request, res: Response) =>{
+export const createTeamController = async (req: Request, res: Response) =>{
     try{
         const {subRegionName,shortCode,location,region} = req.body ;
-        const newSubRegion = await createSubRegion(subRegionName,shortCode,location,region) ;
+        const newSubRegion = await createTeam(subRegionName,shortCode,location,region) ;
         return res.json({
             status:"Success",
             message:"sub region created successfuly",
@@ -485,12 +491,12 @@ export const createSubRegionController = async (req: Request, res: Response) =>{
         });
     }
 }
-export const assignSubRegionAdminToSubRegionController = async (req: Request, res: Response) =>{
+export const assignTeamAdminToTeamController = async (req: Request, res: Response) =>{
     try{
         const {admin,areas} = req.body ;
         const foundAdmin = await getAdminById(admin) as IAdmin
-        const assignAdmin = await assignSubRegionAdmin(foundAdmin._id.toString(),areas) ;
-        const assignAdminToSubRegion = await assignSubRegionAdminToSubRegion(foundAdmin,areas) ;
+        const assignAdmin = await assignTeamAdmin(foundAdmin._id.toString(),areas) ;
+        const assignAdminToSubRegion = await assignTeamAdminToTeam(foundAdmin,areas) ;
         return res.json({
             status:"Success",
             message:"admin assign successfuly",
@@ -503,10 +509,10 @@ export const assignSubRegionAdminToSubRegionController = async (req: Request, re
         });
     }
 }
-export const getAllSubRegion = async (req: Request, res: Response) =>{
+export const getAllMyTeamController = async (req: Request, res: Response) =>{
     try{
         const user = req.user as IAdmin;
-        const foundArea = await getAllMySubRegion(user._id.toString()) ; 
+        const foundArea = await getAllMyTeam(user._id.toString()) ; 
         return res.json({
             status: "Success",
             message:"foundAllRegion",

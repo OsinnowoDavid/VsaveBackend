@@ -1,7 +1,7 @@
 import express from "express";
 import {
     registerAdminController,
-    LoginSuperAdminController,
+    LoginAdminController,
     superAdminProfileController,
     createNewRegionController,
     getAllRegionController,
@@ -25,12 +25,13 @@ import {
     approveOrRejectLoanController,
     getAllAdminSavingsController,
     deleteAminController,
-    createSubRegionController,
-    assignSubRegionAdminToSubRegionController,
-    getAllSubRegion
+    createTeamController,
+   assignTeamAdminToTeamController,
+   getAllMyTeamController
 } from "../controller/Admin";
 import { verifyGeneralAdminToken, verifySuperAdminToken , verifyRegionalAdminToken, verifySubRegionalAdminToken} from "../config/JWT"; 
 import { validateAdminRegistrationInput } from "../validate-input/admin/index";
+import { createOfficerController } from "../controller/Area";
 
 const router = express.Router();
 
@@ -41,7 +42,7 @@ router.post(
 );
 router.post("/create-password", createAdminPasswordController)
 router.post("/resend-verification-code", resendVerificationCodeController)
-router.post("/login", LoginSuperAdminController);
+router.post("/login", LoginAdminController);
 
 router.get("/profile", verifySuperAdminToken, superAdminProfileController);
 // get index info
@@ -66,10 +67,10 @@ router.get(
 router.post(
     "/create-area",
    verifyRegionalAdminToken,
-    createSubRegionController,
+    createTeamController,
 );
-router.post("/assign-admin-to-area",verifyRegionalAdminToken, assignSubRegionAdminToSubRegionController) ; 
-router.get("/get-all-area", verifySubRegionalAdminToken,  getAllSubRegion)
+router.post("/assign-admin-to-area",verifyRegionalAdminToken, assignTeamAdminToTeamController) ; 
+router.get("/get-all-area", verifySubRegionalAdminToken,  getAllMyTeamController)
 router.post(
     "/set-saving-config",
     verifySuperAdminToken,
@@ -105,4 +106,6 @@ router.get("/all-admin-created-savings", verifySuperAdminToken, getAllAdminSavin
 // send general notification
 // send personal notification
 // suspend admin account
+// create Officer 
+router.post("/create-officer", verifySubRegionalAdminToken, createOfficerController) ;
 export default router;

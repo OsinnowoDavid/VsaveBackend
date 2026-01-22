@@ -3,10 +3,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllTransaction = exports.getSubRegionById = exports.getSubRegionaladminByEmail = exports.getAllSubRegionalAdmin = exports.createSubRegionalAdmin = exports.sendNotification = exports.getAdminSavingsConfig = exports.setAdminSavingsConfig = exports.getAllMySubRegion = exports.getAllSubRegion = exports.assignSubRegionAdminToSubRegion = exports.assignSubRegionAdmin = exports.createSubRegion = exports.getRegionById = exports.getRegionByName = exports.getAllRegion = exports.getRegionalAdminByEmail = exports.getRegionalAdminById = exports.getRegionalAdmins = exports.getAllRegionalAdmin = exports.assignRegionalAdminToRegions = exports.UpdateAdminPassword = exports.updateAdminRecord = exports.assignRegionalAdmin = exports.createRegionalAdmin = exports.createNewRegion = exports.deleteAdmin = exports.createAdminPassword = exports.getAllSuperAdminByEmail = exports.getAdminByRole = exports.getAllAdmin = exports.getAdminByEmail = exports.getAdminById = exports.CreateAdmin = void 0;
+exports.getAllTransaction = exports.getSubRegionById = exports.getSubRegionaladminByEmail = exports.getAllSubRegionalAdmin = exports.createSubRegionalAdmin = exports.sendNotification = exports.getAdminSavingsConfig = exports.setAdminSavingsConfig = exports.getAllMyTeam = exports.getAllSubRegion = exports.assignTeamAdminToTeam = exports.assignTeamAdmin = exports.createTeam = exports.getRegionById = exports.getRegionByName = exports.getAllRegion = exports.getRegionalAdminByEmail = exports.getRegionalAdminById = exports.getRegionalAdmins = exports.getAllRegionalAdmin = exports.assignRegionalAdminToRegions = exports.UpdateAdminPassword = exports.updateAdminRecord = exports.assignRegionalAdmin = exports.createRegionalAdmin = exports.createNewRegion = exports.deleteAdmin = exports.createAdminPassword = exports.getAllSuperAdminByEmail = exports.getAdminByRole = exports.getAllAdmin = exports.getAdminByEmail = exports.getAdminById = exports.CreateAdmin = void 0;
 const Admin_1 = __importDefault(require("../model/Admin"));
 const Region_1 = __importDefault(require("../model/Region"));
-const SubRegion_1 = __importDefault(require("../model/SubRegion"));
+const Teams_1 = __importDefault(require("../model/Teams"));
 const Admin_config_1 = __importDefault(require("../model/Admin_config"));
 const Transaction_1 = __importDefault(require("../model/Transaction"));
 const CreateAdmin = async (firstName, lastName, email, phoneNumber, role, profilePicture) => {
@@ -103,13 +103,17 @@ const deleteAdmin = async (id) => {
     }
 };
 exports.deleteAdmin = deleteAdmin;
-const createNewRegion = async (regionName, shortCode, location) => {
+const createNewRegion = async (regionName, location, admin, shortCode) => {
     try {
         const newRegion = await Region_1.default.create({
             regionName,
             shortCode,
-            location
+            location,
+            admin
         });
+        if (admin) {
+            const foundAdmin = await Admin_1.default.findByIdAndUpdate(admin, { region: newRegion._id });
+        }
         return newRegion;
     }
     catch (err) {
@@ -268,16 +272,17 @@ const getRegionById = async (id) => {
     }
 };
 exports.getRegionById = getRegionById;
-const createSubRegion = async (areaName, shortCode, location, region) => {
+const createTeam = async (areaName, location, region, admin, shortCode) => {
     try {
-        const newSubRegion = await SubRegion_1.default.create({
+        const newSubRegion = await Teams_1.default.create({
             subRegionName: areaName,
-            shortCode,
             location,
-            region
+            region,
+            shortCode,
+            admin
         });
         const foundRegion = await Region_1.default.findById(region);
-        foundRegion.areas.push(newSubRegion._id);
+        foundRegion.teams.push(newSubRegion._id);
         await foundRegion.save();
         return newSubRegion;
     }
@@ -285,16 +290,16 @@ const createSubRegion = async (areaName, shortCode, location, region) => {
         throw err;
     }
 };
-exports.createSubRegion = createSubRegion;
-const assignSubRegionAdmin = async (admin, subRegion) => {
+exports.createTeam = createTeam;
+const assignTeamAdmin = async (admin, subRegion) => {
     try {
         const foundAdmin = await Admin_1.default.findById(admin);
         for (const record of subRegion) {
-            const foundSubRegion = await SubRegion_1.default.findById(record);
+            const foundSubRegion = await Teams_1.default.findById(record);
             if (!foundSubRegion) {
                 throw { Message: "no sub region found with this ID" };
             }
-            foundAdmin.subRegion.push(record);
+            foundAdmin.team.push(record);
         }
         await foundAdmin.save();
         return foundAdmin;
@@ -303,11 +308,11 @@ const assignSubRegionAdmin = async (admin, subRegion) => {
         throw err;
     }
 };
-exports.assignSubRegionAdmin = assignSubRegionAdmin;
-const assignSubRegionAdminToSubRegion = async (admin, subRegion) => {
+exports.assignTeamAdmin = assignTeamAdmin;
+const assignTeamAdminToTeam = async (admin, subRegion) => {
     try {
         for (const id of subRegion) {
-            const foundSubRegion = await SubRegion_1.default.findById(id);
+            const foundSubRegion = await Teams_1.default.findById(id);
             if (!foundSubRegion) {
                 throw { message: "no sub region found with this ID" };
             }
@@ -320,10 +325,10 @@ const assignSubRegionAdminToSubRegion = async (admin, subRegion) => {
         throw err;
     }
 };
-exports.assignSubRegionAdminToSubRegion = assignSubRegionAdminToSubRegion;
+exports.assignTeamAdminToTeam = assignTeamAdminToTeam;
 const getAllSubRegion = async () => {
     try {
-        const foundRecord = await SubRegion_1.default.find();
+        const foundRecord = await Teams_1.default.find();
         return foundRecord;
     }
     catch (err) {
@@ -331,13 +336,13 @@ const getAllSubRegion = async () => {
     }
 };
 exports.getAllSubRegion = getAllSubRegion;
-const getAllMySubRegion = async (admin) => {
+const getAllMyTeam = async (admin) => {
     try {
         const foundAdmin = await Admin_1.default.findById(admin);
         let result = [];
-        if (foundAdmin.role === "SUBREGIONAL ADMIN") {
-            for (const record of foundAdmin.subRegion) {
-                const foundArea = await SubRegion_1.default.findById(record);
+        if (foundAdmin.role === "TEAM ADMIN") {
+            for (const record of foundAdmin.team) {
+                const foundArea = await Teams_1.default.findById(record);
                 result.push(foundArea);
             }
             return result;
@@ -345,21 +350,21 @@ const getAllMySubRegion = async (admin) => {
         if (foundAdmin.role === "REGIONAL ADMIN") {
             for (const record of foundAdmin.region) {
                 const foundRegion = await Region_1.default.findById(record);
-                for (const areaRecord of foundRegion.areas) {
-                    const foundArea = await SubRegion_1.default.findById(areaRecord);
+                for (const areaRecord of foundRegion.teams) {
+                    const foundArea = await Teams_1.default.findById(areaRecord);
                     result.push(foundArea);
                 }
             }
             return result;
         }
-        const allArea = await SubRegion_1.default.find();
+        const allArea = await Teams_1.default.find();
         return allArea;
     }
     catch (err) {
         throw err;
     }
 };
-exports.getAllMySubRegion = getAllMySubRegion;
+exports.getAllMyTeam = getAllMyTeam;
 const setAdminSavingsConfig = async (defaultPenaltyFee, firstTimeAdminFee, loanPenaltyFee, fixedSavingsAnualInterest, fixedSavingsPenaltyFee, terminalBonus) => {
     try {
         const configSettings = await Admin_config_1.default.getSettings();
@@ -439,7 +444,7 @@ const getSubRegionaladminByEmail = async (email, subRegion) => {
 exports.getSubRegionaladminByEmail = getSubRegionaladminByEmail;
 const getSubRegionById = async (id) => {
     try {
-        const foundRecord = await SubRegion_1.default.findById(id);
+        const foundRecord = await Teams_1.default.findById(id);
         return foundRecord;
     }
     catch (err) {

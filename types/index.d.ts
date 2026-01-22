@@ -68,10 +68,10 @@ declare interface ISuperAdmin extends Document {
 declare interface IRegion extends Document {
     _id: Types.ObjectId;
     regionName: string;
-    shortCode: string;
+    shortCode?: string;
     location:string;
     admin: Types.ObjectId[];
-    subRegion: Types.ObjectId[];
+    teams: Types.ObjectId[];
     createdAt?: Date;
     updatedAt?: Date;
 }

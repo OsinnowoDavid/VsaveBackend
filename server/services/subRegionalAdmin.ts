@@ -1,4 +1,4 @@
-import SubRegion from "../model/SubRegion";
+import SubRegion from "../model/Teams";
 import Agent from "../model/Agents";
 import AgentReferral from "../model/Agents_referral";
 import { IAgent } from "../../types";

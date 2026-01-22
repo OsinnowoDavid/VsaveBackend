@@ -10,7 +10,7 @@ const subRegionSchema = new Schema(
         },
         shortCode: {
             type: String,
-            required: true,
+            required: false,
         },
         region: {
             type: mongoose.Schema.Types.ObjectId,
@@ -24,11 +24,11 @@ const subRegionSchema = new Schema(
         admin: [
             { type: mongoose.Schema.Types.ObjectId, ref: "Admin" },
         ],
-        teams: [{type: mongoose.Schema.Types.ObjectId, ref: "Team"}]
+        Officers: [{type: mongoose.Schema.Types.ObjectId, ref: "Team"}]
     },
     { timestamps: true },
 );
 
-const subRegion = mongoose.model("Area", subRegionSchema);
+const subRegion = mongoose.model("Team", subRegionSchema);
 
 export default subRegion; 

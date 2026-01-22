@@ -1,5 +1,6 @@
 
 import mongoose from "mongoose"; 
+import VerificationToken from "./VerificationToken";
 
 const officerSchema = new mongoose.Schema({
     firstName: {
@@ -23,7 +24,6 @@ const officerSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: true,
     },
     profilePicture: {
         type: String,
@@ -34,7 +34,10 @@ const officerSchema = new mongoose.Schema({
         required: true,
     },
     area:{type: mongoose.Schema.Types.ObjectId,
-                ref: "Area",}
+                ref: "Area",},
+    VerificationToken:{
+        type:Number
+    }
 })
 
 const officer = mongoose.model("Officer", officerSchema) ;
