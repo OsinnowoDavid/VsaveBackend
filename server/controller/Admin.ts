@@ -486,10 +486,10 @@ export const createSubRegionController = async (req: Request, res: Response) =>{
 }
 export const assignSubRegionAdminToSubRegionController = async (req: Request, res: Response) =>{
     try{
-        const {admin,subRegions} = req.body ;
+        const {admin,areas} = req.body ;
         const foundAdmin = await getAdminById(admin) as IAdmin
-        const assignAdmin = await assignSubRegionAdmin(foundAdmin._id.toString(),subRegions) ;
-        const assignAdminToSubRegion = await assignSubRegionAdminToSubRegion(foundAdmin,subRegions) ;
+        const assignAdmin = await assignSubRegionAdmin(foundAdmin._id.toString(),areas) ;
+        const assignAdminToSubRegion = await assignSubRegionAdminToSubRegion(foundAdmin,areas) ;
         return res.json({
             status:"Success",
             message:"admin assign successfuly",
