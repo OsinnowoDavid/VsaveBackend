@@ -260,6 +260,9 @@ export const createSubRegion = async (areaName:string, shortCode:string, locatio
             location,
             region
         })
+        const foundRegion = await Region.findById(region) ;
+        foundRegion.areas.push(newSubRegion._id) ;
+         await foundRegion.save()
         return newSubRegion
     }catch(err:any){
         throw err
@@ -295,6 +298,14 @@ export const assignSubRegionAdminToSubRegion = async (admin:IAdmin, subRegion:[s
         return 'Done'
     }catch(err:any){
         throw err 
+    }
+}
+export const getAllSubRegion = async () =>{
+    try{
+        const foundRecord = await SubRegion.find(); 
+        return foundRecord
+    }catch(err:any){
+        throw err
     }
 }
 export const setAdminSavingsConfig = async (

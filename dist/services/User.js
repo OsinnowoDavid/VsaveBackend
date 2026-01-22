@@ -11,10 +11,10 @@ const KYC_1 = __importDefault(require("../model/KYC"));
 const Transaction_1 = __importDefault(require("../model/Transaction"));
 const axios_1 = __importDefault(require("axios"));
 const Bank_code_1 = __importDefault(require("../model/Bank_code"));
-const RegionalAdmin_1 = require("./RegionalAdmin");
 const FixedSavings_1 = __importDefault(require("../model/FixedSavings"));
 const tools_1 = require("../config/tools");
 const Savings_circle_1 = __importDefault(require("../model/Savings_circle"));
+const Admin_1 = require("./Admin");
 const FLW_SECRET_KEY = process.env.FLW_SECRET_KEY;
 const createNewUser = async (firstName, lastName, email, password, gender, dateOfBirth, phoneNumber) => {
     try {
@@ -706,7 +706,7 @@ const getUserTransactionByType = async (user, type) => {
 exports.getUserTransactionByType = getUserTransactionByType;
 const userGetAllSubRegion = async () => {
     try {
-        const allSubRegion = await (0, RegionalAdmin_1.getAllSubRegion)();
+        const allSubRegion = await (0, Admin_1.getAllSubRegion)();
         return allSubRegion;
     }
     catch (err) {

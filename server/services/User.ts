@@ -6,7 +6,6 @@ import Transaction from "../model/Transaction";
 import { IUser, IUserSavingsRecord } from "../../types";
 import axios from "axios";
 import BankCode from "../model/Bank_code";
-import { getAllSubRegion } from "./RegionalAdmin";
 import FixedSavings from "../model/FixedSavings";
 import {
     getFiveMinutesAgo,
@@ -14,6 +13,7 @@ import {
     generateSavingsRefrenceCode,
 } from "../config/tools";
 import savingsCircle from "../model/Savings_circle";
+import { getAllSubRegion } from "./Admin";
 const FLW_SECRET_KEY = process.env.FLW_SECRET_KEY;
 
 export const createNewUser = async (

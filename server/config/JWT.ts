@@ -9,10 +9,6 @@ import {
     ISubRegionalAdmin,
     IUser,
 } from "../../types";
-import {
-    getRegionalAdminById,
-    getSubRegionalAdminById,
-} from "../services/RegionalAdmin";
 
 interface attachJwtPayload extends JwtPayload {
   user:any ;
