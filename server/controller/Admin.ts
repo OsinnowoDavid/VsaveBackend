@@ -228,7 +228,7 @@ export const LoginSuperAdminController = async (
 ) => {
     try {
         const { email, password } = req.body;
-        const foundAdmin = await getAllSuperAdminByEmail(email);
+        const foundAdmin = await getAdminByEmail(email);
         if (!foundAdmin) {
             return res.json({
                 status: "Failed",

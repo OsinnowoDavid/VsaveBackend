@@ -194,7 +194,7 @@ exports.resendVerificationCodeController = resendVerificationCodeController;
 const LoginSuperAdminController = async (req, res) => {
     try {
         const { email, password } = req.body;
-        const foundAdmin = await (0, Admin_1.getAllSuperAdminByEmail)(email);
+        const foundAdmin = await (0, Admin_1.getAdminByEmail)(email);
         if (!foundAdmin) {
             return res.json({
                 status: "Failed",
