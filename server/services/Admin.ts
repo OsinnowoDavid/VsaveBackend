@@ -5,6 +5,7 @@ import SubRegion from "../model/Teams";
 import { IAdmin, ISuperAdmin } from "../../types";
 import AdminConfig from "../model/Admin_config"; 
 import Transaction from "../model/Transaction";
+import mongoose from "mongoose" ;
 export const CreateAdmin = async (
     firstName: string,
     lastName: string,
@@ -99,14 +100,15 @@ export const createNewRegion = async (
     shortCode?: string
 ) => {
     try {
+        let adminId = new mongoose.Types.ObjectId(admin) ; 
         const newRegion = await Region.create({
             regionName,
             shortCode,
             location,
-            admin
+           admin:adminId
         });
         if(admin){
-            const foundAdmin = await Admin.findByIdAndUpdate(admin,{region:newRegion._id})
+            const foundAdmin = await Admin.findByIdAndUpdate(adminId,{region:newRegion._id})
         }
         return newRegion;
     } catch (err: any) {
@@ -259,16 +261,18 @@ export const getRegionById = async (id:string) =>{
 }
 export const createTeam = async (areaName:string, location:string,region:string, admin?:string ,shortCode?:string,) =>{
     try{
+         let adminId = new mongoose.Types.ObjectId(admin) ; 
         const newSubRegion = await SubRegion.create({
             subRegionName: areaName,
             location,
             region,
              shortCode,
-             admin
+             admin:adminId
         })
         const foundRegion = await Region.findById(region) ;
         foundRegion.teams.push(newSubRegion._id) ;
          await foundRegion.save()
+         const foundAdmin = await Admin.findByIdAndUpdate(adminId,{team:newSubRegion._id}) ;
         return newSubRegion
     }catch(err:any){
         throw err

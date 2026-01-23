@@ -9,6 +9,7 @@ const Region_1 = __importDefault(require("../model/Region"));
 const Teams_1 = __importDefault(require("../model/Teams"));
 const Admin_config_1 = __importDefault(require("../model/Admin_config"));
 const Transaction_1 = __importDefault(require("../model/Transaction"));
+const mongoose_1 = __importDefault(require("mongoose"));
 const CreateAdmin = async (firstName, lastName, email, phoneNumber, role, profilePicture) => {
     try {
         const newSuperAdmin = await Admin_1.default.create({
@@ -105,14 +106,15 @@ const deleteAdmin = async (id) => {
 exports.deleteAdmin = deleteAdmin;
 const createNewRegion = async (regionName, location, admin, shortCode) => {
     try {
+        let adminId = new mongoose_1.default.Types.ObjectId(admin);
         const newRegion = await Region_1.default.create({
             regionName,
             shortCode,
             location,
-            admin
+            admin: adminId
         });
         if (admin) {
-            const foundAdmin = await Admin_1.default.findByIdAndUpdate(admin, { region: newRegion._id });
+            const foundAdmin = await Admin_1.default.findByIdAndUpdate(adminId, { region: newRegion._id });
         }
         return newRegion;
     }
@@ -274,16 +276,18 @@ const getRegionById = async (id) => {
 exports.getRegionById = getRegionById;
 const createTeam = async (areaName, location, region, admin, shortCode) => {
     try {
+        let adminId = new mongoose_1.default.Types.ObjectId(admin);
         const newSubRegion = await Teams_1.default.create({
             subRegionName: areaName,
             location,
             region,
             shortCode,
-            admin
+            admin: adminId
         });
         const foundRegion = await Region_1.default.findById(region);
         foundRegion.teams.push(newSubRegion._id);
         await foundRegion.save();
+        const foundAdmin = await Admin_1.default.findByIdAndUpdate(adminId, { team: newSubRegion._id });
         return newSubRegion;
     }
     catch (err) {
