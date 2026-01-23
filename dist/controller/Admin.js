@@ -311,7 +311,7 @@ exports.assignRegionalAdminToRegionController = assignRegionalAdminToRegionContr
 const createNewRegionController = async (req, res) => {
     try {
         const { regionName, shortCode, location, admin } = req.body;
-        const newRegion = await (0, Admin_1.createNewRegion)(regionName, shortCode, location, admin);
+        const newRegion = await (0, Admin_1.createNewRegion)(regionName, location, admin, shortCode);
         if (!newRegion) {
             return res.json({
                 status: "Failed",
@@ -422,8 +422,8 @@ const getRegionalAdminByEmailController = async (req, res) => {
 exports.getRegionalAdminByEmailController = getRegionalAdminByEmailController;
 const createTeamController = async (req, res) => {
     try {
-        const { subRegionName, shortCode, location, region } = req.body;
-        const newSubRegion = await (0, Admin_1.createTeam)(subRegionName, shortCode, location, region);
+        const { subRegionName, shortCode, location, region, admin } = req.body;
+        const newSubRegion = await (0, Admin_1.createTeam)(subRegionName, location, region, admin, shortCode);
         return res.json({
             status: "Success",
             message: "sub region created successfuly",
