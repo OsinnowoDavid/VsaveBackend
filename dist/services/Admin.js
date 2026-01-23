@@ -106,15 +106,15 @@ const deleteAdmin = async (id) => {
 exports.deleteAdmin = deleteAdmin;
 const createNewRegion = async (regionName, location, admin, shortCode) => {
     try {
-        let adminId = new mongoose_1.default.Types.ObjectId(admin);
         const newRegion = await Region_1.default.create({
             regionName,
             shortCode,
-            location,
-            admin: adminId
+            location
         });
         if (admin) {
-            const foundAdmin = await Admin_1.default.findByIdAndUpdate(adminId, { region: newRegion._id });
+            const foundAdmin = await Admin_1.default.findByIdAndUpdate(admin, { region: newRegion._id });
+            newRegion.admin.push(foundAdmin._id);
+            await newRegion.save();
         }
         return newRegion;
     }
@@ -288,6 +288,8 @@ const createTeam = async (areaName, location, region, admin, shortCode) => {
         foundRegion.teams.push(newSubRegion._id);
         await foundRegion.save();
         const foundAdmin = await Admin_1.default.findByIdAndUpdate(adminId, { team: newSubRegion._id });
+        newSubRegion.admin.push(foundAdmin._id);
+        await newSubRegion.save();
         return newSubRegion;
     }
     catch (err) {
