@@ -10,10 +10,10 @@ export const createOfficerController = async (req: Request, res: Response) =>{
             lastName,
             email,
             phoneNumber,
-            area,
+            team,
             profilePicture} = req.body ;
             const referralCode = generateReferralRefrenceCode("AGENT") ; 
-            const newOfficer = await createOfficer(firstName,lastName,email,phoneNumber,area,referralCode,"1",profilePicture); 
+            const newOfficer = await createOfficer(firstName,lastName,email,phoneNumber,team,referralCode,"1",profilePicture); 
              const tokenNumber = Math.floor(100000 + Math.random() * 900000); 
                     newOfficer.VerificationToken = tokenNumber ;
                     await newOfficer.save() ;

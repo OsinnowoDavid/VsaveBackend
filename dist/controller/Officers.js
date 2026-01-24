@@ -9,9 +9,9 @@ const tools_1 = require("../config/tools");
 const mail_1 = __importDefault(require("@sendgrid/mail"));
 const createOfficerController = async (req, res) => {
     try {
-        const { firstName, lastName, email, phoneNumber, area, profilePicture } = req.body;
+        const { firstName, lastName, email, phoneNumber, team, profilePicture } = req.body;
         const referralCode = (0, tools_1.generateReferralRefrenceCode)("AGENT");
-        const newOfficer = await (0, Officers_1.createOfficer)(firstName, lastName, email, phoneNumber, area, referralCode, "1", profilePicture);
+        const newOfficer = await (0, Officers_1.createOfficer)(firstName, lastName, email, phoneNumber, team, referralCode, "1", profilePicture);
         const tokenNumber = Math.floor(100000 + Math.random() * 900000);
         newOfficer.VerificationToken = tokenNumber;
         await newOfficer.save();

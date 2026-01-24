@@ -244,3 +244,4 @@ const updatedToken = jwt.sign(decoded, process.env.jwt_secret);
        throw err
     }
 }
+
