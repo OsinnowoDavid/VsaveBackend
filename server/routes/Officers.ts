@@ -1,5 +1,5 @@
 import express from "express"; 
-import { createPasswordController } from "../controller/Area";
+import { createPasswordController } from "../controller/Officers";
 const router = express.Router();
 
 router.post("/create-password", createPasswordController)

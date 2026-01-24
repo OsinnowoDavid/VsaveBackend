@@ -31,7 +31,7 @@ import {
 } from "../controller/Admin";
 import { verifyGeneralAdminToken, verifySuperAdminToken , verifyRegionalAdminToken, verifySubRegionalAdminToken} from "../config/JWT"; 
 import { validateAdminRegistrationInput } from "../validate-input/admin/index";
-import { createOfficerController } from "../controller/Area";
+import { createOfficerController } from "../controller/Officers";
 
 const router = express.Router();
 

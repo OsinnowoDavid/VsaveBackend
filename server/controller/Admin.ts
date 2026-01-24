@@ -478,6 +478,15 @@ export const getRegionalAdminByEmailController = async (
 export const createTeamController = async (req: Request, res: Response) =>{
     try{
         const {subRegionName,shortCode,location,region, admin} = req.body ;
+        const foundAdmin = await getAdminById(admin) ; 
+         if(foundAdmin.role === "SUPER ADMIN" || foundAdmin.role === "REGIONAL ADMIN"){
+             const newSubRegion = await createTeam(subRegionName,location,region, "",shortCode,) ;
+            return res.json({
+                status:"Failed",
+                message:"Team created but,you can't assign a regional admin to a Team (regional admin have access to all team under there region so this action is not advisable",
+                data: newSubRegion
+            })
+        }
         const newSubRegion = await createTeam(subRegionName,location,region, admin,shortCode,) ;
         return res.json({
             status:"Success",
@@ -491,6 +500,7 @@ export const createTeamController = async (req: Request, res: Response) =>{
         });
     }
 }
+
 export const assignTeamAdminToTeamController = async (req: Request, res: Response) =>{
     try{
         const {admin,areas} = req.body ;

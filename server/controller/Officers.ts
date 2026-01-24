@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import argon from "argon2";
 import { getAllMyTeam } from "../services/Admin"; 
-import { createOfficer, getOfficerByEmail,getOfficerById, verifyToken, createPassword } from "../services/Area";
+import { createOfficer, getOfficerByEmail,getOfficerById, verifyToken, createPassword } from "../services/Officers";
 import {generateReferralRefrenceCode} from "../config/tools"
 import SGMail from "@sendgrid/mail";
 export const createOfficerController = async (req: Request, res: Response) =>{

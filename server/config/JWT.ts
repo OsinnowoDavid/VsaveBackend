@@ -8,6 +8,7 @@ import {
     IRegionalAdmin,
     ISubRegionalAdmin,
     IUser,
+    IAdmin,
 } from "../../types";
 
 interface attachJwtPayload extends JwtPayload {
