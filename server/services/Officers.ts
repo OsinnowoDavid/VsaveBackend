@@ -1,7 +1,7 @@
 import Officers from "../model/Officers" ;
 
 
-export const createOfficer = async (firstName:string,lastName:string,email:string,phoneNumber:string,area:string,referralCode:string,level:string,profilePicture:string) =>{
+export const createOfficer = async (firstName:string,lastName:string,email:string,phoneNumber:string,area:string,referralCode:string,level:string,profilePicture?:string) =>{
     try{
         const newOfficer = await Officers.create({
             firstName,

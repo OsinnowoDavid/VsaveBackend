@@ -40,7 +40,7 @@ const getAdminRegionsOrsubregions = async (admin) => {
 };
 const registerAdminController = async (req, res) => {
     try {
-        const { firstName, lastName, email, phoneNumber, password, role, profilePicture } = req.body;
+        const { firstName, lastName, email, phoneNumber, role, profilePicture } = req.body;
         // check if admin account already exist 
         const foundAdmin = await (0, Admin_1.getAdminByEmail)(email);
         if (foundAdmin) {
