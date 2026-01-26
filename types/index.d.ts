@@ -29,7 +29,8 @@ declare interface IUser extends Document {
         | "Unemployed"
         | "Other";
     referralCode:string ;
-    referredBy: Types.ObjectId | string | null;
+    referredBy?: Types.ObjectId | string | null;
+    referralModel?: "User" |"Officer" |"" ;
 }
 declare interface IVerificationToken extends Document {
     user?: Types.ObjectId;

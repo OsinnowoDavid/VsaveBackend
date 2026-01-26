@@ -939,3 +939,15 @@ export const getReferalByReferalCode = async (code:string) =>{
         throw err
     }
 }
+
+export const addReferredUser = async (user: string, referral:string,type:"User"|"Officer"|"" ) =>{
+    try{
+        const foundUser = await User.findById(user) as IUser ;
+        foundUser.referredBy = referral ;
+        foundUser.referralModel = type ; 
+        await foundUser.save() ;
+        return foundUser
+    }catch(err:any){
+        throw err
+    }
+}

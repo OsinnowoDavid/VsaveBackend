@@ -73,7 +73,8 @@ const registerUser = async (req, res) => {
         // check for referral code 
         let referralErr = "";
         if (referralCode) {
-            const userReferred = await (0, referral_1.assignReferral)(newUser._id.toString(), referralCode, "USER");
+            const referralType = (0, referral_1.getUserTypeWithReferralCode)(referralCode);
+            const userReferred = await (0, referral_1.assignReferral)(newUser._id.toString(), referralCode, referralType);
             if (userReferred === "Successful") {
                 const foundUser = await (0, User_1.getReferalByReferalCode)(referralCode);
                 newUser.referredBy = foundUser._id;

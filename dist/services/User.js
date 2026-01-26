@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getReferalByReferalCode = exports.getAllUser = exports.validateTransactionPin = exports.createTransactionPin = exports.getCircleById = exports.userDeposit = exports.userWithdraw = exports.createFixedSaving = exports.userGetAllSubRegion = exports.getUserTransactionByType = exports.getUserTransactionByStatus = exports.getUserSingleTransaction = exports.getUserTransactions = exports.getAccountBalance = exports.payOut = exports.accountLookUp = exports.getBankCode = exports.createUserAirtimeTransaction = exports.createUserDataTransaction = exports.checkTransferByRefrence = exports.createUserTransaction = exports.deposit = exports.withdraw = exports.buyData = exports.getUserKyc1Record = exports.getDataPlan = exports.buyAirtime = exports.createVirtualAccountIndex = exports.createVirtualAccountForPayment = exports.verifyBankaccount = exports.getAllBanksAndCode = exports.updateKYC1Record = exports.createKYC1Record = exports.kycStatusChange = exports.createKYCRecord = exports.changePassword = exports.updateProfile = exports.confirmTokenExist = exports.getUserVerificationToken = exports.assignUserEmailVerificationToken = exports.getUserByEmail = exports.getUserByIdPublicUse = exports.getUserById = exports.createNewUser = void 0;
+exports.addReferredUser = exports.getReferalByReferalCode = exports.getAllUser = exports.validateTransactionPin = exports.createTransactionPin = exports.getCircleById = exports.userDeposit = exports.userWithdraw = exports.createFixedSaving = exports.userGetAllSubRegion = exports.getUserTransactionByType = exports.getUserTransactionByStatus = exports.getUserSingleTransaction = exports.getUserTransactions = exports.getAccountBalance = exports.payOut = exports.accountLookUp = exports.getBankCode = exports.createUserAirtimeTransaction = exports.createUserDataTransaction = exports.checkTransferByRefrence = exports.createUserTransaction = exports.deposit = exports.withdraw = exports.buyData = exports.getUserKyc1Record = exports.getDataPlan = exports.buyAirtime = exports.createVirtualAccountIndex = exports.createVirtualAccountForPayment = exports.verifyBankaccount = exports.getAllBanksAndCode = exports.updateKYC1Record = exports.createKYC1Record = exports.kycStatusChange = exports.createKYCRecord = exports.changePassword = exports.updateProfile = exports.confirmTokenExist = exports.getUserVerificationToken = exports.assignUserEmailVerificationToken = exports.getUserByEmail = exports.getUserByIdPublicUse = exports.getUserById = exports.createNewUser = void 0;
 const User_1 = __importDefault(require("../model/User"));
 const VerificationToken_1 = __importDefault(require("../model/VerificationToken"));
 const KYC1_1 = __importDefault(require("../model/KYC1"));
@@ -832,3 +832,16 @@ const getReferalByReferalCode = async (code) => {
     }
 };
 exports.getReferalByReferalCode = getReferalByReferalCode;
+const addReferredUser = async (user, referral, type) => {
+    try {
+        const foundUser = await User_1.default.findById(user);
+        foundUser.referredBy = referral;
+        foundUser.referralModel = type;
+        await foundUser.save();
+        return foundUser;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.addReferredUser = addReferredUser;

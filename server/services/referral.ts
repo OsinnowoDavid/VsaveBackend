@@ -1,16 +1,16 @@
 import UserReferral from "../model/Referral_record"; 
-import User from "../model/User" ;
+import User from "../model/User" ; 
+import Officer from "../model/Officers";
 import {generateReferralRefrenceCode} from "../config/tools" ;
 import { IUser } from "../../types";
 
-export const createUserReferral = async (user:string, referredUser:string,type:"USER"|"OFFICER") =>{
+export const createUserReferral = async (user:string, referredUser:string,type:"User"|"Officer"|"", referralCode:string) =>{
     try{
-        const foundUserRecord = await User.findById(user) ;
         const newRecord = await UserReferral.create({
             user,
-            type,
+            userModel:type,
             referredUser,
-            referralCode: foundUserRecord.referralCode,
+            referralCode,
             bonusAmount:500,
             status: "pending",
             referredUserTask:{
@@ -19,7 +19,7 @@ export const createUserReferral = async (user:string, referredUser:string,type:"
                 complete5SuccessfulSavingsCircle:false,
             }
         }) 
-        return newRecord
+        return newRecord 
     }catch(err:any){
         throw err 
     }
@@ -85,22 +85,47 @@ export const createReferralCodeForUser = async (user:string) =>{
         throw err
     }
 }
-export const assignReferral = async (user:string,referralCode:string,type:"USER"|"OFFICER") =>{
+export const createReferralCodeForOfficer = async (user:string) =>{
     try{
-        let foundUser = {} as IUser ;
+     const foundUserRecord = await User.findById(user) ;
+        let referralCode = '' 
+        let existingRecord= null ;
+        do {
+                    referralCode = generateReferralRefrenceCode("AGENT") ;
+                    existingRecord = await User.findOne({referralCode})
+                } while (existingRecord) 
+        foundUserRecord.referralCode = referralCode 
+        await foundUserRecord.save()      
+        return foundUserRecord
+    }catch(err:any){
+        throw err
+    }
+}
+export const assignReferral = async (user:string,referralCode:string,type:"User"|"Officer"|"") =>{
+    try{
         let firstLetter: string = referralCode.charAt(0); 
         // check if its a User referral code 
         if(firstLetter === "U"){ 
-            foundUser = await User.findOne({referralCode}) ;
+           const foundUser = await User.findOne({referralCode}) ;
             if(!foundUser){
                 return  {err:true,message:"account created but, no user found with this referral code"}
             }
-            let newRecord = await createUserReferral(foundUser._id.toString(), user,type) ;
+            let newRecord = await createUserReferral(foundUser._id.toString(), user,type,referralCode) ;
             foundUser.pendingBalance += 500 ;
             await foundUser.save() ;
             return "Successful"
         
         } ;
+        if(firstLetter === "A"){
+            const foundOfficer = await Officer.findOne({referralCode}) ;
+             if(!foundOfficer){
+                return  {err:true,message:"account created but, no user found with this referral code"}
+            }
+             let newRecord = await createUserReferral(foundOfficer._id.toString(), user,type,referralCode) ;
+             foundOfficer.pendingBalance += 500 ;
+             await foundOfficer.save() ;
+              return "Successful"
+        }
         return  {err:true,message: "account created but, invalid referral code"}
     }catch(err:any){
         throw err
@@ -125,5 +150,19 @@ export const assignReferralCodeToExistingUser = async () =>{
         return "done"
     }catch(err:any){
         throw err 
+    }
+}
+export const getUserTypeWithReferralCode = async (referralCode:string) =>{
+    try{
+         let firstLetter: string = referralCode.charAt(0);  
+         if(firstLetter === "U"){
+            return "User"
+         } 
+         if(firstLetter === "A"){
+            return "Officer"
+         } ;
+         return ""
+    }catch(err:any){
+        throw err
     }
 }

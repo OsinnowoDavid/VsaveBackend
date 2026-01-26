@@ -3,18 +3,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.assignReferralCodeToExistingUser = exports.getSingleReferralRecord = exports.assignReferral = exports.createReferralCodeForUser = exports.getUserReferralByReferredUser = exports.getAllUserReferralRecord = exports.editUserReferralRecord = exports.getUserReferralByStatus = exports.createUserReferral = void 0;
+exports.getUserTypeWithReferralCode = exports.assignReferralCodeToExistingUser = exports.getSingleReferralRecord = exports.assignReferral = exports.createReferralCodeForOfficer = exports.createReferralCodeForUser = exports.getUserReferralByReferredUser = exports.getAllUserReferralRecord = exports.editUserReferralRecord = exports.getUserReferralByStatus = exports.createUserReferral = void 0;
 const Referral_record_1 = __importDefault(require("../model/Referral_record"));
 const User_1 = __importDefault(require("../model/User"));
+const Officers_1 = __importDefault(require("../model/Officers"));
 const tools_1 = require("../config/tools");
-const createUserReferral = async (user, referredUser, type) => {
+const createUserReferral = async (user, referredUser, type, referralCode) => {
     try {
-        const foundUserRecord = await User_1.default.findById(user);
         const newRecord = await Referral_record_1.default.create({
             user,
-            type,
+            userModel: type,
             referredUser,
-            referralCode: foundUserRecord.referralCode,
+            referralCode,
             bonusAmount: 500,
             status: "pending",
             referredUserTask: {
@@ -99,22 +99,49 @@ const createReferralCodeForUser = async (user) => {
     }
 };
 exports.createReferralCodeForUser = createReferralCodeForUser;
+const createReferralCodeForOfficer = async (user) => {
+    try {
+        const foundUserRecord = await User_1.default.findById(user);
+        let referralCode = '';
+        let existingRecord = null;
+        do {
+            referralCode = (0, tools_1.generateReferralRefrenceCode)("AGENT");
+            existingRecord = await User_1.default.findOne({ referralCode });
+        } while (existingRecord);
+        foundUserRecord.referralCode = referralCode;
+        await foundUserRecord.save();
+        return foundUserRecord;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.createReferralCodeForOfficer = createReferralCodeForOfficer;
 const assignReferral = async (user, referralCode, type) => {
     try {
-        let foundUser = {};
         let firstLetter = referralCode.charAt(0);
         // check if its a User referral code 
         if (firstLetter === "U") {
-            foundUser = await User_1.default.findOne({ referralCode });
+            const foundUser = await User_1.default.findOne({ referralCode });
             if (!foundUser) {
                 return { err: true, message: "account created but, no user found with this referral code" };
             }
-            let newRecord = await (0, exports.createUserReferral)(foundUser._id.toString(), user, type);
+            let newRecord = await (0, exports.createUserReferral)(foundUser._id.toString(), user, type, referralCode);
             foundUser.pendingBalance += 500;
             await foundUser.save();
             return "Successful";
         }
         ;
+        if (firstLetter === "A") {
+            const foundOfficer = await Officers_1.default.findOne({ referralCode });
+            if (!foundOfficer) {
+                return { err: true, message: "account created but, no user found with this referral code" };
+            }
+            let newRecord = await (0, exports.createUserReferral)(foundOfficer._id.toString(), user, type, referralCode);
+            foundOfficer.pendingBalance += 500;
+            await foundOfficer.save();
+            return "Successful";
+        }
         return { err: true, message: "account created but, invalid referral code" };
     }
     catch (err) {
@@ -146,3 +173,20 @@ const assignReferralCodeToExistingUser = async () => {
     }
 };
 exports.assignReferralCodeToExistingUser = assignReferralCodeToExistingUser;
+const getUserTypeWithReferralCode = async (referralCode) => {
+    try {
+        let firstLetter = referralCode.charAt(0);
+        if (firstLetter === "U") {
+            return "User";
+        }
+        if (firstLetter === "A") {
+            return "Officer";
+        }
+        ;
+        return "";
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.getUserTypeWithReferralCode = getUserTypeWithReferralCode;

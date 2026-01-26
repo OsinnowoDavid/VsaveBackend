@@ -82,7 +82,7 @@ import {
      getTerminalTransaction,
      getSingleTerminalTransaction,
     } from "../services/Terminal" ;
-    import {assignReferral,createReferralCodeForUser,getAllUserReferralRecord,getUserReferralByStatus,getSingleReferralRecord,assignReferralCodeToExistingUser} from "../services/referral"
+    import {assignReferral,createReferralCodeForUser,getAllUserReferralRecord,getUserReferralByStatus,getSingleReferralRecord,assignReferralCodeToExistingUser, getUserTypeWithReferralCode} from "../services/referral"
 const QOREID_API_KEY = process.env.QOREID_SECRET_KEY as string;
 const QOREID_BASE_URL = process.env.QOREID_BASE_URL as string;
 SGMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -170,7 +170,8 @@ export const registerUser = async (req: Request, res: Response) => {
         // check for referral code 
         let referralErr = "";
         if(referralCode){
-           const userReferred = await assignReferral(newUser._id.toString(), referralCode,"USER") as any ;  
+            const referralType = getUserTypeWithReferralCode(referralCode) as any ;
+           const userReferred = await assignReferral(newUser._id.toString(), referralCode, referralType) as any ;  
             if(userReferred === "Successful"){
                 const foundUser = await getReferalByReferalCode(referralCode) ;
                 newUser.referredBy = foundUser._id ;

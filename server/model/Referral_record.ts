@@ -1,56 +1,60 @@
 import mongoose from "mongoose";
 
-const referralSchema = new mongoose.Schema({
-    user:  {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "User", // Reference to your User model
-                required: true,
-            },
-    referralCode:{
-        type:String
+const referralSchema = new mongoose.Schema(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      refPath: "userModel", // 👈 dynamic reference
     },
-    type:{
-        type:String,
-        required:true,
-        enum:["USER","OFFICER"]
+    userModel: {
+      type: String,
+      required: true,
+      enum: ["User", "Officer"], // must match model names exactly
     },
-    bonusAmount:{
-        type:Number ,
+    referralCode: {
+      type: String,
     },
-    status:{
-        type:String,
-        enum:["pending","completed", "rejected"]
+    bonusAmount: {
+      type: Number,
     },
-    referredUser:{
-         type: mongoose.Schema.Types.ObjectId,
-                ref: "User", // Reference to your User model
-                required: true,
+    status: {
+      type: String,
+      enum: ["pending", "completed", "rejected"],
+      default: "pending",
     },
-    referredUserTask:{
-         fundVSaveWallet: {
-            type:Boolean,
-            default: false
-         },
-          createSavingsPlan: {
-            type:Boolean,
-            default: false
-         },
-        complete5SuccessfulSavingsCircle: {
-            type:Boolean,
-            default: false
-         },
+    // 👇 referred user is ALWAYS a User
+    referredUser: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
-    depositedToAvaliableBalnace:{
-        type:Boolean,
-        default: false
+    referredUserTask: {
+      fundVSaveWallet: {
+        type: Boolean,
+        default: false,
+      },
+      createSavingsPlan: {
+        type: Boolean,
+        default: false,
+      },
+      complete5SuccessfulSavingsCircle: {
+        type: Boolean,
+        default: false,
+      },
     },
-    depositedToAvaliableBalnaceDate:{
-        type:Date,
-    }
-},
-{timestamps:true}
-)
 
-const Referral = mongoose.model("ReferralRecord", referralSchema) ;
+    depositedToAvaliableBalnace: {
+      type: Boolean,
+      default: false,
+    },
 
-export default Referral
+    depositedToAvaliableBalnaceDate: {
+      type: Date,
+    },
+  },
+  { timestamps: true }
+);
+
+const Referral = mongoose.model("ReferralRecord", referralSchema);
+export default Referral;

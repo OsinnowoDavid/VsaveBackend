@@ -24,6 +24,14 @@ const officerSchema = new mongoose_1.default.Schema({
     level: {
         type: String
     },
+    availableBalance: {
+        type: Number,
+        default: 0
+    },
+    pendingBalance: {
+        type: Number,
+        default: 0
+    },
     password: {
         type: String,
     },

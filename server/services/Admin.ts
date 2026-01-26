@@ -230,7 +230,7 @@ export const getRegionalAdminByEmail = async (email: string) => {
 
 export const getAllRegion = async () => {
     try {
-        const allRegion = await Region.find();
+        const allRegion = await Region.find().populate({path:"admin",select:"-password"})
         return allRegion;
     } catch (err: any) {
         throw err;
