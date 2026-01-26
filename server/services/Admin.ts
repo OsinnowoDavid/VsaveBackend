@@ -231,15 +231,7 @@ export const getRegionalAdminByEmail = async (email: string) => {
 export const getAllRegion = async () => {
     try {
         const allRegion = await Region.find();
-        let result: any = [];
-        allRegion.forEach((region) => {
-            let finalResult = {
-                region: region.regionName,
-                shortCode: region.shortCode,
-            };
-            result.push(finalResult);
-        });
-        return result;
+        return allRegion;
     } catch (err: any) {
         throw err;
     }

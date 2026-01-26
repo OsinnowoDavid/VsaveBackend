@@ -170,7 +170,7 @@ export const registerUser = async (req: Request, res: Response) => {
         // check for referral code 
         let referralErr = "";
         if(referralCode){
-           const userReferred = await assignReferral(newUser._id.toString(), referralCode) as any ;  
+           const userReferred = await assignReferral(newUser._id.toString(), referralCode,"USER") as any ;  
             if(userReferred === "Successful"){
                 const foundUser = await getReferalByReferalCode(referralCode) ;
                 newUser.referredBy = foundUser._id ;

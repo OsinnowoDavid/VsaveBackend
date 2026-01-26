@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const userReferralSchema = new mongoose.Schema({
+const referralSchema = new mongoose.Schema({
     user:  {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "User", // Reference to your User model
@@ -8,6 +8,11 @@ const userReferralSchema = new mongoose.Schema({
             },
     referralCode:{
         type:String
+    },
+    type:{
+        type:String,
+        required:true,
+        enum:["USER","OFFICER"]
     },
     bonusAmount:{
         type:Number ,
@@ -46,6 +51,6 @@ const userReferralSchema = new mongoose.Schema({
 {timestamps:true}
 )
 
-const userReferral = mongoose.model("user_referral", userReferralSchema) ;
+const Referral = mongoose.model("ReferralRecord", referralSchema) ;
 
-export default userReferral
+export default Referral

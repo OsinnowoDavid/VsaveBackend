@@ -1,13 +1,14 @@
-import UserReferral from "../model/User_referral"; 
+import UserReferral from "../model/Referral_record"; 
 import User from "../model/User" ;
 import {generateReferralRefrenceCode} from "../config/tools" ;
 import { IUser } from "../../types";
 
-export const createUserReferral = async (user:string, referredUser:string) =>{
+export const createUserReferral = async (user:string, referredUser:string,type:"USER"|"OFFICER") =>{
     try{
         const foundUserRecord = await User.findById(user) ;
         const newRecord = await UserReferral.create({
             user,
+            type,
             referredUser,
             referralCode: foundUserRecord.referralCode,
             bonusAmount:500,
@@ -84,7 +85,7 @@ export const createReferralCodeForUser = async (user:string) =>{
         throw err
     }
 }
-export const assignReferral = async (user:string,referralCode:string) =>{
+export const assignReferral = async (user:string,referralCode:string,type:"USER"|"OFFICER") =>{
     try{
         let foundUser = {} as IUser ;
         let firstLetter: string = referralCode.charAt(0); 
@@ -94,7 +95,7 @@ export const assignReferral = async (user:string,referralCode:string) =>{
             if(!foundUser){
                 return  {err:true,message:"account created but, no user found with this referral code"}
             }
-            let newRecord = await createUserReferral(foundUser._id.toString(), user) ;
+            let newRecord = await createUserReferral(foundUser._id.toString(), user,type) ;
             foundUser.pendingBalance += 500 ;
             await foundUser.save() ;
             return "Successful"
