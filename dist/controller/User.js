@@ -404,6 +404,7 @@ const registerKYC1 = async (req, res) => {
             });
         }
         // change KYC status
+        console.log("got here start virtual account creattion");
         const virtualAccount = await (0, User_1.createVirtualAccountForPayment)(user, bvn, address);
         if (virtualAccount.success === "false") {
             return res.json({
@@ -412,15 +413,20 @@ const registerKYC1 = async (req, res) => {
             });
         }
         await (0, User_1.createVirtualAccountIndex)(user._id.toString(), virtualAccount.data.virtual_account_number);
+        console.log("got here kyc record creation");
         // save KYC1
         const newKYC1 = await (0, User_1.createKYC1Record)(user, profession, country, state, bvn, address, subRegion, accountNumber, bank, accountDetails, bankCode);
+        console.log("got here  virtual account is created", User_1.createKYC1Record);
         user.profession = profession;
         await user.save();
+        console.log("got here proffession saved");
         if (profession === "Lottery Agent") {
             await (0, Terminal_1.generateAndAsignLottoryId)(user._id.toString());
         }
+        console.log("got here if it's lotto agent completed");
         // create transaction pin 
         await (0, User_1.createTransactionPin)(user._id.toString(), transactionPin);
+        console.log("got here transaction pin created");
         if (!newKYC1) {
             return res.json({
                 status: "Failed",

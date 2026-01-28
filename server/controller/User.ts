@@ -532,7 +532,7 @@ export const registerKYC1 = async (req: Request, res: Response) => {
             });
         }
         // change KYC status
-
+        console.log("got here start virtual account creattion")
         const virtualAccount = await createVirtualAccountForPayment(
             user,
             bvn,
@@ -544,10 +544,12 @@ export const registerKYC1 = async (req: Request, res: Response) => {
                 message: "something went wrong, account number not created"
             });
         }
+        
         await createVirtualAccountIndex(
             user._id.toString(),
             virtualAccount.data.virtual_account_number,
         );
+        console.log("got here kyc record creation")
         // save KYC1
         const newKYC1 = await createKYC1Record(
             user,
@@ -562,13 +564,17 @@ export const registerKYC1 = async (req: Request, res: Response) => {
             accountDetails,
             bankCode,
         );
+        console.log("got here  virtual account is created", createKYC1Record) ;
         user.profession = profession ;
         await user.save() ;
+        console.log("got here proffession saved")
         if(profession === "Lottery Agent" ){
              await generateAndAsignLottoryId(user._id.toString()) ;
         }
+        console.log("got here if it's lotto agent completed") ;
         // create transaction pin 
-        await createTransactionPin(user._id.toString(),transactionPin) ;
+        await createTransactionPin(user._id.toString(),transactionPin) ; 
+        console.log("got here transaction pin created") ;
         if (!newKYC1) {
             return res.json({
                 status: "Failed",
