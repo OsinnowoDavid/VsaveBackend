@@ -7,7 +7,6 @@ import adminRouter from "./routes/Admin";
 import loanRouter from "./routes/Loan";
 import savingsRouter from "./routes/Savings";
 import webhookRouter from "./routes/Webhook";
-import OfficersRoutes from "./routes/Officers"
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import nodeCron from "node-cron";
@@ -48,8 +47,6 @@ app.use("/user", userRouter);
 
 // superAdmin routes config
 app.use("/admin", adminRouter);
-
-app.use("/officers", OfficersRoutes)
 
 app.use("/savings", savingsRouter);
 

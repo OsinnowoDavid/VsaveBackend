@@ -96,7 +96,7 @@ const userSchema = new Schema({
     },
     referralModel: {
         type: String,
-        enum: ["User", "Officer"], // must match model names exactly
+        enum: ["User", "Officer"], // must match model names exactly 
     },
     lottoryId: {
         type: String
@@ -106,6 +106,14 @@ const userSchema = new Schema({
     },
     referralCode: {
         type: String
+    },
+    role: {
+        type: String,
+        enum: ["USER", "AGENT"]
+    },
+    deactivated: {
+        type: Boolean,
+        default: false
     }
 }, { timestamps: true });
 const User = mongoose_1.default.model("User", userSchema);

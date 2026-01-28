@@ -12,7 +12,6 @@ const Admin_1 = __importDefault(require("./routes/Admin"));
 const Loan_1 = __importDefault(require("./routes/Loan"));
 const Savings_1 = __importDefault(require("./routes/Savings"));
 const Webhook_1 = __importDefault(require("./routes/Webhook"));
-const Officers_1 = __importDefault(require("./routes/Officers"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const node_cron_1 = __importDefault(require("node-cron"));
@@ -47,7 +46,6 @@ app.get("/", (req, res) => {
 app.use("/user", User_1.default);
 // superAdmin routes config
 app.use("/admin", Admin_1.default);
-app.use("/officers", Officers_1.default);
 app.use("/savings", Savings_1.default);
 app.use("/webhook", Webhook_1.default);
 app.use("/loan", Loan_1.default);

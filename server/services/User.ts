@@ -951,3 +951,11 @@ export const addReferredUser = async (user: string, referral:string,type:"User"|
         throw err
     }
 }
+export const deactivateAccount = async (user:string) =>{
+    try{
+        const foundUser = await User.findByIdAndUpdate(user, {deactivated:true}) ;
+        return foundUser
+    }catch(err:any){
+        throw err
+    }
+}

@@ -64,4 +64,5 @@ router.get("/get-referral-record", JWT_1.verifyUserToken, User_1.checkUserReferr
 router.get("/get-referral-by-status/:status", JWT_1.verifyUserToken, User_1.checkUserReferralRecordsByStatusController);
 router.get("/get-single-referral/:id", JWT_1.verifyUserToken, User_1.checkUserSingleReferralRecordController);
 router.get("/assign-referral", User_1.assignReferralCodeToExistingUserController);
+router.get("/delete-account", JWT_1.verifyUserToken, User_1.deactivateAccountController);
 exports.default = router;

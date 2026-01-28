@@ -6,7 +6,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const Admin_1 = require("../controller/Admin");
 const JWT_1 = require("../config/JWT");
-const Officers_1 = require("../controller/Officers");
 const router = express_1.default.Router();
 router.post("/register", JWT_1.verifySuperAdminToken, Admin_1.registerAdminController);
 router.post("/create-password", Admin_1.createAdminPasswordController);
@@ -48,5 +47,4 @@ router.get("/all-admin-created-savings", JWT_1.verifySuperAdminToken, Admin_1.ge
 // send personal notification
 // suspend admin account
 // create Officer 
-router.post("/create-officer", JWT_1.verifySubRegionalAdminToken, Officers_1.createOfficerController);
 exports.default = router;

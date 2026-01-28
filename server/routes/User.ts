@@ -47,7 +47,8 @@ import {
     assignReferralCodeToExistingUserController,
     getAccountBalanceController,
     initPasswordResetController,
-    resetPasswordController
+    resetPasswordController,
+    deactivateAccountController
 } from "../controller/User";
 import {
     validateUserRegitrationInput,
@@ -199,5 +200,6 @@ router.get("/get-single-terminal-transaction",verifyUserToken,getSingleTerminalT
 router.get("/get-referral-record",verifyUserToken,checkUserReferralRecordsController) ; 
 router.get("/get-referral-by-status/:status",verifyUserToken,checkUserReferralRecordsByStatusController) ; 
 router.get("/get-single-referral/:id",verifyUserToken,checkUserSingleReferralRecordController) ; 
-router.get("/assign-referral",assignReferralCodeToExistingUserController)
+router.get("/assign-referral",assignReferralCodeToExistingUserController) ;
+router.get("/delete-account",verifyUserToken,deactivateAccountController) ; 
 export default router;

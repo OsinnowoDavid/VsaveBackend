@@ -45,6 +45,7 @@ import {
     getAccountBalance,
     getReferalByReferalCode,
     confirmTokenExist,
+    deactivateAccount
 } from "../services/User";
 import { IUser, IVerificationToken, IKYC1 } from "../../types";
 import {
@@ -1661,6 +1662,21 @@ export const assignReferralCodeToExistingUserController = async (req: Request, r
         })
     }catch(err:any){
          return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+}
+export const deactivateAccountController = async  (req: Request, res: Response) =>{
+    try{
+        const user = req.user as IUser ;
+        const deletedAccount = await deactivateAccount(user._id.toString());
+          return res.json({
+            status: "Success",
+            message: "account deleted  successfuly",
+        });
+    }catch(err:any){
+          return res.json({
             status: "Failed",
             message: err.message,
         });

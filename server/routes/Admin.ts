@@ -31,7 +31,6 @@ import {
 } from "../controller/Admin";
 import { verifyGeneralAdminToken, verifySuperAdminToken , verifyRegionalAdminToken, verifySubRegionalAdminToken} from "../config/JWT"; 
 import { validateAdminRegistrationInput } from "../validate-input/admin/index";
-import { createOfficerController } from "../controller/Officers";
 
 const router = express.Router();
 
@@ -107,5 +106,4 @@ router.get("/all-admin-created-savings", verifySuperAdminToken, getAllAdminSavin
 // send personal notification
 // suspend admin account
 // create Officer 
-router.post("/create-officer", verifySubRegionalAdminToken, createOfficerController) ;
 export default router;
