@@ -393,7 +393,7 @@ const changePasswordController = async (req, res) => {
 exports.changePasswordController = changePasswordController;
 const registerKYC1 = async (req, res) => {
     try {
-        const { profession, accountNumber, bank, accountDetails, bankCode, country, state, bvn, address, subRegion, transactionPin, } = req.body;
+        const { profession, accountNumber, bank, accountDetails, bankCode, country, state, bvn, address, region, transactionPin, } = req.body;
         const user = req.user;
         // check if KYC record already exisyt
         const foundKYC = await (0, User_1.getUserKyc1Record)(user._id.toString());
@@ -415,7 +415,7 @@ const registerKYC1 = async (req, res) => {
         await (0, User_1.createVirtualAccountIndex)(user._id.toString(), virtualAccount.data.virtual_account_number);
         console.log("got here kyc record creation");
         // save KYC1
-        const newKYC1 = await (0, User_1.createKYC1Record)(user, profession, country, state, bvn, address, subRegion, accountNumber, bank, accountDetails, bankCode);
+        const newKYC1 = await (0, User_1.createKYC1Record)(user, profession, country, state, bvn, address, region, accountNumber, bank, accountDetails, bankCode);
         console.log("got here  virtual account is created", User_1.createKYC1Record);
         user.profession = profession;
         await user.save();
@@ -937,7 +937,7 @@ exports.createPersonalSavingsCircleController = createPersonalSavingsCircleContr
 const getAvaliableSavingsController = async (req, res) => {
     try {
         const user = req.user;
-        const allAvaliableSavings = await (0, Savings_2.getAllActiveSavingsCircle)(user.subRegion.toString());
+        const allAvaliableSavings = await (0, Savings_2.getAllActiveSavingsCircle)(user.region.toString());
         return res.json({
             status: "Success",
             message: "found savings",

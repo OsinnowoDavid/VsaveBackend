@@ -9,7 +9,7 @@ declare interface IUser extends Document {
     phoneNumber?: string | null;
     profilePicture?: string | null;
     vsavePoint: number;
-    subRegion?: Types.ObjectId | string | null;
+    region?: Types.ObjectId | string | null;
     KYC?: Types.ObjectId | null;
     availableBalance: number;
     pendingBalance: number;
@@ -31,6 +31,7 @@ declare interface IUser extends Document {
     referralCode:string ;
     referredBy?: Types.ObjectId | string | null;
     referralModel?: "User" |"Officer" |"" ;
+    team:string ;
 }
 declare interface IVerificationToken extends Document {
     user?: Types.ObjectId;

@@ -3,13 +3,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllTransaction = exports.getSubRegionById = exports.getSubRegionaladminByEmail = exports.getAllSubRegionalAdmin = exports.createSubRegionalAdmin = exports.sendNotification = exports.getAdminSavingsConfig = exports.setAdminSavingsConfig = exports.getAllMyTeam = exports.getAllSubRegion = exports.assignTeamAdminToTeam = exports.assignTeamAdmin = exports.createTeam = exports.getRegionById = exports.getRegionByName = exports.getAllRegion = exports.getRegionalAdminByEmail = exports.getRegionalAdminById = exports.getRegionalAdmins = exports.getAllRegionalAdmin = exports.assignRegionalAdminToRegions = exports.UpdateAdminPassword = exports.updateAdminRecord = exports.assignRegionalAdmin = exports.createRegionalAdmin = exports.createNewRegion = exports.deleteAdmin = exports.createAdminPassword = exports.getAllSuperAdminByEmail = exports.getAdminByRole = exports.getAllAdmin = exports.getAdminByEmail = exports.getAdminById = exports.CreateAdmin = void 0;
+exports.createAgents = exports.getAllTeamUnderARegion = exports.getAllTransaction = exports.getSubRegionById = exports.getSubRegionaladminByEmail = exports.getAllSubRegionalAdmin = exports.createSubRegionalAdmin = exports.sendNotification = exports.getAdminSavingsConfig = exports.setAdminSavingsConfig = exports.getAllMyTeam = exports.getAllSubRegion = exports.assignTeamAdminToTeam = exports.assignTeamAdmin = exports.createTeam = exports.getRegionById = exports.getRegionByName = exports.getAllRegion = exports.getRegionalAdminByEmail = exports.getRegionalAdminById = exports.getRegionalAdmins = exports.getAllRegionalAdmin = exports.assignRegionalAdminToRegions = exports.UpdateAdminPassword = exports.updateAdminRecord = exports.assignRegionalAdmin = exports.createRegionalAdmin = exports.createNewRegion = exports.deleteAdmin = exports.createAdminPassword = exports.getAllSuperAdminByEmail = exports.getAdminByRole = exports.getAllAdmin = exports.getAdminByEmail = exports.getAdminById = exports.CreateAdmin = void 0;
 const Admin_1 = __importDefault(require("../model/Admin"));
 const Region_1 = __importDefault(require("../model/Region"));
 const Teams_1 = __importDefault(require("../model/Teams"));
 const Admin_config_1 = __importDefault(require("../model/Admin_config"));
 const Transaction_1 = __importDefault(require("../model/Transaction"));
 const mongoose_1 = __importDefault(require("mongoose"));
+const User_1 = __importDefault(require("../model/User"));
 const CreateAdmin = async (firstName, lastName, email, phoneNumber, role, profilePicture) => {
     try {
         const newSuperAdmin = await Admin_1.default.create({
@@ -266,11 +267,11 @@ const getRegionById = async (id) => {
     }
 };
 exports.getRegionById = getRegionById;
-const createTeam = async (areaName, location, region, admin, shortCode) => {
+const createTeam = async (teamName, location, region, admin, shortCode) => {
     try {
         let adminId = new mongoose_1.default.Types.ObjectId(admin);
         const newSubRegion = await Teams_1.default.create({
-            subRegionName: areaName,
+            teamName,
             location,
             region,
             shortCode,
@@ -340,7 +341,7 @@ const getAllMyTeam = async (admin) => {
         let result = [];
         if (foundAdmin.role === "TEAM ADMIN") {
             for (const record of foundAdmin.team) {
-                const foundArea = await Teams_1.default.findById(record);
+                const foundArea = (await Teams_1.default.findById(record)).populate({ path: "admin", select: "-password" });
                 result.push(foundArea);
             }
             return result;
@@ -349,13 +350,13 @@ const getAllMyTeam = async (admin) => {
             for (const record of foundAdmin.region) {
                 const foundRegion = await Region_1.default.findById(record);
                 for (const areaRecord of foundRegion.teams) {
-                    const foundArea = await Teams_1.default.findById(areaRecord);
+                    const foundArea = await Teams_1.default.findById(areaRecord).populate({ path: "admin", select: "-password" });
                     result.push(foundArea);
                 }
             }
             return result;
         }
-        const allArea = await Teams_1.default.find();
+        const allArea = await Teams_1.default.find().populate({ path: "admin", select: "-password" });
         return allArea;
     }
     catch (err) {
@@ -460,3 +461,33 @@ const getAllTransaction = async () => {
     }
 };
 exports.getAllTransaction = getAllTransaction;
+const getAllTeamUnderARegion = async (region) => {
+    try {
+        const foundTeams = await Teams_1.default.find({ region });
+        return foundTeams;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.getAllTeamUnderARegion = getAllTeamUnderARegion;
+const createAgents = async (firstName, lastName, email, password, gender, dateOfBirth, phoneNumber, region, team) => {
+    try {
+        const newUser = await User_1.default.create({
+            firstName,
+            lastName,
+            email,
+            password,
+            gender,
+            dateOfBirth,
+            phoneNumber,
+            region,
+            team
+        });
+        return newUser;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.createAgents = createAgents;

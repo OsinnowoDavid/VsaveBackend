@@ -162,7 +162,7 @@ const kycStatusChange = async (user, status, stage) => {
     }
 };
 exports.kycStatusChange = kycStatusChange;
-const createKYC1Record = async (user, profession, country, state, bvn, address, subRegion, accountNumber, bank, accountDetails, bankCode) => {
+const createKYC1Record = async (user, profession, country, state, bvn, address, region, accountNumber, bank, accountDetails, bankCode) => {
     try {
         const newKYC1 = await KYC1_1.default.create({
             user,
@@ -177,7 +177,7 @@ const createKYC1Record = async (user, profession, country, state, bvn, address, 
             address,
         });
         const foundUser = (await User_1.default.findById(user._id));
-        foundUser.subRegion = subRegion;
+        foundUser.region = region;
         await foundUser.save();
         return newKYC1;
     }

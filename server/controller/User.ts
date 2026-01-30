@@ -519,7 +519,7 @@ export const registerKYC1 = async (req: Request, res: Response) => {
             state,
             bvn,
             address,
-            subRegion,
+            region,
             transactionPin,
         } = req.body;
         const user = req.user as IUser;
@@ -558,7 +558,7 @@ export const registerKYC1 = async (req: Request, res: Response) => {
             state,
             bvn,
             address,
-            subRegion,
+            region,
             accountNumber,
             bank,
             accountDetails,
@@ -1202,7 +1202,7 @@ export const getAvaliableSavingsController = async (
     try {
         const user = req.user as IUser;
         const allAvaliableSavings = await getAllActiveSavingsCircle(
-            user.subRegion.toString(),
+            user.region.toString(),
         );
         return res.json({
             status: "Success",

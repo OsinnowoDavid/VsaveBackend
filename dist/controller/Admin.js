@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllAdminSavingsController = exports.approveOrRejectLoanController = exports.getLoanRecordByStatusController = exports.getAllLoanRecordController = exports.getUserSavingsDetailsController = exports.getSavingsDetailsController = exports.getAdminDashboardDetails = exports.getAllAdminByRoleController = exports.getAllAdminController = exports.getAllUserController = exports.getAdminConfigController = exports.setAdminConfigController = exports.getAllMyTeamController = exports.assignTeamAdminToTeamController = exports.createTeamController = exports.getRegionalAdminByEmailController = exports.getRegionalAdminsController = exports.getAllRegionalAdminController = exports.getAllRegionController = exports.createNewRegionController = exports.assignRegionalAdminToRegionController = exports.updateAdminRecordController = exports.deleteAminController = exports.superAdminProfileController = exports.LoginAdminController = exports.resendVerificationCodeController = exports.updateAdminPasswordController = exports.createAdminPasswordController = exports.registerAdminController = void 0;
+exports.createAgentsController = exports.getAllTeamUnderARegionController = exports.getAllAdminSavingsController = exports.approveOrRejectLoanController = exports.getLoanRecordByStatusController = exports.getAllLoanRecordController = exports.getUserSavingsDetailsController = exports.getSavingsDetailsController = exports.getAdminDashboardDetails = exports.getAllAdminByRoleController = exports.getAllAdminController = exports.getAllUserController = exports.getAdminConfigController = exports.setAdminConfigController = exports.getAllMyTeamController = exports.assignTeamAdminToTeamController = exports.createTeamController = exports.getRegionalAdminByEmailController = exports.getRegionalAdminsController = exports.getAllRegionalAdminController = exports.getAllRegionController = exports.createNewRegionController = exports.assignRegionalAdminToRegionController = exports.updateAdminRecordController = exports.deleteAminController = exports.superAdminProfileController = exports.LoginAdminController = exports.resendVerificationCodeController = exports.updateAdminPasswordController = exports.createAdminPasswordController = exports.registerAdminController = void 0;
 const argon2_1 = __importDefault(require("argon2"));
 const Admin_1 = require("../services/Admin");
 const JWT_1 = require("../config/JWT");
@@ -13,6 +13,11 @@ const User_1 = require("../services/User");
 const mail_1 = __importDefault(require("@sendgrid/mail"));
 const Savings_1 = require("../services/Savings");
 mail_1.default.setApiKey(process.env.SENDGRID_API_KEY);
+const getNextTenMinutes = () => {
+    const now = new Date();
+    const next = new Date(now.getTime() + 10 * 60 * 1000); // add 5 minutes
+    return next;
+};
 const getAdminRegionsOrsubregions = async (admin) => {
     try {
         const foundAdmin = await Regionaladmin_1.default.findById(admin);
@@ -29,7 +34,7 @@ const getAdminRegionsOrsubregions = async (admin) => {
         if (foundAdmin.subRegion) {
             for (const subRegion of foundAdmin.subRegion) {
                 let foundSubRegion = await (0, Admin_1.getSubRegionById)(subRegion);
-                result.subRegionNames.push(foundSubRegion.subRegionName);
+                result.subRegionNames.push(foundSubRegion.teamName);
             }
         }
         return result;
@@ -422,17 +427,17 @@ const getRegionalAdminByEmailController = async (req, res) => {
 exports.getRegionalAdminByEmailController = getRegionalAdminByEmailController;
 const createTeamController = async (req, res) => {
     try {
-        const { subRegionName, shortCode, location, region, admin } = req.body;
+        const { teamName, shortCode, location, region, admin } = req.body;
         const foundAdmin = await (0, Admin_1.getAdminById)(admin);
         if (foundAdmin.role === "SUPER ADMIN" || foundAdmin.role === "REGIONAL ADMIN") {
-            const newSubRegion = await (0, Admin_1.createTeam)(subRegionName, location, region, "", shortCode);
+            const newSubRegion = await (0, Admin_1.createTeam)(teamName, location, region, "", shortCode);
             return res.json({
                 status: "Failed",
                 message: "Team created but,you can't assign a regional admin to a Team (regional admin have access to all team under there region so this action is not advisable",
                 data: newSubRegion
             });
         }
-        const newSubRegion = await (0, Admin_1.createTeam)(subRegionName, location, region, admin, shortCode);
+        const newSubRegion = await (0, Admin_1.createTeam)(teamName, location, region, admin, shortCode);
         return res.json({
             status: "Success",
             message: "sub region created successfuly",
@@ -729,6 +734,79 @@ const getAllAdminSavingsController = async (req, res) => {
     }
 };
 exports.getAllAdminSavingsController = getAllAdminSavingsController;
+const getAllTeamUnderARegionController = async (req, res) => {
+    try {
+        const { region } = req.body;
+        const foundRecord = await (0, Admin_1.getAllTeamUnderARegion)(region);
+        return res.json({
+            status: "Success",
+            message: "found record",
+            data: foundRecord
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.getAllTeamUnderARegionController = getAllTeamUnderARegionController;
+const createAgentsController = async (req, res) => {
+    try {
+        const { firstName, lastName, email, password, gender, dateOfBirth, phoneNumber, region, team } = req.body;
+        let hashPassword = await argon2_1.default.hash(password);
+        const foundUser = await (0, User_1.getUserByEmail)(email);
+        if (foundUser) {
+            return res.json({
+                status: "Failed",
+                message: "user already found with this email"
+            });
+        }
+        const newUser = await (0, Admin_1.createAgents)(firstName, lastName, email, hashPassword, gender, dateOfBirth, phoneNumber, region, team);
+        // Send verification code
+        const tokenNumber = Math.floor(100000 + Math.random() * 900000);
+        const expTime = getNextTenMinutes();
+        console.log("Token expiry:", expTime);
+        let token = await (0, User_1.assignUserEmailVerificationToken)(email, tokenNumber, expTime);
+        if (!token) {
+            console.log("Failed to generate verification token");
+            return res.status(500).json({
+                status: "Failed",
+                message: "Failed to generate verification token",
+            });
+        }
+        const foundTeam = await (0, Admin_1.getSubRegionById)(team);
+        // Send email
+        const msg = {
+            to: newUser.email,
+            from: `David <davidosinnowo1@gmail.com>`,
+            subject: "Welcome to VSAVE 🎉",
+            html: `Hello ${newUser.firstName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans.
+                    you have been assign as an Agent to Team ${foundTeam.teamName}
+                     To get started, please verify your email using the code below:
+                   CODE : ${tokenNumber} 
+                   This code will expire in 5 minutes, so be sure to use it right away.
+                   We're excited to have you on board!
+                
+                  — The VSave Team.`,
+        };
+        const sentMail = await mail_1.default.send(msg);
+        console.log("Email sent successfully:", sentMail);
+        return res.json({
+            status: "Success",
+            message: "Agent account created successfuly",
+            data: newUser
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.createAgentsController = createAgentsController;
 // edit pending loan for approval
 // send general notification
 // send personal notification

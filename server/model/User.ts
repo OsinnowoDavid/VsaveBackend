@@ -48,7 +48,7 @@ const userSchema = new Schema(
             type:Number,
             default:0
         },
-        subRegion: {
+        region: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "SubRegion",
             required: false,
@@ -113,6 +113,9 @@ const userSchema = new Schema(
         deactivated:{
             type:Boolean,
             default:false
+        },
+        team:{
+            type:String
         }
     },
     { timestamps: true },

@@ -181,7 +181,7 @@ export const createKYC1Record = async (
     state: string,
     bvn: string,
     address: string,
-    subRegion: string,
+    region: string,
     accountNumber?: number,
     bank?: string,
     accountDetails?: string,
@@ -201,7 +201,7 @@ export const createKYC1Record = async (
             address,
         });
         const foundUser = (await User.findById(user._id)) as IUser;
-        foundUser.subRegion = subRegion;
+        foundUser.region = region;
         await foundUser.save();
         return newKYC1;
     } catch (err: any) {

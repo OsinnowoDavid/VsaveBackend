@@ -107,7 +107,7 @@ router.post("/payout", verifyUserToken, payOutController);
 
 router.get("/account-balance", verifyUserToken, getAccountBalanceController) ;
 
-router.get("/transactions", verifyUserToken, getUserTransactionsController);
+router.get("/transactions", verifyUserToken, getUserTransactionsController); 
 
 router.get(
     "/single-transaction/:id",

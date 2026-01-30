@@ -49,7 +49,7 @@ const userSchema = new Schema({
         type: Number,
         default: 0
     },
-    subRegion: {
+    region: {
         type: mongoose_1.default.Schema.Types.ObjectId,
         ref: "SubRegion",
         required: false,
@@ -114,6 +114,9 @@ const userSchema = new Schema({
     deactivated: {
         type: Boolean,
         default: false
+    },
+    team: {
+        type: String
     }
 }, { timestamps: true });
 const User = mongoose_1.default.model("User", userSchema);

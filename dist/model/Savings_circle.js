@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
 const savingsCircleSchema = new mongoose_1.default.Schema({
     savingsTitle: { type: String },
-    subRegion: {
+    region: {
         type: mongoose_1.default.Schema.Types.ObjectId,
         ref: "Region",
         required: true,

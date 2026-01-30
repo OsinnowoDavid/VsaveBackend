@@ -67,11 +67,11 @@ export const getCircleById = async (id: string) => {
     }
 };
 
-export const getAllActiveSavingsCircle = async (subRegion: string) => {
+export const getAllActiveSavingsCircle = async (region: string) => {
     try {
         const allActiveCircle = await SavingsCircle.find({
             status: "ACTIVE",
-            subRegion,
+            region,
         });
         return allActiveCircle;
     } catch (err: any) {

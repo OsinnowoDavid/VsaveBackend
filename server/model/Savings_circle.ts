@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const savingsCircleSchema = new mongoose.Schema(
     {
         savingsTitle: { type: String },
-        subRegion: {
+        region: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Region",
             required: true,

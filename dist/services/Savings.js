@@ -53,11 +53,11 @@ const getCircleById = async (id) => {
     }
 };
 exports.getCircleById = getCircleById;
-const getAllActiveSavingsCircle = async (subRegion) => {
+const getAllActiveSavingsCircle = async (region) => {
     try {
         const allActiveCircle = await Savings_circle_1.default.find({
             status: "ACTIVE",
-            subRegion,
+            region,
         });
         return allActiveCircle;
     }

@@ -1,11 +1,12 @@
 import Admin from "../model/Admin";
 import RegionalAdmin from "../model/Regionaladmin";
 import Region from "../model/Region";
-import SubRegion from "../model/Teams";
+import Team from "../model/Teams";
 import { IAdmin, ISuperAdmin } from "../../types";
 import AdminConfig from "../model/Admin_config"; 
 import Transaction from "../model/Transaction";
 import mongoose from "mongoose" ;
+import User from "../model/User";
 export const CreateAdmin = async (
     firstName: string,
     lastName: string,
@@ -253,11 +254,11 @@ export const getRegionById = async (id:string) =>{
         throw err
     }
 }
-export const createTeam = async (areaName:string, location:string,region:string, admin?:string ,shortCode?:string,) =>{
+export const createTeam = async (teamName:string, location:string,region:string, admin?:string ,shortCode?:string,) =>{
     try{
          let adminId = new mongoose.Types.ObjectId(admin) ; 
-        const newSubRegion = await SubRegion.create({
-            subRegionName: areaName,
+        const newSubRegion = await Team.create({
+            teamName,
             location,
             region,
              shortCode,
@@ -278,7 +279,7 @@ export const assignTeamAdmin = async (admin:string, subRegion:[string])  =>{
     try{
         const foundAdmin = await Admin.findById(admin) ;
         for(const record of subRegion){
-            const foundSubRegion = await SubRegion.findById(record) ;
+            const foundSubRegion = await Team.findById(record) ;
             if(!foundSubRegion){
                 throw {Message:"no sub region found with this ID"}
             }
@@ -293,7 +294,7 @@ export const assignTeamAdmin = async (admin:string, subRegion:[string])  =>{
 export const assignTeamAdminToTeam = async (admin:IAdmin, subRegion:[string]) =>{
     try{
         for(const id of subRegion){
-         const foundSubRegion = await SubRegion.findById(id);
+         const foundSubRegion = await Team.findById(id);
         if (!foundSubRegion) {
             throw {message:"no sub region found with this ID"};
         }
@@ -308,7 +309,7 @@ export const assignTeamAdminToTeam = async (admin:IAdmin, subRegion:[string]) =>
 }
 export const getAllSubRegion = async () =>{
     try{
-        const foundRecord = await SubRegion.find(); 
+        const foundRecord = await Team.find(); 
         return foundRecord
     }catch(err:any){
         throw err
@@ -320,7 +321,7 @@ export const getAllMyTeam = async (admin:string) =>{
         let result = [] ;
        if(foundAdmin.role === "TEAM ADMIN"){
          for(const record of foundAdmin.team){
-            const foundArea = await SubRegion.findById(record) ;
+            const foundArea = (await Team.findById(record)).populate({path:"admin",select:"-password"}) ;
             result.push(foundArea) ;
         }
         return result 
@@ -329,13 +330,13 @@ export const getAllMyTeam = async (admin:string) =>{
             for(const record of foundAdmin.region){
                 const foundRegion = await Region.findById(record) ;
                 for(const areaRecord of foundRegion.teams){
-                    const foundArea = await SubRegion.findById(areaRecord) ;
+                    const foundArea = await Team.findById(areaRecord).populate({path:"admin",select:"-password"});
                     result.push(foundArea) ;
                 }
             }
             return result 
        }
-       const allArea = await SubRegion.find() ;
+       const allArea = await Team.find().populate({path:"admin",select:"-password"}) ;
        return allArea
     }catch(err:any){
         throw err
@@ -431,7 +432,7 @@ export const createSubRegionalAdmin = async (  firstName: string,
     }
 export const getSubRegionById = async (id:string) =>{
     try{
-        const foundRecord = await SubRegion.findById(id) ;
+        const foundRecord = await Team.findById(id) ;
         return foundRecord
     }catch(err:any){
         throw err
@@ -443,5 +444,40 @@ export const getAllTransaction = async () =>{
         return allTransaction
     }catch(err:any){
         throw err
+    }
+}
+export const getAllTeamUnderARegion = async (region:string) =>{
+    try{
+        const foundTeams = await Team.find({region}) ;
+        return foundTeams
+    }catch(err:any){
+        throw err
+    }
+}
+export const createAgents = async (firstName: string,
+    lastName: string,
+    email: string,
+    password: string,
+    gender: string,
+    dateOfBirth: string,
+    phoneNumber: string,
+    region:string,
+    team:string,
+) =>{
+    try{
+        const newUser = await User.create({
+            firstName,
+            lastName,
+            email,
+            password,
+            gender,
+            dateOfBirth,
+            phoneNumber,
+            region,
+            team
+        })
+        return newUser 
+    }catch(err:any){
+        throw err 
     }
 }

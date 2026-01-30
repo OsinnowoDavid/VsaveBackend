@@ -29,16 +29,23 @@ import {
     createTeam,
     assignTeamAdmin,
    assignTeamAdminToTeam,
-    getAllMyTeam
+    getAllMyTeam,
+    getAllTeamUnderARegion,
+    createAgents,
 } from "../services/Admin";
 import { signUserToken } from "../config/JWT";
 import {getAllLoanRecord,getLoanRecordByStatus,approveOrRejectLoan} from "../services/Loan" ;
 import Admin from "../model/Regionaladmin";
-import { getAllUser } from "../services/User";
+import { getAllUser, getUserByEmail, assignUserEmailVerificationToken } from "../services/User";
 import { IAdmin } from "../../types";
 import SGMail from "@sendgrid/mail";
 import { getAllSavingsCircle, getAllUserSavingsRecord, getSavingsDetails } from "../services/Savings";
 SGMail.setApiKey(process.env.SENDGRID_API_KEY);
+const getNextTenMinutes = () => {
+    const now = new Date();
+    const next = new Date(now.getTime() + 10 * 60 * 1000); // add 5 minutes
+    return next;
+};
 const getAdminRegionsOrsubregions = async (admin:string) =>{
     try{
         const foundAdmin = await Admin.findById(admin) as IAdmin ; 
@@ -56,7 +63,7 @@ const getAdminRegionsOrsubregions = async (admin:string) =>{
          if(foundAdmin.subRegion){
             for(const subRegion of foundAdmin.subRegion){
                 let foundSubRegion = await getSubRegionById(subRegion) ;
-                result.subRegionNames.push(foundSubRegion.subRegionName)
+                result.subRegionNames.push(foundSubRegion.teamName) 
             }
         }
         return result 
@@ -477,17 +484,17 @@ export const getRegionalAdminByEmailController = async (
 };
 export const createTeamController = async (req: Request, res: Response) =>{
     try{
-        const {subRegionName,shortCode,location,region, admin} = req.body ;
+        const {teamName,shortCode,location,region, admin} = req.body ;
         const foundAdmin = await getAdminById(admin) ; 
          if(foundAdmin.role === "SUPER ADMIN" || foundAdmin.role === "REGIONAL ADMIN"){
-             const newSubRegion = await createTeam(subRegionName,location,region, "",shortCode,) ;
+             const newSubRegion = await createTeam(teamName,location,region, "",shortCode,) ;
             return res.json({
                 status:"Failed",
                 message:"Team created but,you can't assign a regional admin to a Team (regional admin have access to all team under there region so this action is not advisable",
                 data: newSubRegion
             })
         }
-        const newSubRegion = await createTeam(subRegionName,location,region, admin,shortCode,) ;
+        const newSubRegion = await createTeam(teamName,location,region, admin,shortCode,) ;
         return res.json({
             status:"Success",
             message:"sub region created successfuly",
@@ -793,6 +800,99 @@ export const getAllAdminSavingsController = async (
         })
     }catch(err:any){
         return res.json({
+            status: "Failed",
+            message: err.message,
+        }); 
+    }
+}
+export const getAllTeamUnderARegionController = async (
+    req: Request,
+    res: Response,
+) =>{
+    try{
+        const {region} = req.body ;
+        const foundRecord = await getAllTeamUnderARegion(region) ;
+        return res.json({
+            status:"Success",
+            message:"found record",
+            data: foundRecord
+        })
+    }catch(err:any){
+         return res.json({
+            status: "Failed",
+            message: err.message,
+        }); 
+    }
+}
+export const createAgentsController = async (
+    req: Request,
+    res: Response,
+) =>{
+    try{
+        const {
+            firstName,
+            lastName,
+            email,
+            password,
+            gender,
+            dateOfBirth,
+            phoneNumber,
+            region,
+            team
+        } = req.body; 
+         let hashPassword = await argon.hash(password);
+        const foundUser = await getUserByEmail(email) ;
+                        if(foundUser){
+                            return res.json({
+                                status:"Failed",
+                                message:"user already found with this email"
+                            })
+                        }
+        const newUser = await createAgents(firstName,lastName,email,hashPassword,gender,dateOfBirth,phoneNumber,region,team); 
+          // Send verification code
+                const tokenNumber = Math.floor(100000 + Math.random() * 900000);
+                const expTime = getNextTenMinutes();
+                console.log("Token expiry:", expTime);
+               let token = await assignUserEmailVerificationToken(
+                    email,
+                    tokenNumber,
+                    expTime,
+                );
+                
+                if (!token) {
+                    console.log("Failed to generate verification token");
+                    return res.status(500).json({
+                        status: "Failed",
+                        message: "Failed to generate verification token",
+                    });
+                }
+                const foundTeam = await getSubRegionById(team) ;
+        
+                // Send email
+                const msg = {
+                    to: newUser.email,
+                    from: `David <davidosinnowo1@gmail.com>`,
+                    subject: "Welcome to VSAVE 🎉",
+                    html: `Hello ${newUser.firstName}, welcome to our VSave! ,your trusted partner for smart saving and easy loans.
+                    you have been assign as an Agent to Team ${foundTeam.teamName}
+                     To get started, please verify your email using the code below:
+                   CODE : ${tokenNumber} 
+                   This code will expire in 5 minutes, so be sure to use it right away.
+                   We're excited to have you on board!
+                
+                  — The VSave Team.`,
+                };
+    
+                
+                const sentMail = await SGMail.send(msg);
+                console.log("Email sent successfully:", sentMail);
+        return res.json({
+            status:"Success",
+            message:"Agent account created successfuly",
+            data:newUser
+        })
+    }catch(err:any){
+         return res.json({
             status: "Failed",
             message: err.message,
         }); 
