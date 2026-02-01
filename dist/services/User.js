@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deactivateAccount = exports.addReferredUser = exports.getReferalByReferalCode = exports.getAllUser = exports.validateTransactionPin = exports.createTransactionPin = exports.getCircleById = exports.userDeposit = exports.userWithdraw = exports.createFixedSaving = exports.userGetAllSubRegion = exports.getUserTransactionByType = exports.getUserTransactionByStatus = exports.getUserSingleTransaction = exports.getUserTransactions = exports.getAccountBalance = exports.payOut = exports.accountLookUp = exports.getBankCode = exports.createUserAirtimeTransaction = exports.createUserDataTransaction = exports.checkTransferByRefrence = exports.createUserTransaction = exports.deposit = exports.withdraw = exports.buyData = exports.getUserKyc1Record = exports.getDataPlan = exports.buyAirtime = exports.createVirtualAccountIndex = exports.createVirtualAccountForPayment = exports.verifyBankaccount = exports.getAllBanksAndCode = exports.updateKYC1Record = exports.createKYC1Record = exports.kycStatusChange = exports.createKYCRecord = exports.changePassword = exports.updateProfile = exports.confirmTokenExist = exports.getUserVerificationToken = exports.assignUserEmailVerificationToken = exports.getUserByEmail = exports.getUserByIdPublicUse = exports.getUserById = exports.createNewUser = void 0;
+exports.deactivateAccount = exports.addReferredUser = exports.getReferalByReferalCode = exports.getAllUser = exports.validateTransactionPin = exports.createTransactionPin = exports.getCircleById = exports.userDeposit = exports.userWithdraw = exports.createFixedSaving = exports.userGetAllSubRegion = exports.getUserTransactionByType = exports.getUserTransactionByStatus = exports.getUserSingleTransaction = exports.getUserTransactions = exports.getAccountBalance = exports.payOut = exports.accountLookUp = exports.getBankCode = exports.createUserAirtimeTransaction = exports.createUserDataTransaction = exports.checkTransferByRefrence = exports.createUserTransaction = exports.deposit = exports.withdraw = exports.buyData = exports.getUserKyc1Record = exports.getDataPlan = exports.buyAirtime = exports.createVirtualAccountIndex = exports.createVirtualAccountForPayment = exports.verifyBankaccount = exports.getAllBanksAndCode = exports.updateKYC1Record = exports.createKYC1Record = exports.kycStatusChange = exports.createKYCRecord = exports.changePassword = exports.updateProfile = exports.confirmTokenExist = exports.getUserVerificationToken = exports.getDeactivatedAccountByMail = exports.getNotDeactivatedAccountByMail = exports.assignUserEmailVerificationToken = exports.getUserByEmail = exports.getUserByIdPublicUse = exports.getUserById = exports.createNewUser = void 0;
 const User_1 = __importDefault(require("../model/User"));
 const VerificationToken_1 = __importDefault(require("../model/VerificationToken"));
 const KYC1_1 = __importDefault(require("../model/KYC1"));
@@ -86,6 +86,26 @@ const assignUserEmailVerificationToken = async (email, token, expiresAt) => {
     }
 };
 exports.assignUserEmailVerificationToken = assignUserEmailVerificationToken;
+const getNotDeactivatedAccountByMail = async (email) => {
+    try {
+        const foundRecord = await User_1.default.findOne({ email, deactivated: false });
+        return foundRecord;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.getNotDeactivatedAccountByMail = getNotDeactivatedAccountByMail;
+const getDeactivatedAccountByMail = async (email) => {
+    try {
+        const foundRecord = await User_1.default.findOne({ email, deactivated: true });
+        return foundRecord;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.getDeactivatedAccountByMail = getDeactivatedAccountByMail;
 const getUserVerificationToken = async (email, token) => {
     try {
         const fiveMinsAgo = (0, tools_1.getFiveMinutesAgo)();
@@ -812,8 +832,12 @@ const validateTransactionPin = async (user, enteredPin) => {
     }
 };
 exports.validateTransactionPin = validateTransactionPin;
-const getAllUser = async () => {
+const getAllUser = async (populate) => {
     try {
+        if (populate) {
+            const allUser = await User_1.default.find().populate({ path: "user", select: "-password" });
+            return allUser;
+        }
         const allUser = await User_1.default.find();
         return allUser;
     }

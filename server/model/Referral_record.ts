@@ -3,15 +3,10 @@ import mongoose from "mongoose";
 const referralSchema = new mongoose.Schema(
   {
     user: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: true,
-      refPath: "userModel", // 👈 dynamic reference
-    },
-    userModel: {
-      type: String,
-      required: true,
-      enum: ["User", "Officer"], // must match model names exactly
-    },
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User", // Reference to your User model
+                required: true,
+            },
     referralCode: {
       type: String,
     },

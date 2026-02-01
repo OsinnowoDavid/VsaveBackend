@@ -45,7 +45,9 @@ import {
     getAccountBalance,
     getReferalByReferalCode,
     confirmTokenExist,
-    deactivateAccount
+    deactivateAccount,
+     getNotDeactivatedAccountByMail,
+     getDeactivatedAccountByMail
 } from "../services/User";
 import { IUser, IVerificationToken, IKYC1 } from "../../types";
 import {
@@ -83,7 +85,7 @@ import {
      getTerminalTransaction,
      getSingleTerminalTransaction,
     } from "../services/Terminal" ;
-    import {assignReferral,createReferralCodeForUser,getAllUserReferralRecord,getUserReferralByStatus,getSingleReferralRecord,assignReferralCodeToExistingUser, getUserTypeWithReferralCode} from "../services/referral"
+    import {assignReferral,createReferralCodeForUser,getAllUserReferralRecord,getUserReferralByStatus,getSingleReferralRecord, getUserTypeWithReferralCode} from "../services/referral"
 const QOREID_API_KEY = process.env.QOREID_SECRET_KEY as string;
 const QOREID_BASE_URL = process.env.QOREID_BASE_URL as string;
 SGMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -107,13 +109,14 @@ export const registerUser = async (req: Request, res: Response) => {
         } = req.body;
 
         let hashPassword = await argon.hash(password);
-         const foundUser = await getUserByEmail(email) ;
+         const foundUser = await  getNotDeactivatedAccountByMail(email) ;
                 if(foundUser){
                     return res.json({
                         status:"Failed",
                         message:"user already found with this email"
                     })
                 }
+        
         const newUser = await createNewUser(
             firstName,
             lastName,
@@ -172,7 +175,7 @@ export const registerUser = async (req: Request, res: Response) => {
         let referralErr = "";
         if(referralCode){
             const referralType = getUserTypeWithReferralCode(referralCode) as any ;
-           const userReferred = await assignReferral(newUser._id.toString(), referralCode, referralType) as any ;  
+           const userReferred = await assignReferral(newUser._id.toString(), referralCode) as any ;  
             if(userReferred === "Successful"){
                 const foundUser = await getReferalByReferalCode(referralCode) ;
                 newUser.referredBy = foundUser._id ;
@@ -291,7 +294,7 @@ export const resendUserVerificationEmail = async (
 export const loginUser = async (req: Request, res: Response) => {
     try {
         const { email, password } = req.body;
-        const user = (await getUserByEmail(email.toLowerCase())) as IUser;
+        const user = (await  getNotDeactivatedAccountByMail(email.toLowerCase())) as IUser;
         if (!user) {
             return res.json({
                 status: "Failed",
@@ -1657,22 +1660,6 @@ export const checkUserSingleReferralRecordController = async (req: Request, res:
         });
     }
 } 
-
-export const assignReferralCodeToExistingUserController = async (req: Request, res: Response) =>{
-    try{
-        let task = await assignReferralCodeToExistingUser()
-         return res.json({
-            status:"Success",
-            message:"task completed",
-            data: task
-        })
-    }catch(err:any){
-         return res.json({
-            status: "Failed",
-            message: err.message,
-        });
-    }
-}
 export const deactivateAccountController = async  (req: Request, res: Response) =>{
     try{
         const user = req.user as IUser ;

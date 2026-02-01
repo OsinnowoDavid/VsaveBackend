@@ -7,13 +7,8 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const referralSchema = new mongoose_1.default.Schema({
     user: {
         type: mongoose_1.default.Schema.Types.ObjectId,
+        ref: "User", // Reference to your User model
         required: true,
-        refPath: "userModel", // 👈 dynamic reference
-    },
-    userModel: {
-        type: String,
-        required: true,
-        enum: ["User", "Officer"], // must match model names exactly
     },
     referralCode: {
         type: String,

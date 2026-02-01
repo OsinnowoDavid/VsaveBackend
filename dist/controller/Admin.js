@@ -534,7 +534,7 @@ exports.getAdminConfigController = getAdminConfigController;
 // get all users 
 const getAllUserController = async (req, res) => {
     try {
-        const allUsers = await (0, User_1.getAllUser)();
+        const allUsers = await (0, User_1.getAllUser)(true);
         return res.json({
             status: "Success",
             message: "found Users",

@@ -90,7 +90,22 @@ export const assignUserEmailVerificationToken = async (
         throw err;
     }
 };
-
+export const getNotDeactivatedAccountByMail = async (email:string) =>{
+try{
+const foundRecord = await User.findOne({email,deactivated:false}) ;
+return foundRecord
+}catch(err:any){
+    throw err
+}
+}
+export const getDeactivatedAccountByMail = async (email:string) =>{
+    try{
+        const foundRecord = await User.findOne({email,deactivated:true}) ;
+        return foundRecord
+    }catch(err:any){
+        throw err
+    }
+}
 export const getUserVerificationToken = async (
     email: String,
     token: String,
@@ -923,8 +938,12 @@ export const validateTransactionPin = async (
     }
 };
 
-export const getAllUser = async () => {
+export const getAllUser = async (populate?:boolean) => {
     try {
+        if(populate){
+              const allUser = await User.find().populate({path:"user",select:"-password"});
+             return allUser; 
+        }
         const allUser = await User.find();
         return allUser;
     } catch (err: any) {

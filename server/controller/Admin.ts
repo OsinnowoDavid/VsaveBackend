@@ -603,7 +603,7 @@ export const getAllUserController = async (
     res: Response,
 ) => {
     try{
-        const allUsers = await getAllUser() 
+        const allUsers = await getAllUser(true) 
         return res.json({
             status:"Success",
             message:"found Users",

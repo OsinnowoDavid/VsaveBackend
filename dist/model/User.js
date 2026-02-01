@@ -92,11 +92,8 @@ const userSchema = new Schema({
     },
     referredBy: {
         type: mongoose_1.default.Schema.Types.ObjectId,
-        refPath: "referralModel", // 👈 dynamic reference
-    },
-    referralModel: {
-        type: String,
-        enum: ["User", "Officer"], // must match model names exactly 
+        ref: "User", // Reference to your User model
+        required: true,
     },
     lottoryId: {
         type: String
