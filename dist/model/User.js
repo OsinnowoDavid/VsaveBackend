@@ -93,7 +93,7 @@ const userSchema = new Schema({
     referredBy: {
         type: mongoose_1.default.Schema.Types.ObjectId,
         ref: "User", // Reference to your User model
-        required: true,
+        required: false,
     },
     lottoryId: {
         type: String

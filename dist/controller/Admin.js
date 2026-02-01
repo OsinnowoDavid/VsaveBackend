@@ -763,6 +763,25 @@ const createAgentsController = async (req, res) => {
                 message: "user already found with this email"
             });
         }
+        const foundRegion = await (0, Admin_1.getRegionById)(region);
+        if (!foundRegion) {
+            return res.json({
+                status: "Failed",
+                message: "no region found with this id"
+            });
+        }
+        let noTeamFound = true;
+        for (const teamRecord of foundRegion.teams) {
+            if (teamRecord.toString() === team) {
+                noTeamFound = false;
+            }
+        }
+        if (noTeamFound) {
+            return res.json({
+                status: "Failed",
+                message: "this team is not found under this select region"
+            });
+        }
         const newUser = await (0, Admin_1.createAgents)(firstName, lastName, email, hashPassword, gender, dateOfBirth, phoneNumber, region, team);
         // Send verification code
         const tokenNumber = Math.floor(100000 + Math.random() * 900000);
