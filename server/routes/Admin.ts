@@ -28,7 +28,8 @@ import {
     createTeamController,
    assignTeamAdminToTeamController,
    getAllMyTeamController,
-   createAgentsController
+   createAgentsController,
+   getTeamByRegionController
 } from "../controller/Admin";
 import { verifyGeneralAdminToken, verifySuperAdminToken , verifyRegionalAdminToken, verifySubRegionalAdminToken} from "../config/JWT"; 
 import { validateAdminRegistrationInput } from "../validate-input/admin/index";
@@ -70,7 +71,8 @@ router.post(
     createTeamController,
 );
 router.post("/assign-admin-to-area",verifyRegionalAdminToken, assignTeamAdminToTeamController) ; 
-router.get("/get-all-area", verifySubRegionalAdminToken,  getAllMyTeamController)
+router.get("/get-all-team", verifySubRegionalAdminToken,  getAllMyTeamController)
+router.get("/get-all-team-by-region", verifySuperAdminToken,getTeamByRegionController) ;
 router.post(
     "/set-saving-config",
     verifySuperAdminToken,

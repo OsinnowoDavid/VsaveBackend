@@ -342,6 +342,14 @@ export const getAllMyTeam = async (admin:string) =>{
         throw err
     }
 }
+export const getTeamByRegion = async (region:string) =>{
+    try{
+        const foundRecord = await Team.find({region}) ;
+        return foundRecord
+    }catch(err:any){
+        throw err
+    }
+}
 export const setAdminSavingsConfig = async (
     defaultPenaltyFee: string,
     firstTimeAdminFee: string,

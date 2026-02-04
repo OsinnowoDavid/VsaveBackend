@@ -32,14 +32,16 @@ import {
     getAllMyTeam,
     getAllTeamUnderARegion,
     createAgents,
+    getTeamByRegion,
 } from "../services/Admin";
 import { signUserToken } from "../config/JWT";
-import {getAllLoanRecord,getLoanRecordByStatus,approveOrRejectLoan} from "../services/Loan" ;
+import {getAllLoanRecord,getLoanRecordByStatus,approveOrRejectLoan, editLoanRecord} from "../services/Loan" ;
 import Admin from "../model/Regionaladmin";
-import { getAllUser, getUserByEmail, assignUserEmailVerificationToken } from "../services/User";
+import { getAllUser, getUserByEmail, assignUserEmailVerificationToken, userWithdraw, userDeposit } from "../services/User";
 import { IAdmin } from "../../types";
 import SGMail from "@sendgrid/mail";
 import { getAllSavingsCircle, getAllUserSavingsRecord, getSavingsDetails } from "../services/Savings";
+import { generateLoanRefrenceCode } from "../config/tools";
 SGMail.setApiKey(process.env.SENDGRID_API_KEY);
 const getNextTenMinutes = () => {
     const now = new Date();
@@ -542,6 +544,22 @@ export const getAllMyTeamController = async (req: Request, res: Response) =>{
         });
     }
 }
+export const getTeamByRegionController = async (req: Request, res: Response) =>{
+    try{
+        const {region} = req.body ;
+        const foundRecord = await getTeamByRegion(region) ;
+        return res.json({
+            status:"Success",
+            message :"foundRecord",
+            data:foundRecord
+        })
+    }catch(err:any){
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+}
 export const setAdminConfigController = async (req: Request, res: Response) => {
     try {
         const {
@@ -774,7 +792,10 @@ export const approveOrRejectLoanController =  async (
         const {id, status, duration} = req.body ;
         const dueDate = new Date() ;
          dueDate.setDate(dueDate.getDate() + duration);
-        const record = await approveOrRejectLoan(id,status,duration,dueDate) ;
+        const record = await approveOrRejectLoan(id,status,duration,dueDate) ; 
+        if(status === "approved"&& record){
+            await userDeposit(record.user.toString(),record.amount,generateLoanRefrenceCode(),new Date(),"Vsave Loan","loan disbursment", )
+        }
         return res.json({
             status: "Success",
             message: "record updated",
@@ -785,6 +806,19 @@ export const approveOrRejectLoanController =  async (
             status: "Failed",
             message: err.message,
         }); 
+    }
+}
+export const editLoanForApprovalController = async ( req: Request, res: Response,) =>{
+    try{
+        const {id, amount,} = req.body ; 
+        //const foundLoan = await 
+       // const editLoan = await editLoanRecord(id,) ;
+
+    }catch(err:any){
+         return res.json({
+            status: "Failed",
+            message: err.message,
+        });
     }
 }
 export const getAllAdminSavingsController = async (
@@ -917,7 +951,8 @@ export const createAgentsController = async (
         }); 
     }
 }
-// edit pending loan for approval
+// edit pending loan for approval ;
+
 // send general notification
 // send personal notification
 // suspend admin account

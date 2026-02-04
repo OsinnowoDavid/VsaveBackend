@@ -20,7 +20,8 @@ router.get("/get-all-region", JWT_1.verifySuperAdminToken, Admin_1.getAllRegionC
 router.get("/get-regional-admin/:email", JWT_1.verifySuperAdminToken, Admin_1.getRegionalAdminByEmailController);
 router.post("/create-area", JWT_1.verifyRegionalAdminToken, Admin_1.createTeamController);
 router.post("/assign-admin-to-area", JWT_1.verifyRegionalAdminToken, Admin_1.assignTeamAdminToTeamController);
-router.get("/get-all-area", JWT_1.verifySubRegionalAdminToken, Admin_1.getAllMyTeamController);
+router.get("/get-all-team", JWT_1.verifySubRegionalAdminToken, Admin_1.getAllMyTeamController);
+router.get("/get-all-team-by-region", JWT_1.verifySuperAdminToken, Admin_1.getTeamByRegionController);
 router.post("/set-saving-config", JWT_1.verifySuperAdminToken, Admin_1.setAdminConfigController);
 router.get("/get-savings-config", JWT_1.verifySuperAdminToken, Admin_1.getAdminConfigController);
 // get all User 
