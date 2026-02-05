@@ -493,7 +493,7 @@ const getAllMyTeamController = async (req, res) => {
 exports.getAllMyTeamController = getAllMyTeamController;
 const getTeamByRegionController = async (req, res) => {
     try {
-        const { region } = req.body;
+        const { region } = req.params;
         const foundRecord = await (0, Admin_1.getTeamByRegion)(region);
         return res.json({
             status: "Success",

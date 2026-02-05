@@ -72,7 +72,7 @@ router.post(
 );
 router.post("/assign-admin-to-area",verifyRegionalAdminToken, assignTeamAdminToTeamController) ; 
 router.get("/get-all-team", verifySubRegionalAdminToken,  getAllMyTeamController)
-router.get("/get-all-team-by-region", verifySuperAdminToken,getTeamByRegionController) ;
+router.get("/get-all-team-by-region/:region", verifySuperAdminToken,getTeamByRegionController) ;
 router.post(
     "/set-saving-config",
     verifySuperAdminToken,
