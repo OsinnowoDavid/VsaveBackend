@@ -17,7 +17,7 @@ const regionSchema = new Schema(
       required:true
     },
     admin: [{ type: mongoose.Schema.Types.ObjectId, ref: "Admin" }],
-    teams: [{ type: mongoose.Schema.Types.ObjectId, ref: "Agent" }],
+    teams: [{ type: mongoose.Schema.Types.ObjectId, ref: "Team" }],
   },
   { timestamps: true }
 );

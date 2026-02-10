@@ -321,10 +321,9 @@ export const getAllMyTeam = async (admin:string) =>{
         let result = [] ;
        if(foundAdmin.role === "TEAM ADMIN"){
          for(const record of foundAdmin.team){
-           const foundArea = await Team.findById(record).populate([
-            { path: "admin", select: "-password" },
-            { path: "region" }
-            ]);
+           const foundArea = await Team.findById(record)
+            .populate("admin")
+            .populate("region");
             result.push(foundArea) ;
         }
         return result 

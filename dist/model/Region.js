@@ -19,7 +19,7 @@ const regionSchema = new Schema({
         required: true
     },
     admin: [{ type: mongoose_1.default.Schema.Types.ObjectId, ref: "Admin" }],
-    teams: [{ type: mongoose_1.default.Schema.Types.ObjectId, ref: "Agent" }],
+    teams: [{ type: mongoose_1.default.Schema.Types.ObjectId, ref: "Team" }],
 }, { timestamps: true });
 const region = mongoose_1.default.model("Region", regionSchema);
 exports.default = region;

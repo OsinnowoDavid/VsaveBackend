@@ -341,10 +341,9 @@ const getAllMyTeam = async (admin) => {
         let result = [];
         if (foundAdmin.role === "TEAM ADMIN") {
             for (const record of foundAdmin.team) {
-                const foundArea = await Teams_1.default.findById(record).populate([
-                    { path: "admin", select: "-password" },
-                    { path: "region" }
-                ]);
+                const foundArea = await Teams_1.default.findById(record)
+                    .populate("admin")
+                    .populate("region");
                 result.push(foundArea);
             }
             return result;
