@@ -108,7 +108,7 @@ router.get("/all-admin-created-savings", verifySuperAdminToken, getAllAdminSavin
 
 router.post("/create-agent", verifySubRegionalAdminToken, createAgentsController) 
 
-router.post("/get-all-agent", verifySuperAdminToken, getAllAgentsController)
+router.get("/get-all-agent", verifySuperAdminToken, getAllAgentsController)
 // send general notification
 // send personal notification
 // suspend admin account

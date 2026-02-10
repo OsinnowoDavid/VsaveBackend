@@ -45,7 +45,7 @@ router.get("/get-loan-by-status", JWT_1.verifySuperAdminToken, Admin_1.getLoanRe
 router.post("/approve-pending-loan", JWT_1.verifySuperAdminToken, Admin_1.approveOrRejectLoanController);
 router.get("/all-admin-created-savings", JWT_1.verifySuperAdminToken, Admin_1.getAllAdminSavingsController);
 router.post("/create-agent", JWT_1.verifySubRegionalAdminToken, Admin_1.createAgentsController);
-router.post("/get-all-agent", JWT_1.verifySuperAdminToken, Admin_1.getAllAgentsController);
+router.get("/get-all-agent", JWT_1.verifySuperAdminToken, Admin_1.getAllAgentsController);
 // send general notification
 // send personal notification
 // suspend admin account
