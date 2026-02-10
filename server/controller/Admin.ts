@@ -33,6 +33,7 @@ import {
     getAllTeamUnderARegion,
     createAgents,
     getTeamByRegion,
+    getAllAgents,
 } from "../services/Admin";
 import { signUserToken } from "../config/JWT";
 import {getAllLoanRecord,getLoanRecordByStatus,approveOrRejectLoan, editLoanRecord} from "../services/Loan" ;
@@ -950,10 +951,30 @@ export const createAgentsController = async (
             message: err.message,
         }); 
     }
+
 }
+
 // edit pending loan for approval ;
 
 // send general notification
 // send personal notification
 // suspend admin account
 
+export const getAllAgentsController = async (
+    req: Request,
+    res: Response,
+) =>{
+    try{
+        const foundRecords = await getAllAgents() ;
+         return res.json({
+            status:"Success",
+            message:"found record",
+            data:foundRecords
+        })
+    }catch(err:any){
+         return res.json({
+            status: "Failed",
+            message: err.message,
+        }); 
+    }
+}

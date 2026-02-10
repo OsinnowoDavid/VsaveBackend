@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createAgents = exports.getAllTeamUnderARegion = exports.getAllTransaction = exports.getSubRegionById = exports.getSubRegionaladminByEmail = exports.getAllSubRegionalAdmin = exports.createSubRegionalAdmin = exports.sendNotification = exports.getAdminSavingsConfig = exports.setAdminSavingsConfig = exports.getTeamByRegion = exports.getAllMyTeam = exports.getAllSubRegion = exports.assignTeamAdminToTeam = exports.assignTeamAdmin = exports.createTeam = exports.getRegionById = exports.getRegionByName = exports.getAllRegion = exports.getRegionalAdminByEmail = exports.getRegionalAdminById = exports.getRegionalAdmins = exports.getAllRegionalAdmin = exports.assignRegionalAdminToRegions = exports.UpdateAdminPassword = exports.updateAdminRecord = exports.assignRegionalAdmin = exports.createRegionalAdmin = exports.createNewRegion = exports.deleteAdmin = exports.createAdminPassword = exports.getAllSuperAdminByEmail = exports.getAdminByRole = exports.getAllAdmin = exports.getAdminByEmail = exports.getAdminById = exports.CreateAdmin = void 0;
+exports.getAllAgents = exports.createAgents = exports.getAllTeamUnderARegion = exports.getAllTransaction = exports.getSubRegionById = exports.getSubRegionaladminByEmail = exports.getAllSubRegionalAdmin = exports.createSubRegionalAdmin = exports.sendNotification = exports.getAdminSavingsConfig = exports.setAdminSavingsConfig = exports.getTeamByRegion = exports.getAllMyTeam = exports.getAllSubRegion = exports.assignTeamAdminToTeam = exports.assignTeamAdmin = exports.createTeam = exports.getRegionById = exports.getRegionByName = exports.getAllRegion = exports.getRegionalAdminByEmail = exports.getRegionalAdminById = exports.getRegionalAdmins = exports.getAllRegionalAdmin = exports.assignRegionalAdminToRegions = exports.UpdateAdminPassword = exports.updateAdminRecord = exports.assignRegionalAdmin = exports.createRegionalAdmin = exports.createNewRegion = exports.deleteAdmin = exports.createAdminPassword = exports.getAllSuperAdminByEmail = exports.getAdminByRole = exports.getAllAdmin = exports.getAdminByEmail = exports.getAdminById = exports.CreateAdmin = void 0;
 const Admin_1 = __importDefault(require("../model/Admin"));
 const Region_1 = __importDefault(require("../model/Region"));
 const Teams_1 = __importDefault(require("../model/Teams"));
@@ -341,7 +341,10 @@ const getAllMyTeam = async (admin) => {
         let result = [];
         if (foundAdmin.role === "TEAM ADMIN") {
             for (const record of foundAdmin.team) {
-                const foundArea = (await Teams_1.default.findById(record)).populate({ path: "admin", select: "-password" });
+                const foundArea = await Teams_1.default.findById(record).populate([
+                    { path: "admin", select: "-password" },
+                    { path: "region" }
+                ]);
                 result.push(foundArea);
             }
             return result;
@@ -492,7 +495,8 @@ const createAgents = async (firstName, lastName, email, password, gender, dateOf
             dateOfBirth,
             phoneNumber,
             region,
-            team
+            team,
+            role: "AGENT"
         });
         return newUser;
     }
@@ -501,3 +505,13 @@ const createAgents = async (firstName, lastName, email, password, gender, dateOf
     }
 };
 exports.createAgents = createAgents;
+const getAllAgents = async () => {
+    try {
+        const foundRecord = await User_1.default.find({ role: "AGENT" });
+        return foundRecord;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.getAllAgents = getAllAgents;

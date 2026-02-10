@@ -29,7 +29,8 @@ import {
    assignTeamAdminToTeamController,
    getAllMyTeamController,
    createAgentsController,
-   getTeamByRegionController
+   getTeamByRegionController,
+   getAllAgentsController
 } from "../controller/Admin";
 import { verifyGeneralAdminToken, verifySuperAdminToken , verifyRegionalAdminToken, verifySubRegionalAdminToken} from "../config/JWT"; 
 import { validateAdminRegistrationInput } from "../validate-input/admin/index";
@@ -105,7 +106,9 @@ router.post("/approve-pending-loan", verifySuperAdminToken, approveOrRejectLoanC
 
 router.get("/all-admin-created-savings", verifySuperAdminToken, getAllAdminSavingsController)
 
-router.post("/create-agent", verifySubRegionalAdminToken, createAgentsController)
+router.post("/create-agent", verifySubRegionalAdminToken, createAgentsController) 
+
+router.post("/get-all-agent", verifySuperAdminToken, getAllAgentsController)
 // send general notification
 // send personal notification
 // suspend admin account

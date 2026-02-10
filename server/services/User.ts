@@ -32,6 +32,7 @@ export const createNewUser = async (
             email: email.toLowerCase(),
             password,
             gender,
+            role:"USER",
             dateOfBirth,
             phoneNumber,
         });
@@ -941,7 +942,7 @@ export const validateTransactionPin = async (
 export const getAllUser = async (populate?:boolean) => {
     try {
         if(populate){
-              const allUser = await User.find().populate({path:"user",select:"-password"});
+              const allUser = await User.find().populate({path:"referredBy",select:"-password"});
              return allUser; 
         }
         const allUser = await User.find();

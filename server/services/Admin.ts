@@ -321,7 +321,10 @@ export const getAllMyTeam = async (admin:string) =>{
         let result = [] ;
        if(foundAdmin.role === "TEAM ADMIN"){
          for(const record of foundAdmin.team){
-            const foundArea = (await Team.findById(record)).populate({path:"admin",select:"-password"}) ;
+           const foundArea = await Team.findById(record).populate([
+            { path: "admin", select: "-password" },
+            { path: "region" }
+            ]);
             result.push(foundArea) ;
         }
         return result 
@@ -482,10 +485,19 @@ export const createAgents = async (firstName: string,
             dateOfBirth,
             phoneNumber,
             region,
-            team
+            team,
+            role:"AGENT"
         })
         return newUser 
     }catch(err:any){
         throw err 
+    }
+}
+export const getAllAgents = async () =>{
+    try{
+        const foundRecord = await User.find({role:"AGENT"}) ;
+        return foundRecord
+    }catch(err:any){
+        throw err
     }
 }

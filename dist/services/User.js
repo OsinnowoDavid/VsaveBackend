@@ -24,6 +24,7 @@ const createNewUser = async (firstName, lastName, email, password, gender, dateO
             email: email.toLowerCase(),
             password,
             gender,
+            role: "USER",
             dateOfBirth,
             phoneNumber,
         });
@@ -835,7 +836,7 @@ exports.validateTransactionPin = validateTransactionPin;
 const getAllUser = async (populate) => {
     try {
         if (populate) {
-            const allUser = await User_1.default.find().populate({ path: "user", select: "-password" });
+            const allUser = await User_1.default.find().populate({ path: "referredBy", select: "-password" });
             return allUser;
         }
         const allUser = await User_1.default.find();
