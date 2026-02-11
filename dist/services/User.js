@@ -132,13 +132,14 @@ const confirmTokenExist = async (email, token) => {
     }
 };
 exports.confirmTokenExist = confirmTokenExist;
-const updateProfile = async (user, firstName, lastName, email, phoneNumber) => {
+const updateProfile = async (user, firstName, lastName, email, phoneNumber, dateOfBirth) => {
     try {
         const updatedUser = await User_1.default.findByIdAndUpdate(user._id, {
             firstName,
             lastName,
             email,
             phoneNumber,
+            dateOfBirth
         }, { new: true, runValidators: true });
         return updatedUser;
     }

@@ -367,9 +367,9 @@ const resetPasswordController = async (req, res) => {
 exports.resetPasswordController = resetPasswordController;
 const updateProfileController = async (req, res) => {
     try {
-        const { firstName, email, lastName, phoneNumber } = req.body;
+        const { firstName, email, lastName, phoneNumber, dateOfBirth } = req.body;
         const user = req.user;
-        const updatedProfile = await (0, User_1.updateProfile)(user, firstName, lastName, email, phoneNumber);
+        const updatedProfile = await (0, User_1.updateProfile)(user, firstName, lastName, email, phoneNumber, dateOfBirth);
         return res.json({
             status: "Success",
             message: "profile updated successfuly",

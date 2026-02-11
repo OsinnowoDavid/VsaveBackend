@@ -137,6 +137,7 @@ export const updateProfile = async (
     lastName: string,
     email:string,
     phoneNumber: string,
+    dateOfBirth: Date
 ) => {
     try {
         const updatedUser = await User.findByIdAndUpdate(user._id, {
@@ -144,6 +145,7 @@ export const updateProfile = async (
             lastName,
             email,
             phoneNumber,
+            dateOfBirth
         },{new:true,runValidators:true});
         return updatedUser;
     } catch (err: any) {
