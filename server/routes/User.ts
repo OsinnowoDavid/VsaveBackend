@@ -47,7 +47,8 @@ import {
     getAccountBalanceController,
     initPasswordResetController,
     resetPasswordController,
-    deactivateAccountController
+    deactivateAccountController,
+    addDeactivateToAllRecord
 } from "../controller/User";
 import {
     validateUserRegitrationInput,
@@ -200,4 +201,5 @@ router.get("/get-referral-record",verifyUserToken,checkUserReferralRecordsContro
 router.get("/get-referral-by-status/:status",verifyUserToken,checkUserReferralRecordsByStatusController) ; 
 router.get("/get-single-referral/:id",verifyUserToken,checkUserSingleReferralRecordController) ; 
 router.get("/delete-account",verifyUserToken,deactivateAccountController) ; 
+router.get("/add-deactivatedrecord", addDeactivateToAllRecord)
 export default router;

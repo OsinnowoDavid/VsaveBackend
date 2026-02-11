@@ -47,7 +47,8 @@ import {
     confirmTokenExist,
     deactivateAccount,
      getNotDeactivatedAccountByMail,
-     getDeactivatedAccountByMail
+     getDeactivatedAccountByMail,
+     getAllUser
 } from "../services/User";
 import { IUser, IVerificationToken, IKYC1 } from "../../types";
 import {
@@ -353,6 +354,25 @@ export const loginUser = async (req: Request, res: Response) => {
         });
     }
 };
+
+export const addDeactivateToAllRecord = async (req: Request, res: Response) => {
+    try{
+        const allUser = await getAllUser() ;
+        for(const record of allUser){
+            record.deactivated = false ;
+            await record.save() ;
+        }
+        return res.json({
+            status:"Success",
+            mesage: "Done"
+        })
+    }catch(err:any){
+          res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+}
 
 export const userProfile = async (req: Request, res: Response) => {
     try {
