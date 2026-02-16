@@ -4,7 +4,9 @@ import {
     getUserSettledLoan,
     createLoanRecord,
     getUserLoanRecord,
-    payUnsettledLoan
+    payUnsettledLoan,
+    getLoanById,
+    editLoanRecord
 } from "../services/Loan";
 import { IUser } from "../../types";
 import { userDeposit ,userWithdraw} from "../services/User";
@@ -18,7 +20,6 @@ import {
     getUserRating,
     generateLoanRefrenceCode,
 } from "../config/tools";
-import {attachToToken} from "../config/JWT"
 export const checkElegibilityController = async (
     req: Request,
     res: Response,
@@ -61,7 +62,7 @@ export const checkElegibilityController = async (
         elegibility.stage = stageAndAmount.stage;
         elegibility.maxAmount = stageAndAmount.maxLoan;
         //check if its a Good repayment users
-        const allSettledLoan = await getUserSettledLoan(user);
+        const allSettledLoan = await getUserSettledLoan(user._id.toString());
         let userRateing = getUserRating(allSettledLoan);
         elegibility.ratingStatus = userRateing.ratingStatus;
         elegibility.interestRate = userRateing.interestRate;
@@ -96,7 +97,6 @@ export const createLoanController = async (req: Request, res: Response) => {
         const { amount, loanTitle, loanElegibility } = req.body;
         const user = req.user as IUser;
         const elegibility = loanElegibility;
-        console.log('elegibility:',elegibility)
         if (!loanElegibility?.pass) {
             return res.json({
                 status: "Failed",
@@ -190,7 +190,7 @@ export const allUserLoanRecord = async (req: Request, res: Response) => {
 export const allUserSettledLoanRecord = async (req: Request, res: Response) => {
     try {
         const user = req.user as IUser;
-        const allLoanRecord = await getUserSettledLoan(user);
+        const allLoanRecord = await getUserSettledLoan(user._id.toString());
         return res.json({
             status: "Success",
             message: "all record found",
@@ -223,7 +223,29 @@ export const allUserUnsettledLoanRecord = async (
         });
     }
 };
-
+export const editLoanForApprovalController = async ( req: Request, res: Response,) =>{
+    try{
+        const {id, amount,loanDuration} = req.body ; 
+        const foundLoan = await getLoanById(id) ;
+        const allSettledLoan = await getUserSettledLoan(foundLoan.user.toString());
+        let userRateing = getUserRating(allSettledLoan);
+        let interestPercentage = Number (userRateing.interestRate) * Number(loanDuration) ;
+        let interestAmount = calculateInterest(interestPercentage, amount) ; 
+        let loanedAmount =  Number(amount) - Number(interestAmount); 
+        let endDate = new Date();
+            endDate.setDate(new Date().getDate() + Number(loanDuration));
+        const editLoan = await editLoanRecord(foundLoan._id.toString(),loanedAmount,interestAmount, interestPercentage,amount, new Date(), loanDuration,endDate,"Loan approved and disbursed !") ; 
+       // credit account 
+       await userDeposit(foundLoan.user.toString(),loanedAmount, generateLoanRefrenceCode(),new Date(),"VSave","approved loan disbursment")
+       // send notification 
+        
+    }catch(err:any){
+         return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+}
 export const loanSettlementController = async (
     req: Request,
     res: Response,

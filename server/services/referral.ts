@@ -1,6 +1,5 @@
 import UserReferral from "../model/Referral_record"; 
 import User from "../model/User" ; 
-import Officer from "../model/Officers";
 import {generateReferralRefrenceCode} from "../config/tools" ;
 import { IUser } from "../../types";
 

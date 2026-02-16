@@ -1,5 +1,4 @@
-const mongoose = require("mongoose");
-
+import mongoose from "mongoose";
 const notificationSchema = new mongoose.Schema(
     {
         type: {
@@ -7,8 +6,6 @@ const notificationSchema = new mongoose.Schema(
             required: true,
             enum: [
                 "superAdmin-to-admins",
-                "superAdmin-to-user",
-                "superAdmin-to-Agent",
                 "admins-to-user",
                 "admins-to-agents",
                 "app-to-users",
@@ -25,7 +22,7 @@ const notificationSchema = new mongoose.Schema(
         recipientType: {
             type: String,
             required: true,
-            enum: ["User", "Regionaladmin", "SubRegionalAdmin", "Agent"], // your 4 collections
+            enum: ["User", "Admin"], // your 4 collections
         },
         recipientId: {
             type: mongoose.Schema.Types.ObjectId,
@@ -55,4 +52,6 @@ const notificationSchema = new mongoose.Schema(
     { timestamps: true },
 );
 
-module.exports = mongoose.model("Notification", notificationSchema);
+const Notification = mongoose.model("Notification", notificationSchema);
+
+export default Notification 

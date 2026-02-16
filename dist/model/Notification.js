@@ -1,13 +1,15 @@
 "use strict";
-const mongoose = require("mongoose");
-const notificationSchema = new mongoose.Schema({
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const mongoose_1 = __importDefault(require("mongoose"));
+const notificationSchema = new mongoose_1.default.Schema({
     type: {
         type: String,
         required: true,
         enum: [
             "superAdmin-to-admins",
-            "superAdmin-to-user",
-            "superAdmin-to-Agent",
             "admins-to-user",
             "admins-to-agents",
             "app-to-users",
@@ -24,10 +26,10 @@ const notificationSchema = new mongoose.Schema({
     recipientType: {
         type: String,
         required: true,
-        enum: ["User", "Regionaladmin", "SubRegionalAdmin", "Agent"], // your 4 collections
+        enum: ["User", "Admin"], // your 4 collections
     },
     recipientId: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: mongoose_1.default.Schema.Types.ObjectId,
         required: true,
         refPath: "recipientType", // dynamic reference here
     },
@@ -51,4 +53,5 @@ const notificationSchema = new mongoose.Schema({
         enum: ["sent", "delivered", "seen"],
     },
 }, { timestamps: true });
-module.exports = mongoose.model("Notification", notificationSchema);
+const Notification = mongoose_1.default.model("Notification", notificationSchema);
+exports.default = Notification;

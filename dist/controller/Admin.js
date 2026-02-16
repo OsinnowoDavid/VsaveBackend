@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllAgentsController = exports.createAgentsController = exports.getAllTeamUnderARegionController = exports.getAllAdminSavingsController = exports.editLoanForApprovalController = exports.approveOrRejectLoanController = exports.getLoanRecordByStatusController = exports.getAllLoanRecordController = exports.getUserSavingsDetailsController = exports.getSavingsDetailsController = exports.getAdminDashboardDetails = exports.getAllAdminByRoleController = exports.getAllAdminController = exports.getAllUserController = exports.getAdminConfigController = exports.setAdminConfigController = exports.getTeamByRegionController = exports.getAllMyTeamController = exports.assignTeamAdminToTeamController = exports.createTeamController = exports.getRegionalAdminByEmailController = exports.getRegionalAdminsController = exports.getAllRegionalAdminController = exports.getAllRegionController = exports.createNewRegionController = exports.assignRegionalAdminToRegionController = exports.updateAdminRecordController = exports.deleteAminController = exports.superAdminProfileController = exports.LoginAdminController = exports.resendVerificationCodeController = exports.updateAdminPasswordController = exports.createAdminPasswordController = exports.registerAdminController = void 0;
+exports.getAllAgentsController = exports.createAgentsController = exports.getAllTeamUnderARegionController = exports.getAllAdminSavingsController = exports.approveOrRejectLoanController = exports.getLoanRecordByStatusController = exports.getAllLoanRecordController = exports.getUserSavingsDetailsController = exports.getSavingsDetailsController = exports.getAdminDashboardDetails = exports.getAllAdminByRoleController = exports.getAllAdminController = exports.getAllUserController = exports.getAdminConfigController = exports.setAdminConfigController = exports.getTeamByRegionController = exports.getAllMyTeamController = exports.assignTeamAdminToTeamController = exports.createTeamController = exports.getRegionalAdminByEmailController = exports.getRegionalAdminsController = exports.getAllRegionalAdminController = exports.getAllRegionController = exports.createNewRegionController = exports.assignRegionalAdminToRegionController = exports.updateAdminRecordController = exports.deleteAminController = exports.superAdminProfileController = exports.LoginAdminController = exports.resendVerificationCodeController = exports.updateAdminPasswordController = exports.createAdminPasswordController = exports.registerAdminController = void 0;
 const argon2_1 = __importDefault(require("argon2"));
 const Admin_1 = require("../services/Admin");
 const JWT_1 = require("../config/JWT");
@@ -739,20 +739,6 @@ const approveOrRejectLoanController = async (req, res) => {
     }
 };
 exports.approveOrRejectLoanController = approveOrRejectLoanController;
-const editLoanForApprovalController = async (req, res) => {
-    try {
-        const { id, amount, } = req.body;
-        //const foundLoan = await 
-        // const editLoan = await editLoanRecord(id,) ;
-    }
-    catch (err) {
-        return res.json({
-            status: "Failed",
-            message: err.message,
-        });
-    }
-};
-exports.editLoanForApprovalController = editLoanForApprovalController;
 const getAllAdminSavingsController = async (req, res) => {
     try {
         const foundRecord = await (0, Savings_1.getAllSavingsCircle)();

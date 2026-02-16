@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.loanSettlementController = exports.allUserUnsettledLoanRecord = exports.allUserSettledLoanRecord = exports.allUserLoanRecord = exports.createLoanController = exports.checkElegibilityController = void 0;
+exports.loanSettlementController = exports.editLoanForApprovalController = exports.allUserUnsettledLoanRecord = exports.allUserSettledLoanRecord = exports.allUserLoanRecord = exports.createLoanController = exports.checkElegibilityController = void 0;
 const Loan_1 = require("../services/Loan");
 const User_1 = require("../services/User");
 const Savings_1 = require("../services/Savings");
@@ -41,7 +41,7 @@ const checkElegibilityController = async (req, res) => {
         elegibility.stage = stageAndAmount.stage;
         elegibility.maxAmount = stageAndAmount.maxLoan;
         //check if its a Good repayment users
-        const allSettledLoan = await (0, Loan_1.getUserSettledLoan)(user);
+        const allSettledLoan = await (0, Loan_1.getUserSettledLoan)(user._id.toString());
         let userRateing = (0, tools_1.getUserRating)(allSettledLoan);
         elegibility.ratingStatus = userRateing.ratingStatus;
         elegibility.interestRate = userRateing.interestRate;
@@ -77,7 +77,6 @@ const createLoanController = async (req, res) => {
         const { amount, loanTitle, loanElegibility } = req.body;
         const user = req.user;
         const elegibility = loanElegibility;
-        console.log('elegibility:', elegibility);
         if (!loanElegibility?.pass) {
             return res.json({
                 status: "Failed",
@@ -142,7 +141,7 @@ exports.allUserLoanRecord = allUserLoanRecord;
 const allUserSettledLoanRecord = async (req, res) => {
     try {
         const user = req.user;
-        const allLoanRecord = await (0, Loan_1.getUserSettledLoan)(user);
+        const allLoanRecord = await (0, Loan_1.getUserSettledLoan)(user._id.toString());
         return res.json({
             status: "Success",
             message: "all record found",
@@ -175,6 +174,30 @@ const allUserUnsettledLoanRecord = async (req, res) => {
     }
 };
 exports.allUserUnsettledLoanRecord = allUserUnsettledLoanRecord;
+const editLoanForApprovalController = async (req, res) => {
+    try {
+        const { id, amount, loanDuration } = req.body;
+        const foundLoan = await (0, Loan_1.getLoanById)(id);
+        const allSettledLoan = await (0, Loan_1.getUserSettledLoan)(foundLoan.user.toString());
+        let userRateing = (0, tools_1.getUserRating)(allSettledLoan);
+        let interestPercentage = Number(userRateing.interestRate) * Number(loanDuration);
+        let interestAmount = calculateInterest(interestPercentage, amount);
+        let loanedAmount = Number(amount) - Number(interestAmount);
+        let endDate = new Date();
+        endDate.setDate(new Date().getDate() + Number(loanDuration));
+        const editLoan = await (0, Loan_1.editLoanRecord)(foundLoan._id.toString(), loanedAmount, interestAmount, interestPercentage, amount, new Date(), loanDuration, endDate, "Loan approved and disbursed !");
+        // credit account 
+        await (0, User_1.userDeposit)(foundLoan.user.toString(), loanedAmount, (0, tools_1.generateLoanRefrenceCode)(), new Date(), "VSave", "approved loan disbursment");
+        // send notification 
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.editLoanForApprovalController = editLoanForApprovalController;
 const loanSettlementController = async (req, res) => {
     try {
         const { amount } = req.body;

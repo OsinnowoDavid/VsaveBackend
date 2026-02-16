@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllLoanRecordBalance = exports.approveOrRejectLoan = exports.editLoanRecord = exports.getLoanRecordByStatus = exports.getAllLoanRecord = exports.getUserLoanByStatus = exports.allUnsettledRecord = exports.payUnsettledLoan = exports.getUserUnsettledLoan = exports.getUserSettledLoan = exports.getUserLoanRecord = exports.createLoanRecord = void 0;
+exports.getAllLoanRecordBalance = exports.approveOrRejectLoan = exports.editLoanRecord = exports.getLoanById = exports.getLoanRecordByStatus = exports.getAllLoanRecord = exports.getUserLoanByStatus = exports.allUnsettledRecord = exports.payUnsettledLoan = exports.getUserUnsettledLoan = exports.getUserSettledLoan = exports.getUserLoanRecord = exports.createLoanRecord = void 0;
 const Loan_1 = __importDefault(require("../model/Loan"));
 const createLoanRecord = async (user, loanTitle, amount, interest, interestPercentage, status, startDate, dueDate, repaymentAmount, remark) => {
     try {
@@ -38,7 +38,7 @@ const getUserLoanRecord = async (user) => {
 exports.getUserLoanRecord = getUserLoanRecord;
 const getUserSettledLoan = async (user) => {
     try {
-        const allLoans = await Loan_1.default.find({ user: user._id, isSettled: true });
+        const allLoans = await Loan_1.default.find({ user: user, isSettled: true });
         return allLoans;
     }
     catch (err) {
@@ -132,6 +132,16 @@ const getLoanRecordByStatus = async (status) => {
     }
 };
 exports.getLoanRecordByStatus = getLoanRecordByStatus;
+const getLoanById = async (id) => {
+    try {
+        const foundRecord = await Loan_1.default.findById(id);
+        return foundRecord;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.getLoanById = getLoanById;
 const editLoanRecord = async (id, amount, interest, interestPercentage, repaymentAmount, startDate, duration, endDate, remark) => {
     try {
         const foundLoanRecord = await Loan_1.default.findById(id);
@@ -142,6 +152,7 @@ const editLoanRecord = async (id, amount, interest, interestPercentage, repaymen
         foundLoanRecord.startDate = startDate;
         foundLoanRecord.duration = duration;
         foundLoanRecord.dueDate = endDate;
+        foundLoanRecord.status = "approved";
         if (remark) {
             foundLoanRecord.remark = remark;
         }

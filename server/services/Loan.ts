@@ -40,9 +40,9 @@ export const getUserLoanRecord = async (user: IUser) => {
         throw err;
     }
 };
-export const getUserSettledLoan = async (user: IUser) => {
+export const getUserSettledLoan = async (user: string) => {
     try {
-        const allLoans = await Loan.find({ user: user._id, isSettled: true });
+        const allLoans = await Loan.find({ user: user, isSettled: true });
         return allLoans;
     } catch (err: any) {
         throw err;
@@ -130,6 +130,14 @@ export const getLoanRecordByStatus = async (status: string) => {
         throw err;
     }
 };
+export const getLoanById = async (id:string) =>{
+    try{
+        const foundRecord = await Loan.findById(id) ;
+        return foundRecord
+    }catch(err:any){
+        throw err
+    }
+}
 
 export const editLoanRecord = async (
     id: string,
@@ -151,6 +159,7 @@ export const editLoanRecord = async (
         foundLoanRecord.startDate = startDate;
         foundLoanRecord.duration = duration;
         foundLoanRecord.dueDate = endDate;
+        foundLoanRecord.status = "approved" ;
         if (remark) {
             foundLoanRecord.remark = remark;
         }

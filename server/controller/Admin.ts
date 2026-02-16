@@ -36,7 +36,7 @@ import {
     getAllAgents,
 } from "../services/Admin";
 import { signUserToken } from "../config/JWT";
-import {getAllLoanRecord,getLoanRecordByStatus,approveOrRejectLoan, editLoanRecord} from "../services/Loan" ;
+import {getAllLoanRecord,getLoanRecordByStatus,approveOrRejectLoan, editLoanRecord, getLoanById} from "../services/Loan" ;
 import Admin from "../model/Regionaladmin";
 import { getAllUser, getUserByEmail, assignUserEmailVerificationToken, userWithdraw, userDeposit } from "../services/User";
 import { IAdmin } from "../../types";
@@ -807,19 +807,6 @@ export const approveOrRejectLoanController =  async (
             status: "Failed",
             message: err.message,
         }); 
-    }
-}
-export const editLoanForApprovalController = async ( req: Request, res: Response,) =>{
-    try{
-        const {id, amount,} = req.body ; 
-        //const foundLoan = await 
-       // const editLoan = await editLoanRecord(id,) ;
-
-    }catch(err:any){
-         return res.json({
-            status: "Failed",
-            message: err.message,
-        });
     }
 }
 export const getAllAdminSavingsController = async (
