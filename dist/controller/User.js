@@ -15,8 +15,6 @@ const Admin_config_1 = __importDefault(require("../model/Admin_config"));
 const Loan_1 = require("../services/Loan");
 const Terminal_1 = require("../services/Terminal");
 const referral_1 = require("../services/referral");
-const QOREID_API_KEY = process.env.QOREID_SECRET_KEY;
-const QOREID_BASE_URL = process.env.QOREID_BASE_URL;
 mail_1.default.setApiKey(process.env.SENDGRID_API_KEY);
 const getNextFiveMinutes = () => {
     const now = new Date();

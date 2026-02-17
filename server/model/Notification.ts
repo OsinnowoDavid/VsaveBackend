@@ -1,15 +1,10 @@
 import mongoose from "mongoose";
 const notificationSchema = new mongoose.Schema(
     {
-        type: {
+        from: {
             type: String,
             required: true,
-            enum: [
-                "superAdmin-to-admins",
-                "admins-to-user",
-                "admins-to-agents",
-                "app-to-users",
-            ],
+            enum: ["ADMIN", "VSAVE-APP"],
         },
         title: {
             type: String,
@@ -29,19 +24,10 @@ const notificationSchema = new mongoose.Schema(
             required: true,
             refPath: "recipientType", // dynamic reference here
         },
-        senderType: {
-            type: String,
-            required: true,
-            enum: [
-                "Superadmin",
-                "Regionaladmin",
-                "SubRegionalAdmin",
-                "VsaveApp",
-            ], // your 4 collections
-        },
         senderId: {
-            type: String,
-            required: true,
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Admin",
+            required: false,
         },
         status: {
             type: String,

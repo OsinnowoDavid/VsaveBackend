@@ -1,10 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.loanSettlementController = exports.editLoanForApprovalController = exports.allUserUnsettledLoanRecord = exports.allUserSettledLoanRecord = exports.allUserLoanRecord = exports.createLoanController = exports.checkElegibilityController = void 0;
+exports.loanSettlementController = exports.approveOrRejectLoanController = exports.editLoanForApprovalController = exports.allUserUnsettledLoanRecord = exports.allUserSettledLoanRecord = exports.allUserLoanRecord = exports.createLoanController = exports.checkElegibilityController = void 0;
 const Loan_1 = require("../services/Loan");
 const User_1 = require("../services/User");
 const Savings_1 = require("../services/Savings");
 const tools_1 = require("../config/tools");
+const Notification_1 = require("../services/Notification");
 const checkElegibilityController = async (req, res) => {
     try {
         const user = req.user;
@@ -189,6 +190,17 @@ const editLoanForApprovalController = async (req, res) => {
         // credit account 
         await (0, User_1.userDeposit)(foundLoan.user.toString(), loanedAmount, (0, tools_1.generateLoanRefrenceCode)(), new Date(), "VSave", "approved loan disbursment");
         // send notification 
+        let notificationTitle = "Loan Approval";
+        let notificationMessage = `
+       your loan was approved and disbursed but was edited for some reasons 
+       approved loan is ${editLoan.amount}, to repay ${editLoan.repaymentAmount} on ${editLoan.dueDate} .
+       `;
+        await (0, Notification_1.createNotification)("VSAVE-APP", notificationTitle, notificationMessage, "User", editLoan.user.toString(), "sent");
+        return res.json({
+            status: "Success",
+            message: "loan approved and edited successfuly",
+            data: editLoan
+        });
     }
     catch (err) {
         return res.json({
@@ -198,6 +210,48 @@ const editLoanForApprovalController = async (req, res) => {
     }
 };
 exports.editLoanForApprovalController = editLoanForApprovalController;
+// aprovve pending loan
+const approveOrRejectLoanController = async (req, res) => {
+    try {
+        const { id, status, duration } = req.body;
+        const dueDate = new Date();
+        dueDate.setDate(dueDate.getDate() + duration);
+        const record = await (0, Loan_1.approveOrRejectLoan)(id, status, duration, dueDate);
+        if (status === "approved" && record) {
+            await (0, User_1.userDeposit)(record.user.toString(), record.amount, (0, tools_1.generateLoanRefrenceCode)(), new Date(), "Vsave Loan", "loan disbursment");
+            // send notification 
+            let notificationTitle = "Loan Approval";
+            let notificationMessage = `
+            your loan was approved and disbursed
+            approved loan is ${record.amount}, to repay ${record.repaymentAmount} on ${record.dueDate} .
+            `;
+            await (0, Notification_1.createNotification)("VSAVE-APP", notificationTitle, notificationMessage, "User", record.user.toString(), "sent");
+            return res.json({
+                status: "Success",
+                message: "record updated , loan was Approved",
+                data: record
+            });
+        }
+        // send notification 
+        let notificationTitle = "Loan rejected";
+        let notificationMessage = `
+           Sorry to inform you that your loan was rejected
+            `;
+        await (0, Notification_1.createNotification)("VSAVE-APP", notificationTitle, notificationMessage, "User", record.user.toString(), "sent");
+        return res.json({
+            status: "Success",
+            message: "record updated , loan was declined",
+            data: record
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.approveOrRejectLoanController = approveOrRejectLoanController;
 const loanSettlementController = async (req, res) => {
     try {
         const { amount } = req.body;

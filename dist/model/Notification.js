@@ -5,15 +5,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
 const notificationSchema = new mongoose_1.default.Schema({
-    type: {
+    from: {
         type: String,
         required: true,
-        enum: [
-            "superAdmin-to-admins",
-            "admins-to-user",
-            "admins-to-agents",
-            "app-to-users",
-        ],
+        enum: ["ADMIN", "VSAVE-APP"],
     },
     title: {
         type: String,
@@ -33,19 +28,10 @@ const notificationSchema = new mongoose_1.default.Schema({
         required: true,
         refPath: "recipientType", // dynamic reference here
     },
-    senderType: {
-        type: String,
-        required: true,
-        enum: [
-            "Superadmin",
-            "Regionaladmin",
-            "SubRegionalAdmin",
-            "VsaveApp",
-        ], // your 4 collections
-    },
     senderId: {
-        type: String,
-        required: true,
+        type: mongoose_1.default.Schema.Types.ObjectId,
+        ref: "Admin",
+        required: false,
     },
     status: {
         type: String,

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllAgentsController = exports.createAgentsController = exports.getAllTeamUnderARegionController = exports.getAllAdminSavingsController = exports.approveOrRejectLoanController = exports.getLoanRecordByStatusController = exports.getAllLoanRecordController = exports.getUserSavingsDetailsController = exports.getSavingsDetailsController = exports.getAdminDashboardDetails = exports.getAllAdminByRoleController = exports.getAllAdminController = exports.getAllUserController = exports.getAdminConfigController = exports.setAdminConfigController = exports.getTeamByRegionController = exports.getAllMyTeamController = exports.assignTeamAdminToTeamController = exports.createTeamController = exports.getRegionalAdminByEmailController = exports.getRegionalAdminsController = exports.getAllRegionalAdminController = exports.getAllRegionController = exports.createNewRegionController = exports.assignRegionalAdminToRegionController = exports.updateAdminRecordController = exports.deleteAminController = exports.superAdminProfileController = exports.LoginAdminController = exports.resendVerificationCodeController = exports.updateAdminPasswordController = exports.createAdminPasswordController = exports.registerAdminController = void 0;
+exports.getAllAgentsController = exports.createAgentsController = exports.getAllTeamUnderARegionController = exports.getAllAdminSavingsController = exports.getLoanRecordByStatusController = exports.getAllLoanRecordController = exports.getUserSavingsDetailsController = exports.getSavingsDetailsController = exports.getAdminDashboardDetails = exports.getAllAdminByRoleController = exports.getAllAdminController = exports.getAllUserController = exports.getAdminConfigController = exports.setAdminConfigController = exports.getTeamByRegionController = exports.getAllMyTeamController = exports.assignTeamAdminToTeamController = exports.createTeamController = exports.getRegionalAdminByEmailController = exports.getRegionalAdminsController = exports.getAllRegionalAdminController = exports.getAllRegionController = exports.createNewRegionController = exports.assignRegionalAdminToRegionController = exports.updateAdminRecordController = exports.deleteAminController = exports.superAdminProfileController = exports.LoginAdminController = exports.resendVerificationCodeController = exports.updateAdminPasswordController = exports.createAdminPasswordController = exports.registerAdminController = void 0;
 const argon2_1 = __importDefault(require("argon2"));
 const Admin_1 = require("../services/Admin");
 const JWT_1 = require("../config/JWT");
@@ -12,7 +12,6 @@ const Regionaladmin_1 = __importDefault(require("../model/Regionaladmin"));
 const User_1 = require("../services/User");
 const mail_1 = __importDefault(require("@sendgrid/mail"));
 const Savings_1 = require("../services/Savings");
-const tools_1 = require("../config/tools");
 mail_1.default.setApiKey(process.env.SENDGRID_API_KEY);
 const getNextTenMinutes = () => {
     const now = new Date();
@@ -715,30 +714,6 @@ const getLoanRecordByStatusController = async (req, res) => {
     }
 };
 exports.getLoanRecordByStatusController = getLoanRecordByStatusController;
-// aprovve pending loan
-const approveOrRejectLoanController = async (req, res) => {
-    try {
-        const { id, status, duration } = req.body;
-        const dueDate = new Date();
-        dueDate.setDate(dueDate.getDate() + duration);
-        const record = await (0, Loan_1.approveOrRejectLoan)(id, status, duration, dueDate);
-        if (status === "approved" && record) {
-            await (0, User_1.userDeposit)(record.user.toString(), record.amount, (0, tools_1.generateLoanRefrenceCode)(), new Date(), "Vsave Loan", "loan disbursment");
-        }
-        return res.json({
-            status: "Success",
-            message: "record updated",
-            data: record
-        });
-    }
-    catch (err) {
-        return res.json({
-            status: "Failed",
-            message: err.message,
-        });
-    }
-};
-exports.approveOrRejectLoanController = approveOrRejectLoanController;
 const getAllAdminSavingsController = async (req, res) => {
     try {
         const foundRecord = await (0, Savings_1.getAllSavingsCircle)();

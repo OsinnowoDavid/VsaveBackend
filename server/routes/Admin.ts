@@ -22,7 +22,6 @@ import {
     updateAdminPasswordController,
     getAllLoanRecordController,
     getLoanRecordByStatusController,
-    approveOrRejectLoanController,
     getAllAdminSavingsController,
     deleteAminController,
     createTeamController,
@@ -34,6 +33,7 @@ import {
 } from "../controller/Admin";
 import { verifyGeneralAdminToken, verifySuperAdminToken , verifyRegionalAdminToken, verifySubRegionalAdminToken} from "../config/JWT"; 
 import { validateAdminRegistrationInput } from "../validate-input/admin/index";
+import { approveOrRejectLoanController, editLoanForApprovalController } from "../controller/Loan";
 
 const router = express.Router();
 
@@ -102,7 +102,9 @@ router.get("/get-all-loan", verifySuperAdminToken, getAllLoanRecordController)
 // get  loan record by status
 router.get("/get-loan-by-status", verifySuperAdminToken, getLoanRecordByStatusController,)
 // aprovve pending loan 
-router.post("/approve-pending-loan", verifySuperAdminToken, approveOrRejectLoanController)
+router.post("/approve-pending-loan", verifySuperAdminToken, approveOrRejectLoanController) ;
+
+router.post("/edit-loan-for-approval", verifySuperAdminToken, editLoanForApprovalController)
 
 router.get("/all-admin-created-savings", verifySuperAdminToken, getAllAdminSavingsController)
 

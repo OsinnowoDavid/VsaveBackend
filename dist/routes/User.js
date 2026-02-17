@@ -8,6 +8,7 @@ const User_1 = require("../controller/User");
 const user_1 = require("../validate-input/user");
 const JWT_1 = require("../config/JWT");
 const waitList_1 = require("../controller/waitList");
+const Notification_1 = require("../controller/Notification");
 const router = express_1.default.Router();
 router.post("/waitlist", waitList_1.createWaitListController);
 router.get("/get-all-waitlist", waitList_1.getAllWaitListController);
@@ -64,4 +65,6 @@ router.get("/get-referral-record", JWT_1.verifyUserToken, User_1.checkUserReferr
 router.get("/get-referral-by-status/:status", JWT_1.verifyUserToken, User_1.checkUserReferralRecordsByStatusController);
 router.get("/get-single-referral/:id", JWT_1.verifyUserToken, User_1.checkUserSingleReferralRecordController);
 router.get("/delete-account", JWT_1.verifyUserToken, User_1.deactivateAccountController);
+router.get("/notification", JWT_1.verifyUserToken, Notification_1.getUserNotificationsController);
+router.get("/notification/:id", JWT_1.verifyUserToken, Notification_1.getSingleNotificationsController);
 exports.default = router;

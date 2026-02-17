@@ -56,6 +56,7 @@ import {
 } from "../validate-input/user";
 import { verifyUserToken } from "../config/JWT";
 import { createWaitListController , getAllWaitListController, getWaitListByEmailController} from "../controller/waitList";
+import { getSingleNotificationsController, getUserNotificationsController } from "../controller/Notification";
 const router = express.Router();
 router.post("/waitlist", createWaitListController)
 router.get("/get-all-waitlist",getAllWaitListController )
@@ -200,4 +201,6 @@ router.get("/get-referral-record",verifyUserToken,checkUserReferralRecordsContro
 router.get("/get-referral-by-status/:status",verifyUserToken,checkUserReferralRecordsByStatusController) ; 
 router.get("/get-single-referral/:id",verifyUserToken,checkUserSingleReferralRecordController) ; 
 router.get("/delete-account",verifyUserToken,deactivateAccountController) ; 
+router.get("/notification", verifyUserToken, getUserNotificationsController) ;
+router.get("/notification/:id", verifyUserToken, getSingleNotificationsController) ;
 export default router;

@@ -87,8 +87,6 @@ import {
      getSingleTerminalTransaction,
     } from "../services/Terminal" ;
     import {assignReferral,createReferralCodeForUser,getAllUserReferralRecord,getUserReferralByStatus,getSingleReferralRecord, getUserTypeWithReferralCode} from "../services/referral"
-const QOREID_API_KEY = process.env.QOREID_SECRET_KEY as string;
-const QOREID_BASE_URL = process.env.QOREID_BASE_URL as string;
 SGMail.setApiKey(process.env.SENDGRID_API_KEY);
 const getNextFiveMinutes = () => {
     const now = new Date();

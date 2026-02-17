@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const Admin_1 = require("../controller/Admin");
 const JWT_1 = require("../config/JWT");
+const Loan_1 = require("../controller/Loan");
 const router = express_1.default.Router();
 router.post("/register", JWT_1.verifySuperAdminToken, Admin_1.registerAdminController);
 router.post("/create-password", Admin_1.createAdminPasswordController);
@@ -42,7 +43,8 @@ router.get("/get-all-loan", JWT_1.verifySuperAdminToken, Admin_1.getAllLoanRecor
 // get  loan record by status
 router.get("/get-loan-by-status", JWT_1.verifySuperAdminToken, Admin_1.getLoanRecordByStatusController);
 // aprovve pending loan 
-router.post("/approve-pending-loan", JWT_1.verifySuperAdminToken, Admin_1.approveOrRejectLoanController);
+router.post("/approve-pending-loan", JWT_1.verifySuperAdminToken, Loan_1.approveOrRejectLoanController);
+router.post("/edit-loan-for-approval", JWT_1.verifySuperAdminToken, Loan_1.editLoanForApprovalController);
 router.get("/all-admin-created-savings", JWT_1.verifySuperAdminToken, Admin_1.getAllAdminSavingsController);
 router.post("/create-agent", JWT_1.verifySubRegionalAdminToken, Admin_1.createAgentsController);
 router.get("/get-all-agent", JWT_1.verifySuperAdminToken, Admin_1.getAllAgentsController);

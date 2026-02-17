@@ -6,7 +6,8 @@ import {
     getUserLoanRecord,
     payUnsettledLoan,
     getLoanById,
-    editLoanRecord
+    editLoanRecord,
+    approveOrRejectLoan,
 } from "../services/Loan";
 import { IUser } from "../../types";
 import { userDeposit ,userWithdraw} from "../services/User";
@@ -20,6 +21,7 @@ import {
     getUserRating,
     generateLoanRefrenceCode,
 } from "../config/tools";
+import { createNotification } from "../services/Notification";
 export const checkElegibilityController = async (
     req: Request,
     res: Response,
@@ -238,12 +240,65 @@ export const editLoanForApprovalController = async ( req: Request, res: Response
        // credit account 
        await userDeposit(foundLoan.user.toString(),loanedAmount, generateLoanRefrenceCode(),new Date(),"VSave","approved loan disbursment")
        // send notification 
-        
+       let notificationTitle = "Loan Approval" ;
+       let notificationMessage = `
+       your loan was approved and disbursed but was edited for some reasons 
+       approved loan is ${editLoan.amount}, to repay ${editLoan.repaymentAmount} on ${editLoan.dueDate} .
+       `
+        await createNotification("VSAVE-APP",notificationTitle,notificationMessage,"User",editLoan.user.toString(),"sent") ;
+        return res.json({
+            status:"Success",
+            message:"loan approved and edited successfuly",
+            data :editLoan
+        })
     }catch(err:any){
          return res.json({
             status: "Failed",
             message: err.message,
         });
+    }
+}
+// aprovve pending loan
+export const approveOrRejectLoanController =  async (
+    req: Request,
+    res: Response,
+) => {
+    try{
+        const {id, status, duration} = req.body ;
+        const dueDate = new Date() ;
+         dueDate.setDate(dueDate.getDate() + duration);
+        const record = await approveOrRejectLoan(id,status,duration,dueDate) ; 
+        if(status === "approved"&& record){
+            await userDeposit(record.user.toString(),record.amount,generateLoanRefrenceCode(),new Date(),"Vsave Loan","loan disbursment", ) ; 
+             // send notification 
+            let notificationTitle = "Loan Approval" ;
+            let notificationMessage = `
+            your loan was approved and disbursed
+            approved loan is ${record.amount}, to repay ${record.repaymentAmount} on ${record.dueDate} .
+            `
+        await createNotification("VSAVE-APP",notificationTitle,notificationMessage,"User",record.user.toString(),"sent") ;
+              return res.json({
+            status: "Success",
+            message: "record updated , loan was Approved",
+            data: record 
+        })
+        }
+         // send notification 
+            let notificationTitle = "Loan rejected" ;
+            let notificationMessage = `
+           Sorry to inform you that your loan was rejected
+            `
+        await createNotification("VSAVE-APP",notificationTitle,notificationMessage,"User",record.user.toString(),"sent") ;
+        return res.json({
+            status: "Success",
+            message: "record updated , loan was declined",
+            data: record 
+        })
+    }catch(err:any){
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        }); 
     }
 }
 export const loanSettlementController = async (

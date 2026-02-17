@@ -784,31 +784,6 @@ export const getLoanRecordByStatusController = async (
         }); 
     }
 }
-// aprovve pending loan
-export const approveOrRejectLoanController =  async (
-    req: Request,
-    res: Response,
-) => {
-    try{
-        const {id, status, duration} = req.body ;
-        const dueDate = new Date() ;
-         dueDate.setDate(dueDate.getDate() + duration);
-        const record = await approveOrRejectLoan(id,status,duration,dueDate) ; 
-        if(status === "approved"&& record){
-            await userDeposit(record.user.toString(),record.amount,generateLoanRefrenceCode(),new Date(),"Vsave Loan","loan disbursment", )
-        }
-        return res.json({
-            status: "Success",
-            message: "record updated",
-            data: record 
-        })
-    }catch(err:any){
-        return res.json({
-            status: "Failed",
-            message: err.message,
-        }); 
-    }
-}
 export const getAllAdminSavingsController = async (
     req: Request,
     res: Response,
