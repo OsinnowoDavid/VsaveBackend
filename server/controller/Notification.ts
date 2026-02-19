@@ -4,7 +4,13 @@ import { IUser } from "../../types";
 export const getUserNotificationsController = async (req: Request, res: Response) =>{
     try{
         const user = req.user as IUser ;
-        const foundNotification = await getRecipientNotofication(user._id.toString()) ;
+        const foundNotification = await getRecipientNotofication(user._id.toString()) ; 
+        for(const record of foundNotification){
+            if(record.status === "sent"){
+                record.status = "delivered" ;
+                await record.save()
+            }
+        }
          return res.json({
             status: "Success",
             message: "found Notification",
@@ -22,6 +28,8 @@ export const getSingleNotificationsController = async (req: Request, res: Respon
     try{
         const {id} = req.params
         const foundNotification = await getSingleNotification(id) ;
+        foundNotification.status = "seen" ;
+        await foundNotification.save()
          return res.json({
             status: "Success",
             message: "found Notification",

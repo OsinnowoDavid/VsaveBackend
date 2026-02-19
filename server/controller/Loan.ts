@@ -231,7 +231,7 @@ export const editLoanForApprovalController = async ( req: Request, res: Response
         const foundLoan = await getLoanById(id) ;
         const allSettledLoan = await getUserSettledLoan(foundLoan.user.toString());
         let userRateing = getUserRating(allSettledLoan);
-        let interestPercentage = Number (userRateing.interestRate) * Number(loanDuration) ;
+        let interestPercentage = Number (userRateing.interestRate) * 14 ;
         let interestAmount = calculateInterest(interestPercentage, amount) ; 
         let loanedAmount =  Number(amount) - Number(interestAmount); 
         let endDate = new Date();
@@ -241,10 +241,7 @@ export const editLoanForApprovalController = async ( req: Request, res: Response
        await userDeposit(foundLoan.user.toString(),loanedAmount, generateLoanRefrenceCode(),new Date(),"VSave","approved loan disbursment")
        // send notification 
        let notificationTitle = "Loan Approval" ;
-       let notificationMessage = `
-       your loan was approved and disbursed but was edited for some reasons 
-       approved loan is ${editLoan.amount}, to repay ${editLoan.repaymentAmount} on ${editLoan.dueDate} .
-       `
+       let notificationMessage = `your loan was approved and disbursed but was edited for some reasons approved loan is ${editLoan.amount}, to repay ${editLoan.repaymentAmount} on ${editLoan.dueDate} . `
         await createNotification("VSAVE-APP",notificationTitle,notificationMessage,"User",editLoan.user.toString(),"sent") ;
         return res.json({
             status:"Success",

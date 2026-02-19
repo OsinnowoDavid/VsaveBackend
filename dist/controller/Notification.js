@@ -6,6 +6,12 @@ const getUserNotificationsController = async (req, res) => {
     try {
         const user = req.user;
         const foundNotification = await (0, Notification_1.getRecipientNotofication)(user._id.toString());
+        for (const record of foundNotification) {
+            if (record.status === "sent") {
+                record.status = "delivered";
+                await record.save();
+            }
+        }
         return res.json({
             status: "Success",
             message: "found Notification",
@@ -24,6 +30,8 @@ const getSingleNotificationsController = async (req, res) => {
     try {
         const { id } = req.params;
         const foundNotification = await (0, Notification_1.getSingleNotification)(id);
+        foundNotification.status = "seen";
+        await foundNotification.save();
         return res.json({
             status: "Success",
             message: "found Notification",
