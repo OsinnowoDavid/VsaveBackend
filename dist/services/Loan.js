@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllLoanRecordBalance = exports.approveOrRejectLoan = exports.editLoanRecord = exports.getLoanById = exports.getLoanRecordByStatus = exports.getAllLoanRecord = exports.getUserLoanByStatus = exports.allUnsettledRecord = exports.payUnsettledLoan = exports.getUserUnsettledLoan = exports.getUserSettledLoan = exports.getDueUnsettledLoan = exports.getUserLoanRecord = exports.createLoanRecord = void 0;
+exports.getAllLoanRecordBalance = exports.approveOrRejectLoan = exports.editLoanRecord = exports.getLoanById = exports.getLoanRecordByStatus = exports.getAllLoanRecord = exports.getUserLoanByStatus = exports.allUnsettledRecord = exports.payUnsettledLoan = exports.getUserDueUnsettledLoan = exports.getUserUnsettledLoan = exports.getUserSettledLoan = exports.getDueUnsettledLoan = exports.getUserLoanRecord = exports.createLoanRecord = void 0;
 const Loan_1 = __importDefault(require("../model/Loan"));
 const createLoanRecord = async (user, loanTitle, amount, interest, interestPercentage, status, startDate, dueDate, repaymentAmount, remark) => {
     try {
@@ -41,6 +41,7 @@ const getDueUnsettledLoan = async () => {
         let today = new Date();
         today.setHours(0, 0, 0, 0);
         const foundLoanRecord = await Loan_1.default.find({ isSettled: false, dueDate: { $lt: today }, status: { $ne: "pending" } });
+        console.log("due loan:", foundLoanRecord);
         return foundLoanRecord;
     }
     catch (err) {
@@ -72,6 +73,23 @@ const getUserUnsettledLoan = async (user) => {
     }
 };
 exports.getUserUnsettledLoan = getUserUnsettledLoan;
+const getUserDueUnsettledLoan = async (user) => {
+    try {
+        let today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const loan = await Loan_1.default.findOne({
+            user: user._id,
+            isSettled: false,
+            dueDate: { $lt: today },
+            status: { $ne: "pending" }
+        });
+        return loan;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.getUserDueUnsettledLoan = getUserDueUnsettledLoan;
 const payUnsettledLoan = async (user, amount) => {
     try {
         const foundLoanRecord = await (0, exports.getUserUnsettledLoan)(user);

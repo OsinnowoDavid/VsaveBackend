@@ -45,6 +45,7 @@ export const getDueUnsettledLoan = async () =>{
         let today = new Date();
         today.setHours(0, 0, 0, 0);
         const foundLoanRecord = await Loan.find({isSettled: false, dueDate: { $lt: today },status: { $ne: "pending" }}) ;
+        console.log("due loan:",foundLoanRecord)
         return foundLoanRecord
     }catch(err:any){
         throw err
@@ -63,6 +64,22 @@ export const getUserUnsettledLoan = async (user: IUser) => {
         const loan = await Loan.findOne({
             user: user._id,
             isSettled: false,
+            status: { $ne: "pending" }
+        });
+        return loan;
+    } catch (err: any) {
+        throw err;
+    }
+};
+
+export const getUserDueUnsettledLoan = async (user: IUser) => {
+    try {
+         let today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const loan = await Loan.findOne({
+            user: user._id,
+            isSettled: false,
+            dueDate: { $lt: today },
             status: { $ne: "pending" }
         });
         return loan;

@@ -8,6 +8,7 @@ import {
     getLoanById,
     editLoanRecord,
     approveOrRejectLoan,
+    getDueUnsettledLoan
 } from "../services/Loan";
 import { IUser } from "../../types";
 import { userDeposit ,userWithdraw} from "../services/User";
@@ -333,3 +334,21 @@ export const loanSettlementController = async (
         });
     } 
 }
+export const getDueUnsettledLoanController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const dueUnsettledLoanRecords = await getDueUnsettledLoan();
+        return res.json({
+            status: "Success",
+            message: "due unsettled loan record found",
+            data: dueUnsettledLoanRecords,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};

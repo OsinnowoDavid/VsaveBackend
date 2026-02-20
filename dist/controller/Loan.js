@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.loanSettlementController = exports.approveOrRejectLoanController = exports.editLoanForApprovalController = exports.allUserUnsettledLoanRecord = exports.allUserSettledLoanRecord = exports.allUserLoanRecord = exports.createLoanController = exports.checkElegibilityController = void 0;
+exports.getDueUnsettledLoanController = exports.loanSettlementController = exports.approveOrRejectLoanController = exports.editLoanForApprovalController = exports.allUserUnsettledLoanRecord = exports.allUserSettledLoanRecord = exports.allUserLoanRecord = exports.createLoanController = exports.checkElegibilityController = void 0;
 const Loan_1 = require("../services/Loan");
 const User_1 = require("../services/User");
 const Savings_1 = require("../services/Savings");
@@ -282,3 +282,20 @@ const loanSettlementController = async (req, res) => {
     }
 };
 exports.loanSettlementController = loanSettlementController;
+const getDueUnsettledLoanController = async (req, res) => {
+    try {
+        const dueUnsettledLoanRecords = await (0, Loan_1.getDueUnsettledLoan)();
+        return res.json({
+            status: "Success",
+            message: "due unsettled loan record found",
+            data: dueUnsettledLoanRecords,
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.getDueUnsettledLoanController = getDueUnsettledLoanController;

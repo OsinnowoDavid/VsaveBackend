@@ -31,7 +31,7 @@ export const hourlyScheduleJob = async () => {
         //fixed savings disbursement job
         await fixedSavingsDisbursement();
         //loan deduction job
-        await loanDeductionJob();
+        // await loanDeductionJob();
         console.log("secondScheduleJob has ended");
         return "Done";
     } catch (err: any) {

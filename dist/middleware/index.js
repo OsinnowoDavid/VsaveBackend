@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.transactionPinMiddleware = exports.hourlyScheduleJob = exports.firstMinsOfTheDayJob = void 0;
 const SavingsJobs_1 = require("./SavingsJobs");
-const LoanDeductionJob_1 = require("./LoanDeductionJob");
 const firstMinsOfTheDayJob = async () => {
     try {
         console.log("firstMinsOfTheDayJob has started");
@@ -28,7 +27,7 @@ const hourlyScheduleJob = async () => {
         //fixed savings disbursement job
         await (0, SavingsJobs_1.fixedSavingsDisbursement)();
         //loan deduction job
-        await (0, LoanDeductionJob_1.loanDeductionJob)();
+        // await loanDeductionJob();
         console.log("secondScheduleJob has ended");
         return "Done";
     }
