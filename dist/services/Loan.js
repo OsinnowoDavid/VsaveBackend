@@ -40,7 +40,7 @@ const getDueUnsettledLoan = async () => {
     try {
         let today = new Date();
         today.setHours(0, 0, 0, 0);
-        const foundLoanRecord = await Loan_1.default.find({ isSettled: false, dueDate: { $lt: today } });
+        const foundLoanRecord = await Loan_1.default.find({ isSettled: false, dueDate: { $lt: today }, status: { $ne: "pending" } });
         return foundLoanRecord;
     }
     catch (err) {
@@ -63,6 +63,7 @@ const getUserUnsettledLoan = async (user) => {
         const loan = await Loan_1.default.findOne({
             user: user._id,
             isSettled: false,
+            status: { $ne: "pending" }
         });
         return loan;
     }
@@ -109,6 +110,7 @@ const allUnsettledRecord = async () => {
     try {
         const allUnsettledLoan = await Loan_1.default.find({
             isSettled: false,
+            status: { $ne: "pending" }
         });
         return allUnsettledLoan;
     }
