@@ -40,6 +40,16 @@ export const getUserLoanRecord = async (user: IUser) => {
         throw err;
     }
 };
+export const getDueUnsettledLoan = async () =>{
+    try{
+        let today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const foundLoanRecord = await Loan.find({isSettled: false, dueDate: { $lt: today }}) ;
+        return foundLoanRecord
+    }catch(err:any){
+        throw err
+    }
+}
 export const getUserSettledLoan = async (user: string) => {
     try {
         const allLoans = await Loan.find({ user: user, isSettled: true });
@@ -64,7 +74,9 @@ export const payUnsettledLoan = async (user: IUser, amount: number) => {
     try {
         const foundLoanRecord = await getUserUnsettledLoan(user);
         // check if its the exact amount to clear the dept
+        console.log("got here start payment proccess", foundLoanRecord) ;
         if (Number(foundLoanRecord.repaymentAmount) === amount) {
+             console.log("got here it is the exact amount") ;
             foundLoanRecord.status = "completed";
             foundLoanRecord.isSettled = true;
             foundLoanRecord.repaymentCompletedDate = new Date();
@@ -74,6 +86,7 @@ export const payUnsettledLoan = async (user: IUser, amount: number) => {
                 date: new Date(),
             });
             foundLoanRecord.repaymentAmount = 0;
+             console.log("got here loan deducted and about to save")
             await foundLoanRecord.save();
             return foundLoanRecord;
         }

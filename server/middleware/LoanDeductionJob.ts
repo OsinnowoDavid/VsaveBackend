@@ -3,6 +3,7 @@ import {
     payUnsettledLoan,
     getUserUnsettledLoan,
     allUnsettledRecord,
+    getDueUnsettledLoan,
 } from "../services/Loan";
 import { userWithdraw, getUserById } from "../services/User";
 import { generateLoanRefrenceCode } from "../config/tools";
@@ -52,7 +53,7 @@ const deductLoanRepayment = async (user: string) => {
 
 export const loanDeductionJob = async () => {
     try {
-        const allUnsettledLoan = await allUnsettledRecord();
+        const allUnsettledLoan = await getDueUnsettledLoan();
         for (const record of allUnsettledLoan) {
             const deduction = await deductLoanRepayment(record.user.toString());
             return "done";

@@ -254,6 +254,7 @@ const loanSettlementController = async (req, res) => {
         const { amount } = req.body;
         const user = req.user;
         const settledLoan = await (0, Loan_1.payUnsettledLoan)(user, amount);
+        console.log("got here loan settlement process", settledLoan);
         if (!settledLoan.isSettled) {
             // create transaction record 
             let remark = "loan settlement";

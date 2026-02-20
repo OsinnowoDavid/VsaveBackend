@@ -307,6 +307,7 @@ export const loanSettlementController = async (
         const user = req.user as IUser ;
         
         const settledLoan = await payUnsettledLoan(user,amount) ;
+        console.log("got here loan settlement process", settledLoan) ;
         if(!settledLoan.isSettled){
               // create transaction record 
                let remark = "loan settlement";

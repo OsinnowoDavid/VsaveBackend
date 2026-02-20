@@ -32,7 +32,7 @@ const deductLoanRepayment = async (user) => {
 };
 const loanDeductionJob = async () => {
     try {
-        const allUnsettledLoan = await (0, Loan_1.allUnsettledRecord)();
+        const allUnsettledLoan = await (0, Loan_1.getDueUnsettledLoan)();
         for (const record of allUnsettledLoan) {
             const deduction = await deductLoanRepayment(record.user.toString());
             return "done";

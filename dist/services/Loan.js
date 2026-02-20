@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllLoanRecordBalance = exports.approveOrRejectLoan = exports.editLoanRecord = exports.getLoanById = exports.getLoanRecordByStatus = exports.getAllLoanRecord = exports.getUserLoanByStatus = exports.allUnsettledRecord = exports.payUnsettledLoan = exports.getUserUnsettledLoan = exports.getUserSettledLoan = exports.getUserLoanRecord = exports.createLoanRecord = void 0;
+exports.getAllLoanRecordBalance = exports.approveOrRejectLoan = exports.editLoanRecord = exports.getLoanById = exports.getLoanRecordByStatus = exports.getAllLoanRecord = exports.getUserLoanByStatus = exports.allUnsettledRecord = exports.payUnsettledLoan = exports.getUserUnsettledLoan = exports.getUserSettledLoan = exports.getDueUnsettledLoan = exports.getUserLoanRecord = exports.createLoanRecord = void 0;
 const Loan_1 = __importDefault(require("../model/Loan"));
 const createLoanRecord = async (user, loanTitle, amount, interest, interestPercentage, status, startDate, dueDate, repaymentAmount, remark) => {
     try {
@@ -36,6 +36,18 @@ const getUserLoanRecord = async (user) => {
     }
 };
 exports.getUserLoanRecord = getUserLoanRecord;
+const getDueUnsettledLoan = async () => {
+    try {
+        let today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const foundLoanRecord = await Loan_1.default.find({ isSettled: false, dueDate: { $lt: today } });
+        return foundLoanRecord;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.getDueUnsettledLoan = getDueUnsettledLoan;
 const getUserSettledLoan = async (user) => {
     try {
         const allLoans = await Loan_1.default.find({ user: user, isSettled: true });
@@ -63,7 +75,9 @@ const payUnsettledLoan = async (user, amount) => {
     try {
         const foundLoanRecord = await (0, exports.getUserUnsettledLoan)(user);
         // check if its the exact amount to clear the dept
+        console.log("got here start payment proccess", foundLoanRecord);
         if (Number(foundLoanRecord.repaymentAmount) === amount) {
+            console.log("got here it is the exact amount");
             foundLoanRecord.status = "completed";
             foundLoanRecord.isSettled = true;
             foundLoanRecord.repaymentCompletedDate = new Date();
@@ -73,6 +87,7 @@ const payUnsettledLoan = async (user, amount) => {
                 date: new Date(),
             });
             foundLoanRecord.repaymentAmount = 0;
+            console.log("got here loan deducted and about to save");
             await foundLoanRecord.save();
             return foundLoanRecord;
         }
