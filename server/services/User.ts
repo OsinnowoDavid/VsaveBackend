@@ -14,6 +14,7 @@ import {
 } from "../config/tools";
 import savingsCircle from "../model/Savings_circle";
 import { getAllSubRegion } from "./Admin";
+import Beneficiary from "../model/Beneficiaries";
 const FLW_SECRET_KEY = process.env.FLW_SECRET_KEY;
 
 export const createNewUser = async (
@@ -978,5 +979,30 @@ export const deactivateAccount = async (user:string) =>{
         return foundUser
     }catch(err:any){
         throw err
+    }
+}
+export const addBeneficiaries = async (user:string, accountName:string, accountNumber:string, bankName:string, bankCode:string, isFavorite?: boolean,nickname?: string) =>{
+    try{
+        const newBeneficiary = await Beneficiary.create({user,accountName,accountNumber,bankName,bankCode,isFavorite,nickname}) ;
+        return newBeneficiary 
+    }catch(err:any){
+        throw err 
+    }
+} 
+
+export const getBeneficiaryByAccountName = async (user:string, accountName:string) =>{
+    try{
+        const foundBeneficiary = await Beneficiary.find({user, accountName}) ;
+        return foundBeneficiary
+    }catch(err:any){
+        throw err 
+    }
+}
+export const getBeneficiaryByAccountNumber = async (user:string, accountNumber:string) =>{
+    try{
+        const foundBeneficiary = await Beneficiary.findOne({user, accountNumber}) ;
+        return foundBeneficiary
+    }catch(err:any){
+        throw err 
     }
 }

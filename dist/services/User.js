@@ -3,7 +3,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deactivateAccount = exports.addReferredUser = exports.getReferalByReferalCode = exports.getAllUser = exports.validateTransactionPin = exports.createTransactionPin = exports.getCircleById = exports.userDeposit = exports.userWithdraw = exports.createFixedSaving = exports.userGetAllSubRegion = exports.getUserTransactionByType = exports.getUserTransactionByStatus = exports.getUserSingleTransaction = exports.getUserTransactions = exports.getAccountBalance = exports.payOut = exports.accountLookUp = exports.getBankCode = exports.createUserAirtimeTransaction = exports.createUserDataTransaction = exports.checkTransferByRefrence = exports.createUserTransaction = exports.deposit = exports.withdraw = exports.buyData = exports.getUserKyc1Record = exports.getDataPlan = exports.buyAirtime = exports.createVirtualAccountIndex = exports.createVirtualAccountForPayment = exports.verifyBankaccount = exports.getAllBanksAndCode = exports.updateKYC1Record = exports.createKYC1Record = exports.kycStatusChange = exports.createKYCRecord = exports.changePassword = exports.updateProfile = exports.confirmTokenExist = exports.getUserVerificationToken = exports.getDeactivatedAccountByMail = exports.getNotDeactivatedAccountByMail = exports.assignUserEmailVerificationToken = exports.getUserByEmail = exports.getUserByIdPublicUse = exports.getUserById = exports.createNewUser = void 0;
+exports.getBeneficiaryByAccountName = exports.addBeneficiaries = exports.deactivateAccount = exports.addReferredUser = exports.getReferalByReferalCode = exports.getAllUser = exports.validateTransactionPin = exports.createTransactionPin = exports.getCircleById = exports.userDeposit = exports.userWithdraw = exports.createFixedSaving = exports.userGetAllSubRegion = exports.getUserTransactionByType = exports.getUserTransactionByStatus = exports.getUserSingleTransaction = exports.getUserTransactions = exports.getAccountBalance = exports.payOut = exports.accountLookUp = exports.getBankCode = exports.createUserAirtimeTransaction = exports.createUserDataTransaction = exports.checkTransferByRefrence = exports.createUserTransaction = exports.deposit = exports.withdraw = exports.buyData = exports.getUserKyc1Record = exports.getDataPlan = exports.buyAirtime = exports.createVirtualAccountIndex = exports.createVirtualAccountForPayment = exports.verifyBankaccount = exports.getAllBanksAndCode = exports.updateKYC1Record = exports.createKYC1Record = exports.kycStatusChange = exports.createKYCRecord = exports.changePassword = exports.updateProfile = exports.confirmTokenExist = exports.getUserVerificationToken = exports.getDeactivatedAccountByMail = exports.getNotDeactivatedAccountByMail = exports.assignUserEmailVerificationToken = exports.getUserByEmail = exports.getUserByIdPublicUse = exports.getUserById = exports.createNewUser = void 0;
+exports.getBeneficiaryByAccountNumber = void 0;
 const User_1 = __importDefault(require("../model/User"));
 const VerificationToken_1 = __importDefault(require("../model/VerificationToken"));
 const KYC1_1 = __importDefault(require("../model/KYC1"));
@@ -15,6 +16,7 @@ const FixedSavings_1 = __importDefault(require("../model/FixedSavings"));
 const tools_1 = require("../config/tools");
 const Savings_circle_1 = __importDefault(require("../model/Savings_circle"));
 const Admin_1 = require("./Admin");
+const Beneficiaries_1 = __importDefault(require("../model/Beneficiaries"));
 const FLW_SECRET_KEY = process.env.FLW_SECRET_KEY;
 const createNewUser = async (firstName, lastName, email, password, gender, dateOfBirth, phoneNumber) => {
     try {
@@ -880,3 +882,33 @@ const deactivateAccount = async (user) => {
     }
 };
 exports.deactivateAccount = deactivateAccount;
+const addBeneficiaries = async (user, accountName, accountNumber, bankName, bankCode, isFavorite, nickname) => {
+    try {
+        const newBeneficiary = await Beneficiaries_1.default.create({ user, accountName, accountNumber, bankName, bankCode, isFavorite, nickname });
+        return newBeneficiary;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.addBeneficiaries = addBeneficiaries;
+const getBeneficiaryByAccountName = async (user, accountName) => {
+    try {
+        const foundBeneficiary = await Beneficiaries_1.default.find({ user, accountName });
+        return foundBeneficiary;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.getBeneficiaryByAccountName = getBeneficiaryByAccountName;
+const getBeneficiaryByAccountNumber = async (user, accountNumber) => {
+    try {
+        const foundBeneficiary = await Beneficiaries_1.default.findOne({ user, accountNumber });
+        return foundBeneficiary;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.getBeneficiaryByAccountNumber = getBeneficiaryByAccountNumber;

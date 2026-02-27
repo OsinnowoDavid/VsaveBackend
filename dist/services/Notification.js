@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.changeNotificationStatus = exports.getSingleNotification = exports.getRecipientNotofication = exports.getAllNotification = exports.createNotification = void 0;
+exports.getUnreadNotification = exports.changeNotificationStatus = exports.getSingleNotification = exports.getRecipientNotofication = exports.getAllNotification = exports.createNotification = void 0;
 const Notification_1 = __importDefault(require("../model/Notification"));
 const createNotification = async (from, title, message, recipientType, recipientId, status, senderId) => {
     try {
@@ -63,3 +63,8 @@ const changeNotificationStatus = async (id, status) => {
     }
 };
 exports.changeNotificationStatus = changeNotificationStatus;
+const getUnreadNotification = async (recipient) => {
+    const foundRecord = await Notification_1.default.find({ recipient, status: "delivered" });
+    return foundRecord;
+};
+exports.getUnreadNotification = getUnreadNotification;

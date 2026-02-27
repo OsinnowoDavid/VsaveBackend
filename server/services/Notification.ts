@@ -53,3 +53,7 @@ export const changeNotificationStatus = async (id:string, status:"sent"|"deliver
         throw err 
     }
 }
+export const getUnreadNotification = async (recipient:string) =>{
+   const foundRecord = await Notification.find({recipient,status:"delivered"}) ; 
+   return foundRecord
+}
