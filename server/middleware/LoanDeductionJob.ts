@@ -55,7 +55,36 @@ export const loanDeductionJob = async () => {
     try {
         const allUnsettledLoan = await getDueUnsettledLoan();
         for (const record of allUnsettledLoan) {
-            const deduction = await deductLoanRepayment(record.user.toString());
+            const foundUser = await getUserById(record.user.toString()) as IUser 
+             let remark = `Loan settlement for outstanding laon`;
+        let ref = generateLoanRefrenceCode();
+        // deduct loan money from user account
+        let withdraw = await userWithdraw(
+            foundUser._id.toString(),
+            record.repaymentAmount,
+            remark,
+            ref,
+        );
+        if (withdraw === "Insufficient Funds") {
+            if (Number(foundUser.availableBalance) > 100) {
+                let withdraw = await userWithdraw(
+                    foundUser._id.toString(),
+                    foundUser.availableBalance,
+                    remark,
+                    ref,
+                );
+                const loanpayment = await payUnsettledLoan(
+                    foundUser,
+                    foundUser.availableBalance,
+                );
+                return loanpayment;
+            }
+            return "Insufficient Funds to settle loan";
+        }
+        const loanSettled = await payUnsettledLoan(
+            foundUser,
+            record.repaymentAmount,
+        );
             return "done";
         }
         return "done";

@@ -13,6 +13,7 @@ declare interface IUser extends Document {
     KYC?: Types.ObjectId | null;
     availableBalance: number;
     pendingBalance: number;
+    bonusBalance:Number;
     isEmailVerified: boolean;
     pin?: string;
     lottoryId?:string;
@@ -30,8 +31,10 @@ declare interface IUser extends Document {
         | "Other";
     referralCode:string ;
     referredBy?: Types.ObjectId | string | null;
-    referralModel?: "User" |"Officer" |"" ;
     team:string ;
+    lastSeen:string;
+    role: "USER" | "AGENT" ;
+    deactivated: boolean ;
 }
 declare interface IVerificationToken extends Document {
     user?: Types.ObjectId;

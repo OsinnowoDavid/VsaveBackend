@@ -862,7 +862,6 @@ const addReferredUser = async (user, referral, type) => {
     try {
         const foundUser = await User_1.default.findById(user);
         foundUser.referredBy = referral;
-        foundUser.referralModel = type;
         await foundUser.save();
         return foundUser;
     }

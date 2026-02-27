@@ -966,7 +966,6 @@ export const addReferredUser = async (user: string, referral:string,type:"User"|
     try{
         const foundUser = await User.findById(user) as IUser ;
         foundUser.referredBy = referral ;
-        foundUser.referralModel = type ; 
         await foundUser.save() ;
         return foundUser
     }catch(err:any){

@@ -75,10 +75,6 @@ const userSchema = new Schema(
         pin: {
             type: String,
         },
-        kycStatus: {
-            type: Boolean,
-            default: false,
-        },
          profession: {
             type: String,
             enum: [
