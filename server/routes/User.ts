@@ -208,6 +208,7 @@ router.get("/notification", verifyUserToken, getUserNotificationsController) ;
 router.get("/notification/:id", verifyUserToken, getSingleNotificationsController) ; 
 router.get("/delete-notofication/:id", verifyUserToken, deleteNotificationController) ;
 router.delete("/delete-marked-notification", verifyUserToken, deleteMarkedNotificationController) ;
+router.get("/notification-count", verifyUserToken , notificationCountController ) ;
 router.post("/add-beneficiary", verifyUserToken, addBeneficiariesController) ;
 router.get("/get-user-beneficiary", verifyUserToken, getBeneficiariesController);
 router.get("/get-isfavorite", verifyUserToken, getUserIsFavoriteController);
