@@ -59,7 +59,7 @@ import {
 } from "../validate-input/user";
 import { verifyUserToken } from "../config/JWT";
 import { createWaitListController , getAllWaitListController, getWaitListByEmailController} from "../controller/waitList";
-import { deleteMarkedNotificationController, deleteNotificationController, getSingleNotificationsController, getUserNotificationsController } from "../controller/Notification";
+import { deleteMarkedNotificationController, deleteNotificationController, getSingleNotificationsController, getUserNotificationsController , notificationCountController} from "../controller/Notification";
 const router = express.Router();
 router.post("/waitlist", createWaitListController)
 router.get("/get-all-waitlist",getAllWaitListController )

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteMarkedNotificationController = exports.deleteNotificationController = exports.getSingleNotificationsController = exports.getUserNotificationsController = void 0;
+exports.notificationCountController = exports.deleteMarkedNotificationController = exports.deleteNotificationController = exports.getSingleNotificationsController = exports.getUserNotificationsController = void 0;
 const Notification_1 = require("../services/Notification");
 const getUserNotificationsController = async (req, res) => {
     try {
@@ -80,3 +80,21 @@ const deleteMarkedNotificationController = async (req, res) => {
     }
 };
 exports.deleteMarkedNotificationController = deleteMarkedNotificationController;
+const notificationCountController = async (req, res) => {
+    try {
+        const user = req.user;
+        const count = await (0, Notification_1.notificationCount)(user._id.toString());
+        return res.json({
+            status: "Success",
+            message: "notification counted",
+            data: count
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.notificationCountController = notificationCountController;

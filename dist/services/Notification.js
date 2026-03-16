@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteMarkedNotification = exports.deleteNotification = exports.getUnreadNotification = exports.changeNotificationStatus = exports.getSingleNotification = exports.getRecipientNotofication = exports.getAllNotification = exports.createNotification = void 0;
+exports.notificationCount = exports.deleteMarkedNotification = exports.deleteNotification = exports.getUnreadNotification = exports.changeNotificationStatus = exports.getSingleNotification = exports.getRecipientNotofication = exports.getAllNotification = exports.createNotification = void 0;
 const Notification_1 = __importDefault(require("../model/Notification"));
 const createNotification = async (from, title, message, recipientType, recipientId, status, senderId) => {
     try {
@@ -90,3 +90,24 @@ const deleteMarkedNotification = async (ids) => {
     }
 };
 exports.deleteMarkedNotification = deleteMarkedNotification;
+const notificationCount = async (user) => {
+    try {
+        const foundRecord = await Notification_1.default.find({ recipientId: user });
+        let numberOfDelivered = 0;
+        let numberOfSeen = 0;
+        for (const record of foundRecord) {
+            if (record.status === "seen") {
+                numberOfSeen++;
+            }
+            if (record.status === "delivered") {
+                numberOfDelivered++;
+            }
+        }
+        let totalNumber = foundRecord.length;
+        return { totalNumber, numberOfDelivered, numberOfSeen };
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.notificationCount = notificationCount;
