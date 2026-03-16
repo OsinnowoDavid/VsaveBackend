@@ -48,6 +48,9 @@ import {
     initPasswordResetController,
     resetPasswordController,
     deactivateAccountController,
+    addBeneficiariesController,
+    getBeneficiariesController,
+    getUserIsFavoriteController,
 } from "../controller/User";
 import {
     validateUserRegitrationInput,
@@ -56,7 +59,7 @@ import {
 } from "../validate-input/user";
 import { verifyUserToken } from "../config/JWT";
 import { createWaitListController , getAllWaitListController, getWaitListByEmailController} from "../controller/waitList";
-import { getSingleNotificationsController, getUserNotificationsController } from "../controller/Notification";
+import { deleteMarkedNotificationController, deleteNotificationController, getSingleNotificationsController, getUserNotificationsController } from "../controller/Notification";
 const router = express.Router();
 router.post("/waitlist", createWaitListController)
 router.get("/get-all-waitlist",getAllWaitListController )
@@ -202,5 +205,10 @@ router.get("/get-referral-by-status/:status",verifyUserToken,checkUserReferralRe
 router.get("/get-single-referral/:id",verifyUserToken,checkUserSingleReferralRecordController) ; 
 router.get("/delete-account",verifyUserToken,deactivateAccountController) ; 
 router.get("/notification", verifyUserToken, getUserNotificationsController) ;
-router.get("/notification/:id", verifyUserToken, getSingleNotificationsController) ;
+router.get("/notification/:id", verifyUserToken, getSingleNotificationsController) ; 
+router.get("/delete-notofication/:id", verifyUserToken, deleteNotificationController) ;
+router.delete("/delete-marked-notification", verifyUserToken, deleteMarkedNotificationController) ;
+router.post("/add-beneficiary", verifyUserToken, addBeneficiariesController) ;
+router.get("/get-user-beneficiary", verifyUserToken, getBeneficiariesController);
+router.get("/get-isfavorite", verifyUserToken, getUserIsFavoriteController);
 export default router;

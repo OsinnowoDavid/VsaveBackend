@@ -67,4 +67,9 @@ router.get("/get-single-referral/:id", JWT_1.verifyUserToken, User_1.checkUserSi
 router.get("/delete-account", JWT_1.verifyUserToken, User_1.deactivateAccountController);
 router.get("/notification", JWT_1.verifyUserToken, Notification_1.getUserNotificationsController);
 router.get("/notification/:id", JWT_1.verifyUserToken, Notification_1.getSingleNotificationsController);
+router.get("/delete-notofication/:id", JWT_1.verifyUserToken, Notification_1.deleteNotificationController);
+router.delete("/delete-marked-notification", JWT_1.verifyUserToken, Notification_1.deleteMarkedNotificationController);
+router.post("/add-beneficiary", JWT_1.verifyUserToken, User_1.addBeneficiariesController);
+router.get("/get-user-beneficiary", JWT_1.verifyUserToken, User_1.getBeneficiariesController);
+router.get("/get-isfavorite", JWT_1.verifyUserToken, User_1.getUserIsFavoriteController);
 exports.default = router;

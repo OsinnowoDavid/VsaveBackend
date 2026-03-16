@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
 import { initSavingsPlan } from "../services/Savings";
 import { calculateMaturityAmount, calculateEndDate } from "../config/tools";
-import AdminSavingsConfig from "../model/Admin_config";
+import AdminSavingsConfig from "../model/Admin_config"; 
+import { createNotification } from "../services/Notification";
 
 export const createSavingPlanController = async (
     req: Request,

@@ -48,7 +48,10 @@ import {
     deactivateAccount,
      getNotDeactivatedAccountByMail,
      getDeactivatedAccountByMail,
-     getAllUser
+     getAllUser,
+     addBeneficiaries,
+     getUserBeneficiary,
+     getUserIsFavorite
 } from "../services/User";
 import { IUser, IVerificationToken, IKYC1 } from "../../types";
 import {
@@ -1689,6 +1692,57 @@ export const deactivateAccountController = async  (req: Request, res: Response) 
         });
     }catch(err:any){
           return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+}
+export const addBeneficiariesController = async  (req: Request, res: Response) =>{
+    try{
+        const user = req.user as IUser
+        const {accountName, accountNumber, bankName, bankCode, isFavorite} = req.body ;
+        const newBeneficiary = await addBeneficiaries(user._id.toString(),accountName, accountNumber, bankName, bankCode, isFavorite) ;
+        return res.json({
+            status: "Success",
+            message: "beneficiary created successfuly",
+            data: newBeneficiary
+        });
+    }catch(err:any){
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+}
+
+export const getBeneficiariesController = async (req: Request, res: Response) =>{
+    try{
+        const user = req.user as IUser;
+        const foundBeneficiary = await getUserBeneficiary(user._id.toString());
+        return res.json({
+            status: "Success",
+            message: "beneficiaries found",
+            data: foundBeneficiary
+        });
+    }catch(err:any){
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+}
+
+export const getUserIsFavoriteController = async (req: Request, res: Response) =>{
+    try{
+        const user = req.user as IUser;
+        const foundBeneficiary = await getUserIsFavorite(user._id.toString())
+        return res.json({
+            status: "Success",
+            message: "beneficiaries found",
+            data: foundBeneficiary
+        });
+    }catch(err:any){
+        return res.json({
             status: "Failed",
             message: err.message,
         });

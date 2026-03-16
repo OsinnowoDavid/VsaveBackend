@@ -990,9 +990,9 @@ export const addBeneficiaries = async (user:string, accountName:string, accountN
     }
 } 
 
-export const getBeneficiaryByAccountName = async (user:string, accountName:string) =>{
+export const getUserBeneficiary = async (user:string) =>{
     try{
-        const foundBeneficiary = await Beneficiary.find({user, accountName}) ;
+        const foundBeneficiary = await Beneficiary.find({user}) ;
         return foundBeneficiary
     }catch(err:any){
         throw err 
@@ -1001,6 +1001,14 @@ export const getBeneficiaryByAccountName = async (user:string, accountName:strin
 export const getBeneficiaryByAccountNumber = async (user:string, accountNumber:string) =>{
     try{
         const foundBeneficiary = await Beneficiary.findOne({user, accountNumber}) ;
+        return foundBeneficiary
+    }catch(err:any){
+        throw err 
+    }
+}
+export const getUserIsFavorite = async  (user :string) =>{
+    try{
+        const foundBeneficiary = await Beneficiary.find({user,isFavorite: true }) ;
         return foundBeneficiary
     }catch(err:any){
         throw err 

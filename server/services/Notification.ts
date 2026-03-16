@@ -57,3 +57,23 @@ export const getUnreadNotification = async (recipient:string) =>{
    const foundRecord = await Notification.find({recipient,status:"delivered"}) ; 
    return foundRecord
 }
+
+export const deleteNotification = async (id:string) =>{
+    try{
+        const deletedRecord = await Notification.findByIdAndDelete(id) ;
+        return deletedRecord
+    }catch(err:any){
+        throw err
+    }
+}
+
+export const deleteMarkedNotification = async (ids:[string]) =>{
+    try{
+        for(const id of ids){
+            await Notification.findByIdAndDelete(id) ;
+        }
+        return "Done"
+    }catch(err:any){
+        throw err
+    }
+}

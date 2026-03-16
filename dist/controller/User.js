@@ -3,7 +3,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deactivateAccountController = exports.checkUserSingleReferralRecordController = exports.checkUserReferralRecordsByStatusController = exports.checkUserReferralRecordsController = exports.getSingleTerminalTransactionController = exports.getTerminalTransactionController = exports.getTerminalDetailsController = exports.topUpLottryAccountController = exports.getUserTotalSavingsAndLoanBalanceController = exports.getFixedSavingsByStatusController = exports.getAllFixedSavingsController = exports.getCompletedFixedSavingsController = exports.getActiveFixedSavingsController = exports.createFixedSavingController = exports.getUserSavingsRecordsByStatusController = exports.getSavingsCircleByIdController = exports.getAllUserSavingsRecordController = exports.getUserActiveSavingsRecordController = exports.getAvaliableSavingsController = exports.createPersonalSavingsCircleController = exports.joinSavingsController = exports.userGetAllSubRegionController = exports.getUserTransactionByTypeController = exports.getUserTransactionByStatusController = exports.getUserSingleTransactionController = exports.getUserTransactionsController = exports.getAccountBalanceController = exports.payOutController = exports.accountLookUpController = exports.getBankCodeController = exports.buyDataController = exports.buyAirtimeController = exports.getDataPlanController = exports.updateTransactionPinController = exports.createTransactionPinController = exports.getUserKyc1RecordController = exports.updateKYC1RecordController = exports.registerKYC1 = exports.changePasswordController = exports.updateProfileController = exports.resetPasswordController = exports.initPasswordResetController = exports.userProfile = exports.addDeactivateToAllRecord = exports.loginUser = exports.resendUserVerificationEmail = exports.verifyEmail = exports.registerUser = void 0;
+exports.getBeneficiariesController = exports.addBeneficiariesController = exports.deactivateAccountController = exports.checkUserSingleReferralRecordController = exports.checkUserReferralRecordsByStatusController = exports.checkUserReferralRecordsController = exports.getSingleTerminalTransactionController = exports.getTerminalTransactionController = exports.getTerminalDetailsController = exports.topUpLottryAccountController = exports.getUserTotalSavingsAndLoanBalanceController = exports.getFixedSavingsByStatusController = exports.getAllFixedSavingsController = exports.getCompletedFixedSavingsController = exports.getActiveFixedSavingsController = exports.createFixedSavingController = exports.getUserSavingsRecordsByStatusController = exports.getSavingsCircleByIdController = exports.getAllUserSavingsRecordController = exports.getUserActiveSavingsRecordController = exports.getAvaliableSavingsController = exports.createPersonalSavingsCircleController = exports.joinSavingsController = exports.userGetAllSubRegionController = exports.getUserTransactionByTypeController = exports.getUserTransactionByStatusController = exports.getUserSingleTransactionController = exports.getUserTransactionsController = exports.getAccountBalanceController = exports.payOutController = exports.accountLookUpController = exports.getBankCodeController = exports.buyDataController = exports.buyAirtimeController = exports.getDataPlanController = exports.updateTransactionPinController = exports.createTransactionPinController = exports.getUserKyc1RecordController = exports.updateKYC1RecordController = exports.registerKYC1 = exports.changePasswordController = exports.updateProfileController = exports.resetPasswordController = exports.initPasswordResetController = exports.userProfile = exports.addDeactivateToAllRecord = exports.loginUser = exports.resendUserVerificationEmail = exports.verifyEmail = exports.registerUser = void 0;
+exports.getUserIsFavoriteController = void 0;
 const argon2_1 = __importDefault(require("argon2"));
 const User_1 = require("../services/User");
 const Savings_1 = require("../services/Savings");
@@ -1370,3 +1371,58 @@ const deactivateAccountController = async (req, res) => {
     }
 };
 exports.deactivateAccountController = deactivateAccountController;
+const addBeneficiariesController = async (req, res) => {
+    try {
+        const user = req.user;
+        const { accountName, accountNumber, bankName, bankCode, isFavorite } = req.body;
+        const newBeneficiary = await (0, User_1.addBeneficiaries)(user._id.toString(), accountName, accountNumber, bankName, bankCode, isFavorite);
+        return res.json({
+            status: "Success",
+            message: "beneficiary created successfuly",
+            data: newBeneficiary
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.addBeneficiariesController = addBeneficiariesController;
+const getBeneficiariesController = async (req, res) => {
+    try {
+        const user = req.user;
+        const foundBeneficiary = await (0, User_1.getUserBeneficiary)(user._id.toString());
+        return res.json({
+            status: "Success",
+            message: "beneficiaries found",
+            data: foundBeneficiary
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.getBeneficiariesController = getBeneficiariesController;
+const getUserIsFavoriteController = async (req, res) => {
+    try {
+        const user = req.user;
+        const foundBeneficiary = await (0, User_1.getUserIsFavorite)(user._id.toString());
+        return res.json({
+            status: "Success",
+            message: "beneficiaries found",
+            data: foundBeneficiary
+        });
+    }
+    catch (err) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
+exports.getUserIsFavoriteController = getUserIsFavoriteController;

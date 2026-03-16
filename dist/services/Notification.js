@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getUnreadNotification = exports.changeNotificationStatus = exports.getSingleNotification = exports.getRecipientNotofication = exports.getAllNotification = exports.createNotification = void 0;
+exports.deleteMarkedNotification = exports.deleteNotification = exports.getUnreadNotification = exports.changeNotificationStatus = exports.getSingleNotification = exports.getRecipientNotofication = exports.getAllNotification = exports.createNotification = void 0;
 const Notification_1 = __importDefault(require("../model/Notification"));
 const createNotification = async (from, title, message, recipientType, recipientId, status, senderId) => {
     try {
@@ -68,3 +68,25 @@ const getUnreadNotification = async (recipient) => {
     return foundRecord;
 };
 exports.getUnreadNotification = getUnreadNotification;
+const deleteNotification = async (id) => {
+    try {
+        const deletedRecord = await Notification_1.default.findByIdAndDelete(id);
+        return deletedRecord;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.deleteNotification = deleteNotification;
+const deleteMarkedNotification = async (ids) => {
+    try {
+        for (const id of ids) {
+            await Notification_1.default.findByIdAndDelete(id);
+        }
+        return "Done";
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.deleteMarkedNotification = deleteMarkedNotification;

@@ -3,8 +3,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getBeneficiaryByAccountName = exports.addBeneficiaries = exports.deactivateAccount = exports.addReferredUser = exports.getReferalByReferalCode = exports.getAllUser = exports.validateTransactionPin = exports.createTransactionPin = exports.getCircleById = exports.userDeposit = exports.userWithdraw = exports.createFixedSaving = exports.userGetAllSubRegion = exports.getUserTransactionByType = exports.getUserTransactionByStatus = exports.getUserSingleTransaction = exports.getUserTransactions = exports.getAccountBalance = exports.payOut = exports.accountLookUp = exports.getBankCode = exports.createUserAirtimeTransaction = exports.createUserDataTransaction = exports.checkTransferByRefrence = exports.createUserTransaction = exports.deposit = exports.withdraw = exports.buyData = exports.getUserKyc1Record = exports.getDataPlan = exports.buyAirtime = exports.createVirtualAccountIndex = exports.createVirtualAccountForPayment = exports.verifyBankaccount = exports.getAllBanksAndCode = exports.updateKYC1Record = exports.createKYC1Record = exports.kycStatusChange = exports.createKYCRecord = exports.changePassword = exports.updateProfile = exports.confirmTokenExist = exports.getUserVerificationToken = exports.getDeactivatedAccountByMail = exports.getNotDeactivatedAccountByMail = exports.assignUserEmailVerificationToken = exports.getUserByEmail = exports.getUserByIdPublicUse = exports.getUserById = exports.createNewUser = void 0;
-exports.getBeneficiaryByAccountNumber = void 0;
+exports.getUserBeneficiary = exports.addBeneficiaries = exports.deactivateAccount = exports.addReferredUser = exports.getReferalByReferalCode = exports.getAllUser = exports.validateTransactionPin = exports.createTransactionPin = exports.getCircleById = exports.userDeposit = exports.userWithdraw = exports.createFixedSaving = exports.userGetAllSubRegion = exports.getUserTransactionByType = exports.getUserTransactionByStatus = exports.getUserSingleTransaction = exports.getUserTransactions = exports.getAccountBalance = exports.payOut = exports.accountLookUp = exports.getBankCode = exports.createUserAirtimeTransaction = exports.createUserDataTransaction = exports.checkTransferByRefrence = exports.createUserTransaction = exports.deposit = exports.withdraw = exports.buyData = exports.getUserKyc1Record = exports.getDataPlan = exports.buyAirtime = exports.createVirtualAccountIndex = exports.createVirtualAccountForPayment = exports.verifyBankaccount = exports.getAllBanksAndCode = exports.updateKYC1Record = exports.createKYC1Record = exports.kycStatusChange = exports.createKYCRecord = exports.changePassword = exports.updateProfile = exports.confirmTokenExist = exports.getUserVerificationToken = exports.getDeactivatedAccountByMail = exports.getNotDeactivatedAccountByMail = exports.assignUserEmailVerificationToken = exports.getUserByEmail = exports.getUserByIdPublicUse = exports.getUserById = exports.createNewUser = void 0;
+exports.getUserIsFavorite = exports.getBeneficiaryByAccountNumber = void 0;
 const User_1 = __importDefault(require("../model/User"));
 const VerificationToken_1 = __importDefault(require("../model/VerificationToken"));
 const KYC1_1 = __importDefault(require("../model/KYC1"));
@@ -892,16 +892,16 @@ const addBeneficiaries = async (user, accountName, accountNumber, bankName, bank
     }
 };
 exports.addBeneficiaries = addBeneficiaries;
-const getBeneficiaryByAccountName = async (user, accountName) => {
+const getUserBeneficiary = async (user) => {
     try {
-        const foundBeneficiary = await Beneficiaries_1.default.find({ user, accountName });
+        const foundBeneficiary = await Beneficiaries_1.default.find({ user });
         return foundBeneficiary;
     }
     catch (err) {
         throw err;
     }
 };
-exports.getBeneficiaryByAccountName = getBeneficiaryByAccountName;
+exports.getUserBeneficiary = getUserBeneficiary;
 const getBeneficiaryByAccountNumber = async (user, accountNumber) => {
     try {
         const foundBeneficiary = await Beneficiaries_1.default.findOne({ user, accountNumber });
@@ -912,3 +912,13 @@ const getBeneficiaryByAccountNumber = async (user, accountNumber) => {
     }
 };
 exports.getBeneficiaryByAccountNumber = getBeneficiaryByAccountNumber;
+const getUserIsFavorite = async (user) => {
+    try {
+        const foundBeneficiary = await Beneficiaries_1.default.find({ user, isFavorite: true });
+        return foundBeneficiary;
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.getUserIsFavorite = getUserIsFavorite;

@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { getRecipientNotofication, getSingleNotification } from "../services/Notification";
+import { deleteMarkedNotification, deleteNotification, getRecipientNotofication, getSingleNotification } from "../services/Notification";
 import { IUser } from "../../types";
 export const getUserNotificationsController = async (req: Request, res: Response) =>{
     try{
@@ -37,6 +37,36 @@ export const getSingleNotificationsController = async (req: Request, res: Respon
         });
     }catch(err:any){
          return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+}
+export const deleteNotificationController = async (req: Request, res: Response) =>{
+    try{
+        const {id} = req.params
+         await deleteNotification(id);
+        return res.json({
+            status: "Success",
+            message: "Notification deleted successfuly !"
+        })
+    }catch(err:any){
+          return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+} 
+export const deleteMarkedNotificationController = async (req: Request, res: Response) =>{
+    try{
+        const {ids} = req.body
+         await deleteMarkedNotification(ids) 
+        return res.json({
+            status: "Success",
+            message: "Notification deleted successfuly !"
+        })
+    }catch(err:any){
+          return res.json({
             status: "Failed",
             message: err.message,
         });
