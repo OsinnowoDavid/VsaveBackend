@@ -77,3 +77,22 @@ export const deleteMarkedNotification = async (ids:[string]) =>{
         throw err
     }
 }
+export const notificationCount = async (user:string) =>{
+    try{
+        const foundRecord = await Notification.find({recipientId:user}) 
+       let numberOfDelivered =  0 ;
+        let numberOfSeen = 0 ;
+        for(const record of foundRecord){
+            if(record.status === "seen"){
+               numberOfSeen++
+            }
+             if(record.status === "delivered"){
+                numberOfDelivered++
+            }
+        }
+        let totalNumber = foundRecord.length ; 
+        return {totalNumber, numberOfDelivered ,numberOfSeen }
+    }catch(err:any){
+        throw err
+    }
+}
