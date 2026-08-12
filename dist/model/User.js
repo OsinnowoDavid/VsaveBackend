@@ -47,7 +47,7 @@ const userSchema = new Schema({
     },
     bonusBalance: {
         type: Number,
-        default: 0
+        default: 0,
     },
     region: {
         type: mongoose_1.default.Schema.Types.ObjectId,
@@ -92,25 +92,29 @@ const userSchema = new Schema({
         required: false,
     },
     lottoryId: {
-        type: String
+        type: String,
     },
     lastSeen: {
-        type: String
+        type: String,
     },
     referralCode: {
-        type: String
+        type: String,
     },
     role: {
         type: String,
-        enum: ["USER", "AGENT"]
+        enum: ["USER", "AGENT"],
     },
     deactivated: {
         type: Boolean,
-        default: false
+        default: false,
     },
     team: {
-        type: String
-    }
+        type: String,
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now,
+    },
 }, { timestamps: true });
 const User = mongoose_1.default.model("User", userSchema);
 exports.default = User;

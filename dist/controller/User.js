@@ -17,6 +17,7 @@ const Loan_1 = require("../services/Loan");
 const Terminal_1 = require("../services/Terminal");
 const referral_1 = require("../services/referral");
 mail_1.default.setApiKey(process.env.SENDGRID_API_KEY);
+const mailer_1 = require("../config/mailer");
 const getNextFiveMinutes = () => {
     const now = new Date();
     const next = new Date(now.getTime() + 10 * 60 * 1000); // add 5 minutes
@@ -30,7 +31,7 @@ const registerUser = async (req, res) => {
         if (foundUser) {
             return res.json({
                 status: "Failed",
-                message: "user already found with this email"
+                message: "user already found with this email",
             });
         }
         const newUser = await (0, User_1.createNewUser)(firstName, lastName, email.toLowerCase(), hashPassword, gender, dateOfBirth, phoneNumber);
@@ -67,13 +68,13 @@ const registerUser = async (req, res) => {
           — The VSave Team.`,
         };
         console.log("Sending email via SendGrid...");
-        const sentMail = await mail_1.default.send(msg);
+        const sentMail = await mailer_1.emailService.sendEmail(msg);
         console.log("Email sent successfully:", sentMail);
-        // check for referral code 
+        // check for referral code
         let referralErr = "";
         if (referralCode) {
             const referralType = (0, referral_1.getUserTypeWithReferralCode)(referralCode);
-            const userReferred = await (0, referral_1.assignReferral)(newUser._id.toString(), referralCode);
+            const userReferred = (await (0, referral_1.assignReferral)(newUser._id.toString(), referralCode));
             if (userReferred === "Successful") {
                 const foundUser = await (0, User_1.getReferalByReferalCode)(referralCode);
                 newUser.referredBy = foundUser._id;
@@ -81,14 +82,14 @@ const registerUser = async (req, res) => {
             }
             referralErr = userReferred.message;
         }
-        // generate referral code 
+        // generate referral code
         await (0, referral_1.createReferralCodeForUser)(newUser._id.toString());
         console.log("finish creating account");
         return res.json({
             status: "Success",
             message: `User created successfully. Verify your email - verification code has been sent to ${newUser.email} (also check your spam meesage for the code )`,
             data: newUser,
-            err: referralErr
+            err: referralErr,
         });
     }
     catch (err) {
@@ -246,7 +247,7 @@ const addDeactivateToAllRecord = async (req, res) => {
         }
         return res.json({
             status: "Success",
-            mesage: "Done"
+            mesage: "Done",
         });
     }
     catch (err) {
@@ -292,10 +293,9 @@ const initPasswordResetController = async (req, res) => {
         if (!foundUser) {
             return res.json({
                 status: "Failed",
-                message: "no user found with this email"
+                message: "no user found with this email",
             });
         }
-        ;
         const tokenNumber = Math.floor(100000 + Math.random() * 900000);
         const expTime = getNextFiveMinutes();
         await (0, User_1.assignUserEmailVerificationToken)(foundUser.email, tokenNumber, expTime);
@@ -316,7 +316,7 @@ const initPasswordResetController = async (req, res) => {
         console.log("email sent successfuly:", sentMail);
         return res.json({
             status: "Success",
-            message: `reset code sent to ${foundUser.email} check your email and procced to reset your password`
+            message: `reset code sent to ${foundUser.email} check your email and procced to reset your password`,
         });
     }
     catch (err) {
@@ -330,7 +330,7 @@ exports.initPasswordResetController = initPasswordResetController;
 const resetPasswordController = async (req, res) => {
     try {
         const { email, code, password } = req.body;
-        const foundUser = await (0, User_1.getUserByEmail)(email);
+        const foundUser = (await (0, User_1.getUserByEmail)(email));
         const verifyToken = (await (0, User_1.getUserVerificationToken)(email, code));
         console.log("allToken:", verifyToken);
         for (const token of verifyToken) {
@@ -428,7 +428,7 @@ const registerKYC1 = async (req, res) => {
         if (virtualAccount.success === "false") {
             return res.json({
                 status: "Failed",
-                message: "something went wrong, account number not created"
+                message: "something went wrong, account number not created",
             });
         }
         await (0, User_1.createVirtualAccountIndex)(user._id.toString(), virtualAccount.data.virtual_account_number);
@@ -443,7 +443,7 @@ const registerKYC1 = async (req, res) => {
             await (0, Terminal_1.generateAndAsignLottoryId)(user._id.toString());
         }
         console.log("got here if it's lotto agent completed");
-        // create transaction pin 
+        // create transaction pin
         await (0, User_1.createTransactionPin)(user._id.toString(), transactionPin);
         console.log("got here transaction pin created");
         if (!newKYC1) {
@@ -796,7 +796,7 @@ const getAccountBalanceController = async (req, res) => {
         return res.json({
             status: "Success",
             message: "balance found",
-            data: balanceResult
+            data: balanceResult,
         });
     }
     catch (err) {
@@ -1184,8 +1184,8 @@ const getUserTotalSavingsAndLoanBalanceController = async (req, res) => {
             message: "savings balance calculated",
             data: {
                 totalSavingsBalnce,
-                totalLoanBalance
-            }
+                totalLoanBalance,
+            },
         });
     }
     catch (err) {
@@ -1200,7 +1200,7 @@ const topUpLottryAccountController = async (req, res) => {
     try {
         const { amount, pin, remark } = req.body;
         const user = req.user;
-        // check if user is a lotto user 
+        // check if user is a lotto user
         if (!user.lottoryId) {
             return res.json({
                 status: "Failed",
@@ -1228,13 +1228,13 @@ const topUpLottryAccountController = async (req, res) => {
         const payment = await (0, User_1.payOut)(user, bankCode, amount.toString(), accountNumber, accountName);
         //withdraw money from  user availiable
         await (0, User_1.userWithdraw)(user._id.toString(), amount, remark, payment.data.transaction_reference);
-        // also create TerminalTransaction record 
+        // also create TerminalTransaction record
         const terminalRecord = await (0, Terminal_1.createTerminalRecord)(user._id.toString(), amount, payment.data.transaction_reference, remark);
         await (0, Terminal_1.depositToTerminalAccount)(user._id.toString(), amount);
         return res.json({
             status: "Success",
             message: "terminal credited successfully",
-            data: terminalRecord
+            data: terminalRecord,
         });
     }
     catch (err) {
@@ -1252,7 +1252,7 @@ const getTerminalDetailsController = async (req, res) => {
         return res.json({
             status: "Success",
             message: "found details",
-            data: details
+            data: details,
         });
     }
     catch (err) {
@@ -1270,7 +1270,7 @@ const getTerminalTransactionController = async (req, res) => {
         return res.json({
             status: "Success",
             message: "found records",
-            data: foundRecords
+            data: foundRecords,
         });
     }
     catch (err) {
@@ -1288,7 +1288,7 @@ const getSingleTerminalTransactionController = async (req, res) => {
         return res.json({
             status: "Success",
             message: "found Transaction",
-            data: foundRecord
+            data: foundRecord,
         });
     }
     catch (err) {
@@ -1306,7 +1306,7 @@ const checkUserReferralRecordsController = async (req, res) => {
         return res.json({
             status: "Success",
             message: "Found Records",
-            data: allRecords
+            data: allRecords,
         });
     }
     catch (err) {
@@ -1325,7 +1325,7 @@ const checkUserReferralRecordsByStatusController = async (req, res) => {
         return res.json({
             status: "Success",
             message: "Found Records",
-            data: allRecords
+            data: allRecords,
         });
     }
     catch (err) {
@@ -1343,7 +1343,7 @@ const checkUserSingleReferralRecordController = async (req, res) => {
         return res.json({
             status: "Success",
             message: "Found Record",
-            data: foundRecord
+            data: foundRecord,
         });
     }
     catch (err) {
@@ -1379,7 +1379,7 @@ const addBeneficiariesController = async (req, res) => {
         return res.json({
             status: "Success",
             message: "beneficiary created successfuly",
-            data: newBeneficiary
+            data: newBeneficiary,
         });
     }
     catch (err) {
@@ -1397,7 +1397,7 @@ const getBeneficiariesController = async (req, res) => {
         return res.json({
             status: "Success",
             message: "beneficiaries found",
-            data: foundBeneficiary
+            data: foundBeneficiary,
         });
     }
     catch (err) {
@@ -1415,7 +1415,7 @@ const getUserIsFavoriteController = async (req, res) => {
         return res.json({
             status: "Success",
             message: "beneficiaries found",
-            data: foundBeneficiary
+            data: foundBeneficiary,
         });
     }
     catch (err) {

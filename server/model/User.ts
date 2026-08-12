@@ -44,9 +44,9 @@ const userSchema = new Schema(
             type: Number,
             default: 0,
         },
-        bonusBalance:{
-            type:Number,
-            default:0
+        bonusBalance: {
+            type: Number,
+            default: 0,
         },
         region: {
             type: mongoose.Schema.Types.ObjectId,
@@ -69,13 +69,13 @@ const userSchema = new Schema(
         },
         virtualAccountNumber: {
             type: String,
-            sparse:true,
-            unique: true ,
+            sparse: true,
+            unique: true,
         },
         pin: {
             type: String,
         },
-         profession: {
+        profession: {
             type: String,
             enum: [
                 "Lottery Agent",
@@ -85,31 +85,35 @@ const userSchema = new Schema(
                 "Other",
             ],
         },
-        referredBy:{
-                    type: mongoose.Schema.Types.ObjectId,
-                    ref: "User", // Reference to your User model
-                    required: false,
-                },
-        lottoryId:{
-            type:String
+        referredBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User", // Reference to your User model
+            required: false,
         },
-        lastSeen:{
-            type:String
+        lottoryId: {
+            type: String,
         },
-        referralCode:{
-            type:String
+        lastSeen: {
+            type: String,
         },
-        role:{
-            type:String ,
-            enum:["USER", "AGENT"]
+        referralCode: {
+            type: String,
         },
-        deactivated:{
-            type:Boolean,
-            default:false
+        role: {
+            type: String,
+            enum: ["USER", "AGENT"],
         },
-        team:{
-            type:String
-        }
+        deactivated: {
+            type: Boolean,
+            default: false,
+        },
+        team: {
+            type: String,
+        },
+        createdAt: {
+            type: Date,
+            default: Date.now,
+        },
     },
     { timestamps: true },
 );
