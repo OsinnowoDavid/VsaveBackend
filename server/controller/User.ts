@@ -46,12 +46,12 @@ import {
     getReferalByReferalCode,
     confirmTokenExist,
     deactivateAccount,
-     getNotDeactivatedAccountByMail,
-     getDeactivatedAccountByMail,
-     getAllUser,
-     addBeneficiaries,
-     getUserBeneficiary,
-     getUserIsFavorite
+    getNotDeactivatedAccountByMail,
+    getDeactivatedAccountByMail,
+    getAllUser,
+    addBeneficiaries,
+    getUserBeneficiary,
+    getUserIsFavorite,
 } from "../services/User";
 import { IUser, IVerificationToken, IKYC1 } from "../../types";
 import {
@@ -60,7 +60,7 @@ import {
     getUserCompletedFixedSavings,
     getUserFixedSavings,
     getUserSavingsRecordByStatus,
-    getUserTotalSavingsBalance ,
+    getUserTotalSavingsBalance,
 } from "../services/Savings";
 import { signUserToken } from "../config/JWT";
 import SGMail from "@sendgrid/mail";
@@ -80,17 +80,25 @@ import {
     getCurrentDateWithClosestHour,
 } from "../config/tools";
 import AdminSavingsConfig from "../model/Admin_config";
-import {getAllLoanRecordBalance} from "../services/Loan"
+import { getAllLoanRecordBalance } from "../services/Loan";
 import {
-    generateAndAsignLottoryId, 
-    createTerminalRecord, 
+    generateAndAsignLottoryId,
+    createTerminalRecord,
     depositToTerminalAccount,
-     getTerminalDetails,
-     getTerminalTransaction,
-     getSingleTerminalTransaction,
-    } from "../services/Terminal" ;
-    import {assignReferral,createReferralCodeForUser,getAllUserReferralRecord,getUserReferralByStatus,getSingleReferralRecord, getUserTypeWithReferralCode} from "../services/referral"
+    getTerminalDetails,
+    getTerminalTransaction,
+    getSingleTerminalTransaction,
+} from "../services/Terminal";
+import {
+    assignReferral,
+    createReferralCodeForUser,
+    getAllUserReferralRecord,
+    getUserReferralByStatus,
+    getSingleReferralRecord,
+    getUserTypeWithReferralCode,
+} from "../services/referral";
 SGMail.setApiKey(process.env.SENDGRID_API_KEY);
+import { emailService } from "../config/mailer";
 const getNextFiveMinutes = () => {
     const now = new Date();
     const next = new Date(now.getTime() + 10 * 60 * 1000); // add 5 minutes
@@ -111,14 +119,14 @@ export const registerUser = async (req: Request, res: Response) => {
         } = req.body;
 
         let hashPassword = await argon.hash(password);
-         const foundUser = await  getNotDeactivatedAccountByMail(email) ;
-                if(foundUser){
-                    return res.json({
-                        status:"Failed",
-                        message:"user already found with this email"
-                    })
-                }
-        
+        const foundUser = await getNotDeactivatedAccountByMail(email);
+        if (foundUser) {
+            return res.json({
+                status: "Failed",
+                message: "user already found with this email",
+            });
+        }
+
         const newUser = await createNewUser(
             firstName,
             lastName,
@@ -128,7 +136,7 @@ export const registerUser = async (req: Request, res: Response) => {
             dateOfBirth,
             phoneNumber,
         );
-        
+
         if (!newUser) {
             console.log("User creation returned null/undefined");
             return res.status(500).json({
@@ -141,12 +149,12 @@ export const registerUser = async (req: Request, res: Response) => {
         const tokenNumber = Math.floor(100000 + Math.random() * 900000);
         const expTime = getNextFiveMinutes();
         console.log("Token expiry:", expTime);
-       let token = await assignUserEmailVerificationToken(
+        let token = await assignUserEmailVerificationToken(
             email,
             tokenNumber,
             expTime,
         );
-        
+
         if (!token) {
             console.log("Failed to generate verification token");
             return res.status(500).json({
@@ -154,7 +162,7 @@ export const registerUser = async (req: Request, res: Response) => {
                 message: "Failed to generate verification token",
             });
         }
-        
+
         console.log("Verification token assigned");
 
         // Send email
@@ -171,29 +179,34 @@ export const registerUser = async (req: Request, res: Response) => {
         };
 
         console.log("Sending email via SendGrid...");
-        const sentMail = await SGMail.send(msg);
+        const sentMail = await emailService.sendEmail(msg);
         console.log("Email sent successfully:", sentMail);
-        // check for referral code 
+        // check for referral code
         let referralErr = "";
-        if(referralCode){
-            const referralType = getUserTypeWithReferralCode(referralCode) as any ;
-           const userReferred = await assignReferral(newUser._id.toString(), referralCode) as any ;  
-            if(userReferred === "Successful"){
-                const foundUser = await getReferalByReferalCode(referralCode) ;
-                newUser.referredBy = foundUser._id ;
-                await newUser.save()
+        if (referralCode) {
+            const referralType = getUserTypeWithReferralCode(
+                referralCode,
+            ) as any;
+            const userReferred = (await assignReferral(
+                newUser._id.toString(),
+                referralCode,
+            )) as any;
+            if (userReferred === "Successful") {
+                const foundUser = await getReferalByReferalCode(referralCode);
+                newUser.referredBy = foundUser._id;
+                await newUser.save();
             }
-           referralErr = userReferred.message
-        } 
-       
-        // generate referral code 
-        await createReferralCodeForUser(newUser._id.toString())
-        console.log("finish creating account")
+            referralErr = userReferred.message;
+        }
+
+        // generate referral code
+        await createReferralCodeForUser(newUser._id.toString());
+        console.log("finish creating account");
         return res.json({
             status: "Success",
             message: `User created successfully. Verify your email - verification code has been sent to ${newUser.email} (also check your spam meesage for the code )`,
             data: newUser,
-            err: referralErr
+            err: referralErr,
         });
     } catch (err: any) {
         console.error("=== UNEXPECTED ERROR ===");
@@ -205,9 +218,10 @@ export const registerUser = async (req: Request, res: Response) => {
         console.error("=== END ERROR ===");
 
         // In development, return detailed error
-        const errorMessage = process.env.NODE_ENV === "production"
-            ? "An unexpected error occurred. Please try again later."
-            : `Error: ${err.message} - ${err.stack}`;
+        const errorMessage =
+            process.env.NODE_ENV === "production"
+                ? "An unexpected error occurred. Please try again later."
+                : `Error: ${err.message} - ${err.stack}`;
 
         return res.status(500).json({
             status: "Failed",
@@ -296,7 +310,9 @@ export const resendUserVerificationEmail = async (
 export const loginUser = async (req: Request, res: Response) => {
     try {
         const { email, password } = req.body;
-        const user = (await  getNotDeactivatedAccountByMail(email.toLowerCase())) as IUser;
+        const user = (await getNotDeactivatedAccountByMail(
+            email.toLowerCase(),
+        )) as IUser;
         if (!user) {
             return res.json({
                 status: "Failed",
@@ -357,23 +373,23 @@ export const loginUser = async (req: Request, res: Response) => {
 };
 
 export const addDeactivateToAllRecord = async (req: Request, res: Response) => {
-    try{
-        const allUser = await getAllUser() ;
-        for(const record of allUser){
-            record.deactivated = false ;
-            await record.save() ;
+    try {
+        const allUser = await getAllUser();
+        for (const record of allUser) {
+            record.deactivated = false;
+            await record.save();
         }
         return res.json({
-            status:"Success",
-            mesage: "Done"
-        })
-    }catch(err:any){
-          res.json({
+            status: "Success",
+            mesage: "Done",
+        });
+    } catch (err: any) {
+        res.json({
             status: "Failed",
             message: err.message,
         });
     }
-}
+};
 
 export const userProfile = async (req: Request, res: Response) => {
     try {
@@ -395,24 +411,27 @@ export const userProfile = async (req: Request, res: Response) => {
             data,
         });
     } catch (err: any) {
-       return res.json({
+        return res.json({
             status: "Failed",
             message: err.message,
         });
     }
 };
-export const initPasswordResetController = async (req: Request, res: Response) =>{
-    try{
-        const {email} = req.body; 
-        const foundUser = await getUserByEmail(email) ;
-        if(!foundUser){
+export const initPasswordResetController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const { email } = req.body;
+        const foundUser = await getUserByEmail(email);
+        if (!foundUser) {
             return res.json({
-                status:"Failed",
-                message:"no user found with this email"
-            })
-        } ;
-         const tokenNumber = Math.floor(100000 + Math.random() * 900000);
-          const expTime = getNextFiveMinutes();
+                status: "Failed",
+                message: "no user found with this email",
+            });
+        }
+        const tokenNumber = Math.floor(100000 + Math.random() * 900000);
+        const expTime = getNextFiveMinutes();
         await assignUserEmailVerificationToken(
             foundUser.email,
             tokenNumber,
@@ -431,32 +450,35 @@ export const initPasswordResetController = async (req: Request, res: Response) =
 
           — The VSave Team.`,
         };
-        const sentMail = await SGMail.send(msg); 
-         console.log("email sent successfuly:", sentMail)
+        const sentMail = await SGMail.send(msg);
+        console.log("email sent successfuly:", sentMail);
         return res.json({
-            status:"Success",
-            message :`reset code sent to ${foundUser.email} check your email and procced to reset your password` 
+            status: "Success",
+            message: `reset code sent to ${foundUser.email} check your email and procced to reset your password`,
         });
-    }catch(err:any){
+    } catch (err: any) {
         return res.json({
             status: "Failed",
             message: err.message,
-        }); 
+        });
     }
-}
-export const resetPasswordController = async (req: Request, res: Response) =>{
-    try{
-       const {email,code,password} = req.body ; 
-       const foundUser = await getUserByEmail(email) as IUser ; 
-         const verifyToken = (await getUserVerificationToken(
+};
+export const resetPasswordController = async (req: Request, res: Response) => {
+    try {
+        const { email, code, password } = req.body;
+        const foundUser = (await getUserByEmail(email)) as IUser;
+        const verifyToken = (await getUserVerificationToken(
             email,
             code,
-        )) as any; 
-        console.log("allToken:", verifyToken)
-         for (const token of verifyToken) {
+        )) as any;
+        console.log("allToken:", verifyToken);
+        for (const token of verifyToken) {
             if (token.token === code.toString()) {
-                 let hashPassword = await argon.hash(password);
-                const changedPassword = await changePassword(foundUser, hashPassword);
+                let hashPassword = await argon.hash(password);
+                const changedPassword = await changePassword(
+                    foundUser,
+                    hashPassword,
+                );
                 return res.json({
                     status: "Success",
                     message: "password changed successfuly",
@@ -464,27 +486,28 @@ export const resetPasswordController = async (req: Request, res: Response) =>{
                 });
             }
         }
-        const tokenExist = await confirmTokenExist(email,code) ;
-        if(tokenExist){
+        const tokenExist = await confirmTokenExist(email, code);
+        if (tokenExist) {
             return res.json({
-            status: "Failed",
-            message: "Expired token",
-        });
+                status: "Failed",
+                message: "Expired token",
+            });
         }
-         return res.json({
+        return res.json({
             status: "Failed",
             message: "Incorrect code ",
         });
-    }catch(err:any){
-         return res.json({
+    } catch (err: any) {
+        return res.json({
             status: "Failed",
             message: err.message,
-        }); 
+        });
     }
-}
+};
 export const updateProfileController = async (req: Request, res: Response) => {
     try {
-        const { firstName, email, lastName, phoneNumber, dateOfBirth } = req.body;
+        const { firstName, email, lastName, phoneNumber, dateOfBirth } =
+            req.body;
         const user = req.user as IUser;
         const updatedProfile = await updateProfile(
             user,
@@ -557,7 +580,7 @@ export const registerKYC1 = async (req: Request, res: Response) => {
             });
         }
         // change KYC status
-        console.log("got here start virtual account creattion")
+        console.log("got here start virtual account creattion");
         const virtualAccount = await createVirtualAccountForPayment(
             user,
             bvn,
@@ -566,15 +589,15 @@ export const registerKYC1 = async (req: Request, res: Response) => {
         if (virtualAccount.success === "false") {
             return res.json({
                 status: "Failed",
-                message: "something went wrong, account number not created"
+                message: "something went wrong, account number not created",
             });
         }
-        
+
         await createVirtualAccountIndex(
             user._id.toString(),
             virtualAccount.data.virtual_account_number,
         );
-        console.log("got here kyc record creation")
+        console.log("got here kyc record creation");
         // save KYC1
         const newKYC1 = await createKYC1Record(
             user,
@@ -589,17 +612,17 @@ export const registerKYC1 = async (req: Request, res: Response) => {
             accountDetails,
             bankCode,
         );
-        console.log("got here  virtual account is created", createKYC1Record) ;
-        user.profession = profession ;
-        await user.save() ;
-        console.log("got here proffession saved")
-        if(profession === "Lottery Agent" ){
-             await generateAndAsignLottoryId(user._id.toString()) ;
+        console.log("got here  virtual account is created", createKYC1Record);
+        user.profession = profession;
+        await user.save();
+        console.log("got here proffession saved");
+        if (profession === "Lottery Agent") {
+            await generateAndAsignLottoryId(user._id.toString());
         }
-        console.log("got here if it's lotto agent completed") ;
-        // create transaction pin 
-        await createTransactionPin(user._id.toString(),transactionPin) ; 
-        console.log("got here transaction pin created") ;
+        console.log("got here if it's lotto agent completed");
+        // create transaction pin
+        await createTransactionPin(user._id.toString(), transactionPin);
+        console.log("got here transaction pin created");
         if (!newKYC1) {
             return res.json({
                 status: "Failed",
@@ -635,24 +658,26 @@ export const updateKYC1RecordController = async (
             address,
         } = req.body;
         const user = req.user as IUser;
-        if(profession ==="Lottery Agent"){
-            let newLottoId = await generateAndAsignLottoryId(user._id.toString()) ; 
+        if (profession === "Lottery Agent") {
+            let newLottoId = await generateAndAsignLottoryId(
+                user._id.toString(),
+            );
             const updatedKYC1 = await updateKYC1Record(
-            user,
-            profession,
-            bank,
-            accountNumber,
-            accountDetails,
-            bankCode,
-            country,
-            state,
-            address,
-        );
-        return res.json({
-            status: "Success",
-            message: "KYC updated successfuly",
-            data: updatedKYC1,
-        });
+                user,
+                profession,
+                bank,
+                accountNumber,
+                accountDetails,
+                bankCode,
+                country,
+                state,
+                address,
+            );
+            return res.json({
+                status: "Success",
+                message: "KYC updated successfuly",
+                data: updatedKYC1,
+            });
         }
         const updatedKYC1 = await updateKYC1Record(
             user,
@@ -710,7 +735,7 @@ export const createTransactionPinController = async (
     try {
         const user = req.user as IUser;
         const { pin } = req.body;
-        console.log("req.pin:",pin)
+        console.log("req.pin:", pin);
         const newRecord = await createTransactionPin(user._id.toString(), pin);
         return res.json({
             status: "Success",
@@ -807,17 +832,17 @@ export const getDataPlanController = async (req: Request, res: Response) => {
 
 export const buyAirtimeController = async (req: Request, res: Response) => {
     try {
-        const {pin, phoneNumber, amount } = req.body;
+        const { pin, phoneNumber, amount } = req.body;
         const user = req.user as IUser;
         // validate transaction pin to procced
-        console.log("validate:", pin.toString(),user.pin.toString())
-        if(pin.toString() !== user.pin.toString()){
+        console.log("validate:", pin.toString(), user.pin.toString());
+        if (pin.toString() !== user.pin.toString()) {
             return res.json({
                 status: "Failed",
                 message: "Transaction pin is incorrect enter the correct pin",
             });
         }
-        console.log("validation completed")
+        console.log("validation completed");
         // check if avaliablebalance is greater than the purchased amount
         if (amount > user.availableBalance) {
             console.log("insuficient");
@@ -866,10 +891,10 @@ export const buyAirtimeController = async (req: Request, res: Response) => {
 
 export const buyDataController = async (req: Request, res: Response) => {
     try {
-        const { pin,phoneNumber, amount, planCode } = req.body;
+        const { pin, phoneNumber, amount, planCode } = req.body;
         const user = req.user as IUser;
         // validate transaction pin to procced
-        if(pin.toString() !== user.pin.toString()){
+        if (pin.toString() !== user.pin.toString()) {
             return res.json({
                 status: "Failed",
                 message: "Transaction pin is incorrect enter the correct pin",
@@ -952,10 +977,11 @@ export const accountLookUpController = async (req: Request, res: Response) => {
 };
 export const payOutController = async (req: Request, res: Response) => {
     try {
-        const { pin,bankCode, accountNumber, accountName, amount, remark } = req.body;
+        const { pin, bankCode, accountNumber, accountName, amount, remark } =
+            req.body;
         const user = req.user as IUser;
         // validate transaction pin to procced
-        if(pin.toString() !== user.pin.toString()){
+        if (pin.toString() !== user.pin.toString()) {
             return res.json({
                 status: "Failed",
                 message: "Transaction pin is incorrect enter the correct pin",
@@ -1009,21 +1035,21 @@ export const getAccountBalanceController = async (
     req: Request,
     res: Response,
 ) => {
-    try{
-        const user = req.user as IUser ; 
-        const balanceResult = await getAccountBalance(user._id.toString()) ;
+    try {
+        const user = req.user as IUser;
+        const balanceResult = await getAccountBalance(user._id.toString());
         return res.json({
-            status:"Success",
-            message : "balance found",
-            data: balanceResult
-        })
-    }catch(err:any){
+            status: "Success",
+            message: "balance found",
+            data: balanceResult,
+        });
+    } catch (err: any) {
         return res.json({
             status: "Failed",
             message: err.message,
         });
     }
-}
+};
 export const getUserTransactionsController = async (
     req: Request,
     res: Response,
@@ -1506,40 +1532,50 @@ export const getFixedSavingsByStatusController = async (
         });
     }
 };
-export const getUserTotalSavingsAndLoanBalanceController = async (req: Request, res: Response) =>{
-    try{
+export const getUserTotalSavingsAndLoanBalanceController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
         const user = req.user as IUser;
-        const totalSavingsBalnce = await getUserTotalSavingsBalance(user._id.toString())  ; 
-        const totalLoanBalance = await getAllLoanRecordBalance(user._id.toString())
+        const totalSavingsBalnce = await getUserTotalSavingsBalance(
+            user._id.toString(),
+        );
+        const totalLoanBalance = await getAllLoanRecordBalance(
+            user._id.toString(),
+        );
         return res.json({
-            status:"Success",
-            message:"savings balance calculated",
+            status: "Success",
+            message: "savings balance calculated",
             data: {
                 totalSavingsBalnce,
-                totalLoanBalance
-            }
-        })
-    }catch(err:any){
+                totalLoanBalance,
+            },
+        });
+    } catch (err: any) {
         return res.json({
             status: "Failed",
             message: err.message,
         });
     }
-}
+};
 
-export const topUpLottryAccountController = async (req: Request, res: Response) =>{
-    try{
-        const {amount,pin, remark} = req.body ;
-         const user = req.user as IUser;
-         // check if user is a lotto user 
-         if(!user.lottoryId){
-             return res.json({
+export const topUpLottryAccountController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const { amount, pin, remark } = req.body;
+        const user = req.user as IUser;
+        // check if user is a lotto user
+        if (!user.lottoryId) {
+            return res.json({
                 status: "Failed",
                 message: "not a lotto user",
             });
-         }
+        }
         // validate transaction pin to procced
-        if(pin.toString() !== user.pin.toString()){
+        if (pin.toString() !== user.pin.toString()) {
             return res.json({
                 status: "Failed",
                 message: "Transaction pin is incorrect enter the correct pin",
@@ -1552,10 +1588,10 @@ export const topUpLottryAccountController = async (req: Request, res: Response) 
                 message: "insufficient fund",
             });
         }
-        const foundKYC = await getUserKyc1Record(user._id.toString()) ;
-        let bankCode = foundKYC.bankCode ;
-        let accountNumber = foundKYC.accountNumber.toString() ;
-        let accountName = foundKYC.accountDetails
+        const foundKYC = await getUserKyc1Record(user._id.toString());
+        let bankCode = foundKYC.bankCode;
+        let accountNumber = foundKYC.accountNumber.toString();
+        let accountName = foundKYC.accountDetails;
         const payment = await payOut(
             user,
             bankCode,
@@ -1563,188 +1599,239 @@ export const topUpLottryAccountController = async (req: Request, res: Response) 
             accountNumber,
             accountName,
         );
-        
+
         //withdraw money from  user availiable
-        await userWithdraw(user._id.toString(), amount,remark, payment.data.transaction_reference,)
-        // also create TerminalTransaction record 
-        const terminalRecord = await createTerminalRecord(user._id.toString(), amount,payment.data.transaction_reference,remark) ;
-        await depositToTerminalAccount(user._id.toString(),amount) ;
+        await userWithdraw(
+            user._id.toString(),
+            amount,
+            remark,
+            payment.data.transaction_reference,
+        );
+        // also create TerminalTransaction record
+        const terminalRecord = await createTerminalRecord(
+            user._id.toString(),
+            amount,
+            payment.data.transaction_reference,
+            remark,
+        );
+        await depositToTerminalAccount(user._id.toString(), amount);
         return res.json({
-            status:"Success",
-            message:"terminal credited successfully",
-            data:terminalRecord
-        })
-    }catch(err:any){
-         return res.json({
+            status: "Success",
+            message: "terminal credited successfully",
+            data: terminalRecord,
+        });
+    } catch (err: any) {
+        return res.json({
             status: "Failed",
             message: err.message,
         });
     }
-}
+};
 
-export const getTerminalDetailsController = async (req: Request, res: Response) =>{
-    try{
-        const user = req.user as IUser 
+export const getTerminalDetailsController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const user = req.user as IUser;
         const details = await getTerminalDetails(user._id.toString());
-        return  res.json({
-            status:"Success",
+        return res.json({
+            status: "Success",
             message: "found details",
-            data: details 
-        })
-    }catch(err:any){
+            data: details,
+        });
+    } catch (err: any) {
         return res.json({
             status: "Failed",
             message: err.message,
         });
     }
-}
-export const getTerminalTransactionController = async (req: Request, res: Response) =>{
-    try{
-        const user = req.user as IUser ;
-        const foundRecords = await getTerminalTransaction(user._id.toString()) ;
+};
+export const getTerminalTransactionController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const user = req.user as IUser;
+        const foundRecords = await getTerminalTransaction(user._id.toString());
         return res.json({
-            status:"Success",
-            message:"found records",
-            data: foundRecords
-        })
-    }catch(err:any){
-         return res.json({
-            status: "Failed",
-            message: err.message,
+            status: "Success",
+            message: "found records",
+            data: foundRecords,
         });
-    }
-}
-export const getSingleTerminalTransactionController = async (req: Request, res: Response) =>{
-    try{
-        const {id} = req.params ;
-        const foundRecord = await getSingleTerminalTransaction(id) ;
+    } catch (err: any) {
         return res.json({
-            status:"Success",
-            message:"found Transaction",
-            data: foundRecord
-        })
-    }catch(err:any){
-       return res.json({
             status: "Failed",
             message: err.message,
         });
     }
-}
+};
+export const getSingleTerminalTransactionController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const { id } = req.params;
+        const foundRecord = await getSingleTerminalTransaction(id);
+        return res.json({
+            status: "Success",
+            message: "found Transaction",
+            data: foundRecord,
+        });
+    } catch (err: any) {
+        return res.json({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+};
 
-export const checkUserReferralRecordsController = async (req: Request, res: Response) =>{
-    try{
-        const user = req.user as IUser ;
-        const allRecords = await getAllUserReferralRecord(user._id.toString()) ;
-         return res.json({
-            status:"Success",
-            message:"Found Records",
-            data: allRecords
-        })
-    }catch(err:any){
-         return res.json({
+export const checkUserReferralRecordsController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const user = req.user as IUser;
+        const allRecords = await getAllUserReferralRecord(user._id.toString());
+        return res.json({
+            status: "Success",
+            message: "Found Records",
+            data: allRecords,
+        });
+    } catch (err: any) {
+        return res.json({
             status: "Failed",
             message: err.message,
         });
     }
-}
+};
 
-export const checkUserReferralRecordsByStatusController = async (req: Request, res: Response) =>{
-    try{
-        const user = req.user as IUser ;
-        const {status} = req.params 
-        const allRecords = await getUserReferralByStatus(user._id.toString(),status) ;
-         return res.json({
-            status:"Success",
-            message:"Found Records",
-            data: allRecords
-        })
-    }catch(err:any){
-         return res.json({
+export const checkUserReferralRecordsByStatusController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const user = req.user as IUser;
+        const { status } = req.params;
+        const allRecords = await getUserReferralByStatus(
+            user._id.toString(),
+            status,
+        );
+        return res.json({
+            status: "Success",
+            message: "Found Records",
+            data: allRecords,
+        });
+    } catch (err: any) {
+        return res.json({
             status: "Failed",
             message: err.message,
         });
     }
-}
+};
 
-export const checkUserSingleReferralRecordController = async (req: Request, res: Response) =>{
-    try{
-        const {id} = req.params
-        const foundRecord = await getSingleReferralRecord(id) ;
-         return res.json({
-            status:"Success",
-            message:"Found Record",
-            data: foundRecord
-        })
-    }catch(err:any){
-         return res.json({
+export const checkUserSingleReferralRecordController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const { id } = req.params;
+        const foundRecord = await getSingleReferralRecord(id);
+        return res.json({
+            status: "Success",
+            message: "Found Record",
+            data: foundRecord,
+        });
+    } catch (err: any) {
+        return res.json({
             status: "Failed",
             message: err.message,
         });
     }
-} 
-export const deactivateAccountController = async  (req: Request, res: Response) =>{
-    try{
-        const user = req.user as IUser ;
+};
+export const deactivateAccountController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const user = req.user as IUser;
         const deletedAccount = await deactivateAccount(user._id.toString());
-          return res.json({
+        return res.json({
             status: "Success",
             message: "account deleted  successfuly",
         });
-    }catch(err:any){
-          return res.json({
+    } catch (err: any) {
+        return res.json({
             status: "Failed",
             message: err.message,
         });
     }
-}
-export const addBeneficiariesController = async  (req: Request, res: Response) =>{
-    try{
-        const user = req.user as IUser
-        const {accountName, accountNumber, bankName, bankCode, isFavorite} = req.body ;
-        const newBeneficiary = await addBeneficiaries(user._id.toString(),accountName, accountNumber, bankName, bankCode, isFavorite) ;
+};
+export const addBeneficiariesController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+        const user = req.user as IUser;
+        const { accountName, accountNumber, bankName, bankCode, isFavorite } =
+            req.body;
+        const newBeneficiary = await addBeneficiaries(
+            user._id.toString(),
+            accountName,
+            accountNumber,
+            bankName,
+            bankCode,
+            isFavorite,
+        );
         return res.json({
             status: "Success",
             message: "beneficiary created successfuly",
-            data: newBeneficiary
+            data: newBeneficiary,
         });
-    }catch(err:any){
+    } catch (err: any) {
         return res.json({
             status: "Failed",
             message: err.message,
         });
     }
-}
+};
 
-export const getBeneficiariesController = async (req: Request, res: Response) =>{
-    try{
+export const getBeneficiariesController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
         const user = req.user as IUser;
         const foundBeneficiary = await getUserBeneficiary(user._id.toString());
         return res.json({
             status: "Success",
             message: "beneficiaries found",
-            data: foundBeneficiary
+            data: foundBeneficiary,
         });
-    }catch(err:any){
+    } catch (err: any) {
         return res.json({
             status: "Failed",
             message: err.message,
         });
     }
-}
+};
 
-export const getUserIsFavoriteController = async (req: Request, res: Response) =>{
-    try{
+export const getUserIsFavoriteController = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
         const user = req.user as IUser;
-        const foundBeneficiary = await getUserIsFavorite(user._id.toString())
+        const foundBeneficiary = await getUserIsFavorite(user._id.toString());
         return res.json({
             status: "Success",
             message: "beneficiaries found",
-            data: foundBeneficiary
+            data: foundBeneficiary,
         });
-    }catch(err:any){
+    } catch (err: any) {
         return res.json({
             status: "Failed",
             message: err.message,
         });
     }
-}
+};
